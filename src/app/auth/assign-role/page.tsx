@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, IconBattery, IconShield, IconUser } from '@tabler/icons-react';
+import { IconLoader2, IconBattery, IconShield, IconUser } from '@tabler/icons-react';
 import { UserRole, DEFAULT_USER_ROLE, getRoleDisplayName } from '@/lib/auth/utils';
 import { toast } from 'sonner';
 
@@ -31,28 +31,28 @@ export default function AssignRolePage() {
   const assignDefaultRole = async () => {
     if (!user) return;
 
+    // Since you've manually set the role in Clerk dashboard,
+    // we just need to redirect to dashboard
     setIsAssigning(true);
+    
     try {
-      // Update user metadata with default role
-      await user.update({
-        publicMetadata: {
-          ...user.publicMetadata,
-          role: DEFAULT_USER_ROLE,
-          hireDate: new Date().toISOString().split('T')[0],
-          department: 'Technical Services'
-        }
-      });
-
-      toast.success('Role assigned successfully! Redirecting to dashboard...');
+      // Check if user already has role assigned
+      console.log('User metadata:', user.publicMetadata);
       
-      // Wait a moment for the update to propagate
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
+      if (user.publicMetadata?.role) {
+        toast.success(`Role found: ${user.publicMetadata.role}! Redirecting to dashboard...`);
+        
+        // Force immediate navigation
+        router.replace('/dashboard');
+        return;
+      }
+
+      // If no role is found, show message to contact admin
+      toast.error('No role assigned. Please contact your administrator to assign a role in Clerk dashboard.');
       
     } catch (error) {
-      console.error('Error assigning role:', error);
-      toast.error('Failed to assign role. Please try again or contact support.');
+      console.error('Error checking role:', error);
+      toast.error('Error checking role. Please refresh the page or contact support.');
     } finally {
       setIsAssigning(false);
     }
@@ -61,7 +61,7 @@ export default function AssignRolePage() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+<IconLoader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -141,7 +141,7 @@ export default function AssignRolePage() {
             >
               {isAssigning ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+<IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Setting up your account...
                 </>
               ) : (

@@ -1,12 +1,21 @@
 'use client';
 
-import { User } from '@clerk/nextjs/server';
 import { UserRole } from '@/lib/auth/roles';
 import { AdminDashboard } from './admin-dashboard';
 import { TechnicianDashboard } from './technician-dashboard';
 
+// Serialized user data for client components
+interface SerializedUser {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  emailAddresses: { id: string; emailAddress: string }[];
+  imageUrl: string;
+  publicMetadata: Record<string, any>;
+}
+
 interface DashboardContentProps {
-  user: User;
+  user: SerializedUser;
   role: UserRole;
 }
 

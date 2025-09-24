@@ -17,25 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 
-const Form = ({
-  children,
-  onSubmit,
-  form,
-  className
-}: {
-  children: React.ReactNode;
-  onSubmit: (data: any) => void;
-  form: UseFormReturn<any, any, undefined>;
-  className?: string;
-}) => {
-  return (
-    <FormProvider {...form}>
-      <form onSubmit={onSubmit} className={className}>
-        {children}
-      </form>
-    </FormProvider>
-  );
-};
+const Form = FormProvider;
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,

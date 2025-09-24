@@ -12,12 +12,13 @@ import {
   IconPrinter, 
   IconTool,
   IconAlertTriangle,
-  IconCheckCircle,
+  IconCircleCheck,
   IconClock,
   IconCalendar,
   IconPlus
 } from '@tabler/icons-react';
 import Link from 'next/link';
+import PageContainer from '@/components/layout/page-container';
 
 interface TechnicianDashboardProps {
   user: User;
@@ -27,7 +28,8 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
   const userName = user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Technician';
 
   return (
-    <div className="space-y-6 p-6">
+    <PageContainer>
+      <div className="space-y-6 w-full">
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -333,6 +335,7 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PageContainer>
   );
 }

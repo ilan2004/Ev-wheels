@@ -18,6 +18,7 @@ import {
   IconClock
 } from '@tabler/icons-react';
 import Link from 'next/link';
+import PageContainer from '@/components/layout/page-container';
 
 interface AdminDashboardProps {
   user: User;
@@ -27,7 +28,8 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
   const userName = user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
 
   return (
-    <div className="space-y-6 p-6">
+    <PageContainer>
+      <div className="space-y-6 w-full">
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -281,6 +283,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PageContainer>
   );
 }

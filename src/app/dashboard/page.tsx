@@ -17,5 +17,18 @@ export default async function Dashboard() {
     return redirect('/auth/assign-role');
   }
 
-  return <DashboardContent user={user} role={userRole} />;
+  // Serialize user data for client component
+  const userData = {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    emailAddresses: user.emailAddresses.map(email => ({
+      id: email.id,
+      emailAddress: email.emailAddress
+    })),
+    imageUrl: user.imageUrl,
+    publicMetadata: user.publicMetadata
+  };
+
+  return <DashboardContent user={userData} role={userRole} />;
 }
