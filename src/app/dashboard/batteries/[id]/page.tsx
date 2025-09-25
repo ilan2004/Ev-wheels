@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
 import { BatteryDetails } from '@/components/bms/battery-details';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 interface BatteryPageProps {
   params: Promise<{
@@ -22,6 +23,9 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
   const { id } = await params;
   return (
     <PageContainer>
+      <div className="mb-4">
+        <Breadcrumbs />
+      </div>
       <BatteryDetails batteryId={id} />
     </PageContainer>
   );

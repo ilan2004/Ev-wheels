@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import PageContainer from '@/components/layout/page-container';
 import { BatteryForm } from '@/components/bms/battery-form';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { SectionHeader } from '@/components/layout/section-header';
 
 export const metadata: Metadata = {
   title: 'Add New Battery | E-Wheels',
@@ -10,14 +12,14 @@ export const metadata: Metadata = {
 export default function NewBatteryPage() {
   return (
     <PageContainer>
+      <div className="mb-4">
+        <Breadcrumbs />
+      </div>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add New Battery</h1>
-          <p className="text-muted-foreground">
-            Register a new battery for repair and service tracking
-          </p>
-        </div>
-        
+        <SectionHeader
+          title="Add New Battery"
+          description="Register a new battery for repair and service tracking"
+        />
         <BatteryForm />
       </div>
     </PageContainer>

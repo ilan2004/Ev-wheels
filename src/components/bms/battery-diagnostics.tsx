@@ -28,7 +28,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { 
   IconActivity,
-  IconZap,
+  IconBolt,
   IconGauge,
   IconDeviceFloppy,
   IconRefresh
@@ -190,7 +190,7 @@ export function BatteryDiagnostics({
                 </Badge>
               </div>
               <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <IconZap className="h-4 w-4 text-purple-600" />
+                <IconBolt className="h-4 w-4 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -430,7 +430,7 @@ export function BatteryDiagnostics({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <IconZap className="h-5 w-5" />
+                <IconBolt className="h-5 w-5" />
                 BMS Analysis
               </CardTitle>
             </CardHeader>

@@ -1,5 +1,9 @@
 import { User } from '@clerk/nextjs/server';
+import type { UserResource } from '@clerk/types';
 import { UserRole, Permission, hasPermission, hasAnyPermission, NAVIGATION_PERMISSIONS } from './roles';
+
+// Re-export UserRole for convenience
+export { UserRole };
 
 // Extend the Clerk User type to include our custom metadata
 export interface EVWheelsUser extends User {
@@ -24,8 +28,8 @@ export function getUserRole(user: User | null): UserRole | null {
 /**
  * Check if user has a specific permission
  */
-export function userHasPermission(user: User | null, permission: Permission): boolean {
-  const role = getUserRole(user);
+export function userHasPermission(user: any, permission: Permission): boolean {
+  const role = getUserRole(user as User);
   if (!role) return false;
   
   return hasPermission(role, permission);
@@ -34,8 +38,8 @@ export function userHasPermission(user: User | null, permission: Permission): bo
 /**
  * Check if user has any of the specified permissions
  */
-export function userHasAnyPermission(user: User | null, permissions: Permission[]): boolean {
-  const role = getUserRole(user);
+export function userHasAnyPermission(user: any, permissions: Permission[]): boolean {
+  const role = getUserRole(user as User);
   if (!role) return false;
   
   return hasAnyPermission(role, permissions);

@@ -155,7 +155,7 @@ export function BatteryStatusWorkflow({
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="new-status">New Status</Label>
-                      <Select onValueChange={setSelectedStatus}>
+                      <Select onValueChange={(value) => setSelectedStatus(value as BatteryStatus)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select new status" />
                         </SelectTrigger>

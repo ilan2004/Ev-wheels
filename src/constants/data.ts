@@ -102,38 +102,48 @@ export const navItems: NavItem[] = [
     permissions: [Permission.VIEW_INVENTORY]
   },
   {
-    title: 'Invoices & Quotes',
-    url: '/dashboard/invoices',
-    icon: 'fileText',
+    title: 'Quotes',
+    url: '/dashboard/quotes',
+    icon: 'filePlus',
     shortcut: ['q', 'q'],
+    isActive: false,
+    items: [
+      {
+        title: 'All Quotes',
+        url: '/dashboard/quotes',
+        icon: 'list',
+        permissions: [Permission.GENERATE_QUOTATION]
+      },
+      {
+        title: 'Create Quote',
+        url: '/dashboard/quotes/new',
+        icon: 'filePlus',
+        permissions: [Permission.GENERATE_QUOTATION]
+      }
+    ],
+    permissions: [Permission.GENERATE_QUOTATION]
+  },
+  {
+    title: 'Invoices',
+    url: '/dashboard/invoices',
+    icon: 'receipt',
+    shortcut: ['i', 'n'],
     isActive: false,
     items: [
       {
         title: 'All Invoices',
         url: '/dashboard/invoices',
         icon: 'list',
-        permissions: [Permission.GENERATE_INVOICE, Permission.GENERATE_QUOTATION]
-      },
-      {
-        title: 'Create Quote',
-        url: '/dashboard/invoices/quote/new',
-        icon: 'filePlus',
-        permissions: [Permission.GENERATE_QUOTATION]
-      },
-      {
-        title: 'Create Invoice',
-        url: '/dashboard/invoices/invoice/new',
-        icon: 'receipt',
         permissions: [Permission.GENERATE_INVOICE]
       },
       {
-        title: 'Print Labels',
-        url: '/dashboard/invoices/labels',
-        icon: 'printer',
-        permissions: [Permission.PRINT_LABELS]
+        title: 'Create Invoice',
+        url: '/dashboard/invoices/new',
+        icon: 'receipt',
+        permissions: [Permission.GENERATE_INVOICE]
       }
     ],
-    permissions: [Permission.GENERATE_INVOICE, Permission.GENERATE_QUOTATION]
+    permissions: [Permission.GENERATE_INVOICE]
   },
   {
     title: 'Reports',

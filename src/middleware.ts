@@ -21,7 +21,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 });
 export const config = {
   matcher: [
-    // Only run middleware for dashboard routes to minimize overhead
+    // Run middleware on the homepage so auth() works there
+    '/',
+    // And on dashboard routes (protected via auth.protect in the handler above)
     '/dashboard/:path*'
   ]
 };

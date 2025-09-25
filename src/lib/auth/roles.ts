@@ -85,7 +85,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_INVENTORY,
     Permission.UPDATE_INVENTORY,
     Permission.VIEW_PRICING,
-    Permission.GENERATE_QUOTATION,
     Permission.PRINT_LABELS,
     Permission.GENERATE_QR_CODES
   ]
@@ -118,7 +117,8 @@ export const NAVIGATION_PERMISSIONS = {
   batteries: [Permission.VIEW_BATTERIES],
   customers: [Permission.VIEW_CUSTOMERS],
   inventory: [Permission.VIEW_INVENTORY],
-  invoices: [Permission.GENERATE_INVOICE, Permission.GENERATE_QUOTATION],
+  invoices: [Permission.GENERATE_INVOICE],
+  quotes: [Permission.GENERATE_QUOTATION],
   reports: [Permission.VIEW_FINANCIAL_REPORTS],
   users: [Permission.VIEW_USERS],
   settings: [Permission.MANAGE_SETTINGS]

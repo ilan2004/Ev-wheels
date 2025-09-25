@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import PageContainer from '@/components/layout/page-container';
 import { BatteryStatus } from '@/types/bms';
 import { StatusPageClient } from './status-client';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { SectionHeader } from '@/components/layout/section-header';
 
 export const metadata: Metadata = {
   title: 'Battery Status | E-Wheels',
@@ -15,11 +17,14 @@ export default function BatteryStatusPage() {
 
   return (
     <PageContainer>
+      <div className="mb-4">
+        <Breadcrumbs />
+      </div>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Battery Status</h1>
-          <p className="text-muted-foreground">Track and update repair workflow status</p>
-        </div>
+        <SectionHeader
+          title="Battery Status"
+          description="Track and update repair workflow status"
+        />
         <StatusPageClient currentStatus={currentStatus} batteryId={batteryId} />
       </div>
     </PageContainer>

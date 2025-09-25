@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { SectionHeader } from '@/components/layout/section-header';
 import {
   Select,
   SelectContent,
@@ -150,34 +151,32 @@ export function BatteryManagement() {
     return matchesSearch && matchesStatus && matchesBrand;
   });
 
-  const uniqueBrands = [...new Set(batteries.map(b => b.brand))];
+  const uniqueBrands = Array.from(new Set(batteries.map(b => b.brand)));
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Battery Management</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Track and manage battery repairs, diagnostics, and service records
-          </p>
-        </div>
-        <div className="flex flex-row gap-3 w-full sm:w-auto">
-          <Button variant="outline" size="default" className="flex-1 sm:flex-initial">
-            <IconDownload className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Export</span>
-            <span className="sm:hidden">Export</span>
-          </Button>
-          <Button onClick={() => window.location.href = '/dashboard/batteries/new'} size="default" className="flex-1 sm:flex-initial">
-            <IconPlus className="h-4 w-4 mr-2" />
-            Add Battery
-          </Button>
-        </div>
-      </div>
+      <SectionHeader
+        title="Battery Management"
+        description="Track and manage battery repairs, diagnostics, and service records"
+        actions={(
+          <>
+            <Button variant="outline" size="default" className="flex-1 sm:flex-initial">
+              <IconDownload className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Export</span>
+              <span className="sm:hidden">Export</span>
+            </Button>
+            <Button onClick={() => window.location.href = '/dashboard/batteries/new'} size="default" className="flex-1 sm:flex-initial">
+              <IconPlus className="h-4 w-4 mr-2" />
+              Add Battery
+            </Button>
+          </>
+        )}
+      />
 
       {/* Key Metrics */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-md transition-shadow border-t-2 border-primary/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Batteries</CardTitle>
             <IconQrcode className="h-4 w-4 text-muted-foreground" />
@@ -190,7 +189,7 @@ export function BatteryManagement() {
           </CardContent>
         </Card>
         
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-md transition-shadow border-t-2 border-primary/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">In Progress</CardTitle>
             <IconEdit className="h-4 w-4 text-muted-foreground" />
@@ -205,7 +204,7 @@ export function BatteryManagement() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-md transition-shadow border-t-2 border-primary/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
             <IconEye className="h-4 w-4 text-muted-foreground" />
@@ -220,7 +219,7 @@ export function BatteryManagement() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-md transition-shadow border-t-2 border-primary/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <span className="text-muted-foreground font-bold">₹</span>
@@ -374,7 +373,7 @@ export function BatteryManagement() {
             <div className="border rounded-lg overflow-hidden">
             <div className="overflow-x-auto table-container">
                 <Table>
-                <TableHeader className="bg-muted/50">
+                <TableHeader className="sticky top-0 z-10 bg-muted">
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="min-w-[200px] font-semibold">Serial Number</TableHead>
                     <TableHead className="min-w-[150px] font-semibold">Customer</TableHead>
@@ -386,11 +385,11 @@ export function BatteryManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredBatteries.map((battery) => (
-                    <TableRow key={battery.id} className="hover:bg-muted/50 transition-colors">
+                  {filteredBatteries.map((battery, idx) => (
+                    <TableRow key={battery.id} className="hover:bg-muted/50 transition-colors odd:bg-background even:bg-muted/30">
                       <TableCell className="font-medium py-4">
                         <div className="space-y-1">
-                          <p className="font-mono text-sm font-semibold" title={battery.serial_number}>
+                          <p className="font-mono text-sm font-semibold truncate max-w-[200px]" title={battery.serial_number}>
                             {battery.serial_number.length > 20 
                               ? `${battery.serial_number.slice(0, 20)}...` 
                               : battery.serial_number}
@@ -446,7 +445,7 @@ export function BatteryManagement() {
                       <TableCell className="py-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" title="More actions">
                               <IconDots className="h-4 w-4" />
                               <span className="sr-only">Open menu</span>
                             </Button>
@@ -487,8 +486,21 @@ export function BatteryManagement() {
           )}
 
           {filteredBatteries.length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-12 space-y-3">
               <p className="text-muted-foreground text-sm">No batteries found matching your criteria</p>
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                    setBrandFilter('all');
+                  }}
+                >
+                  Clear filters
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
