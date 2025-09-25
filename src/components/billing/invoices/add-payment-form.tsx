@@ -72,10 +72,10 @@ export function AddPaymentForm({
 
   const paymentMethods = [
     { value: PaymentMethod.CASH, label: 'Cash' },
-    { value: PaymentMethod.CHECK, label: 'Check' },
+    { value: PaymentMethod.CARD, label: 'Card' },
     { value: PaymentMethod.BANK_TRANSFER, label: 'Bank Transfer' },
-    { value: PaymentMethod.CREDIT_CARD, label: 'Credit Card' },
-    { value: PaymentMethod.OTHER, label: 'Other' },
+    { value: PaymentMethod.UPI, label: 'UPI' },
+    { value: PaymentMethod.CHEQUE, label: 'Cheque' },
   ];
 
   const handleFullPayment = () => {

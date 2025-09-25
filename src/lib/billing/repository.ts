@@ -186,7 +186,7 @@ export class InMemoryBillingRepository implements BillingRepository {
     // Recalculate if items changed
     if (input.items) {
       updatedItems = input.items.map(item => updateLineItemTotals({
-        id: item.id || generateLineItemId(),
+        id: (item as any).id || generateLineItemId(),
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
@@ -299,7 +299,7 @@ export class InMemoryBillingRepository implements BillingRepository {
     // Recalculate if items changed
     if (input.items) {
       updatedItems = input.items.map(item => updateLineItemTotals({
-        id: item.id || generateLineItemId(),
+        id: (item as any).id || generateLineItemId(),
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
@@ -422,7 +422,7 @@ export class InMemoryBillingRepository implements BillingRepository {
     // Update quote to mark as converted
     await this.updateQuote(quoteId, {
       convertedToInvoiceId: invoice.id
-    });
+    } as any);
     
     return invoice;
   }
@@ -464,18 +464,25 @@ export class InMemoryBillingRepository implements BillingRepository {
 // Global instance for the application
 // Switch to Supabase-backed repository if env is present
 let instance: BillingRepository;
-const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-if (hasSupabase) {
-  try {
-    // Dynamically import to avoid circular deps at build
-    const { SupabaseBillingRepository } = await import('./repository.supabase');
-    instance = new SupabaseBillingRepository();
-  } catch (e) {
-    console.warn('Failed to initialize Supabase repository, falling back to in-memory. Error:', e);
-    instance = new InMemoryBillingRepository();
+
+async function createBillingRepository(): Promise<BillingRepository> {
+  const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  if (hasSupabase) {
+    try {
+      // Dynamically import to avoid circular deps at build
+      const { SupabaseBillingRepository } = await import('./repository.supabase');
+      return new SupabaseBillingRepository();
+    } catch (e) {
+      console.warn('Failed to initialize Supabase repository, falling back to in-memory. Error:', e);
+      return new InMemoryBillingRepository();
+    }
+  } else {
+    return new InMemoryBillingRepository();
   }
-} else {
-  instance = new InMemoryBillingRepository();
 }
 
+// Initialize with in-memory by default, can be replaced by calling getBillingRepository()
+instance = new InMemoryBillingRepository();
+
 export const billingRepository = instance;
+export const getBillingRepository = createBillingRepository;

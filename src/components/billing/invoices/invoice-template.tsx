@@ -31,7 +31,7 @@ function getStatusBadge(status: InvoiceStatus) {
   const variants = {
     [InvoiceStatus.DRAFT]: 'secondary',
     [InvoiceStatus.SENT]: 'default', 
-    [InvoiceStatus.PAID]: 'success',
+    [InvoiceStatus.PAID]: 'secondary',
     [InvoiceStatus.VOID]: 'destructive'
   } as const;
   
@@ -155,7 +155,7 @@ export function InvoiceTemplate({
                 <TableHead className="font-semibold text-gray-800">Description</TableHead>
                 <TableHead className="text-right font-semibold text-gray-800 w-20">Qty</TableHead>
                 <TableHead className="text-right font-semibold text-gray-800 w-24">Unit Price</TableHead>
-                {invoice.items.some(item => item.discount > 0) && (
+                {invoice.items.some(item => (item.discount ?? 0) > 0) && (
                   <TableHead className="text-right font-semibold text-gray-800 w-20">Disc %</TableHead>
                 )}
                 <TableHead className="text-right font-semibold text-gray-800 w-20">Tax %</TableHead>
@@ -168,13 +168,13 @@ export function InvoiceTemplate({
                   <TableCell className="font-medium py-3">{item.description}</TableCell>
                   <TableCell className="text-right py-3">{item.quantity}</TableCell>
                   <TableCell className="text-right py-3">{formatCurrency(item.unitPrice)}</TableCell>
-                  {invoice.items.some(item => item.discount > 0) && (
+                  {invoice.items.some(item => (item.discount ?? 0) > 0) && (
                     <TableCell className="text-right py-3">
-                      {item.discount > 0 ? `${item.discount}%` : '-'}
+                      {(item.discount ?? 0) > 0 ? `${item.discount}%` : '-' }
                     </TableCell>
                   )}
                   <TableCell className="text-right py-3">
-                    {item.taxRate > 0 ? `${item.taxRate}%` : '-'}
+                    {(item.taxRate ?? 0) > 0 ? `${item.taxRate}%` : '-' }
                   </TableCell>
                   <TableCell className="text-right py-3 font-medium">
                     {formatCurrency(item.total)}

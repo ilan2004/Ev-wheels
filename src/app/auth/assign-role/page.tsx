@@ -83,7 +83,7 @@ export default function AssignRolePage() {
               </CardTitle>
             </div>
             <CardDescription className="text-gray-600">
-              Let's set up your account to get you started
+              Let&apos;s set up your account to get you started
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -92,7 +92,7 @@ export default function AssignRolePage() {
                 Hello, <span className="font-medium">{user.firstName || user.emailAddresses[0]?.emailAddress}</span>
               </div>
               <p className="text-sm text-gray-500">
-                We're assigning you the default role to get you started. An administrator can update your permissions later if needed.
+                We&apos;re assigning you the default role to get you started. An administrator can update your permissions later if needed.
               </p>
             </div>
           </CardContent>

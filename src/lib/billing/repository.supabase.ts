@@ -235,14 +235,18 @@ export class SupabaseBillingRepository implements BillingRepository {
     let totals = existing.totals;
     if (input.items) {
       items = input.items.map(it => updateLineItemTotals({
-        id: it.id || generateLineItemId(),
+        id: (it as any).id || generateLineItemId(),
         description: it.description,
         quantity: it.quantity,
         unitPrice: it.unitPrice,
         discount: it.discount || 0,
         taxRate: it.taxRate || 18,
       }));
-      totals = calculateBillingTotals(items, input.shippingAmount ?? existing.totals.shippingAmount || 0, input.adjustmentAmount ?? existing.totals.adjustmentAmount || 0);
+      totals = calculateBillingTotals(
+        items,
+        (input.shippingAmount ?? existing.totals.shippingAmount) ?? 0,
+        (input.adjustmentAmount ?? existing.totals.adjustmentAmount) ?? 0
+      );
 
       // Replace items
       await supabase.from('quote_items').delete().eq('quote_id', id);
@@ -464,14 +468,18 @@ export class SupabaseBillingRepository implements BillingRepository {
     let balanceDue = existing.balanceDue;
     if (input.items) {
       items = input.items.map(it => updateLineItemTotals({
-        id: it.id || generateLineItemId(),
+        id: (it as any).id || generateLineItemId(),
         description: it.description,
         quantity: it.quantity,
         unitPrice: it.unitPrice,
         discount: it.discount || 0,
         taxRate: it.taxRate || 18,
       }));
-      totals = calculateBillingTotals(items, input.shippingAmount ?? existing.totals.shippingAmount || 0, input.adjustmentAmount ?? existing.totals.adjustmentAmount || 0);
+      totals = calculateBillingTotals(
+        items,
+        (input.shippingAmount ?? existing.totals.shippingAmount) ?? 0,
+        (input.adjustmentAmount ?? existing.totals.adjustmentAmount) ?? 0
+      );
       const paymentsTotal = (existing.payments || []).reduce((s, p) => s + p.amount, 0);
       balanceDue = calculateBalanceDue(totals.grandTotal, paymentsTotal);
 

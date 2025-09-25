@@ -60,7 +60,7 @@ function getStatusBadge(status: InvoiceStatus) {
   const variants = {
     [InvoiceStatus.DRAFT]: 'secondary',
     [InvoiceStatus.SENT]: 'default', 
-    [InvoiceStatus.PAID]: 'success',
+    [InvoiceStatus.PAID]: 'secondary',
     [InvoiceStatus.VOID]: 'destructive'
   } as const;
   
@@ -74,10 +74,10 @@ function getStatusBadge(status: InvoiceStatus) {
 function getPaymentMethodBadge(method: PaymentMethod) {
   const variants = {
     [PaymentMethod.CASH]: 'default',
-    [PaymentMethod.CHECK]: 'secondary',
+    [PaymentMethod.CARD]: 'default',
     [PaymentMethod.BANK_TRANSFER]: 'outline',
-    [PaymentMethod.CREDIT_CARD]: 'default',
-    [PaymentMethod.OTHER]: 'secondary'
+    [PaymentMethod.UPI]: 'secondary',
+    [PaymentMethod.CHEQUE]: 'secondary'
   } as const;
   
   return (
@@ -266,10 +266,10 @@ export function InvoiceDetailView({
                         <TableCell className="text-right">{item.quantity}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
                         <TableCell className="text-right">
-                          {item.discount > 0 ? `${item.discount}%` : '-'}
+                          {(item.discount ?? 0) > 0 ? `${item.discount}%` : '-' }
                         </TableCell>
                         <TableCell className="text-right">
-                          {item.taxRate > 0 ? `${item.taxRate}%` : '-'}
+                          {(item.taxRate ?? 0) > 0 ? `${item.taxRate}%` : '-' }
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatCurrency(item.total)}

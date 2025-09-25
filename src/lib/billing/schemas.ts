@@ -113,7 +113,7 @@ export function validateLineItems(items: unknown[]): { valid: boolean; errors: s
       lineItemInputSchema.parse(items[i]);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        error.errors.forEach(err => {
+        error.issues.forEach(err => {
           errors.push(`Line item ${i + 1}: ${err.message}`);
         });
       }
@@ -131,7 +131,7 @@ export function validateCustomerInfo(customer: unknown): { valid: boolean; error
     if (error instanceof z.ZodError) {
       return { 
         valid: false, 
-        errors: error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
+        errors: error.issues.map(err => `${err.path.join('.')}: ${err.message}`)
       };
     }
     return { valid: false, errors: ['Invalid customer information'] };

@@ -64,8 +64,16 @@ interface QuoteFormProps {
   mode?: 'create' | 'edit';
 }
 
+type ProcessedLineItem = LineItemInputFormData & {
+  id: string; // Ensure id is always a string
+  subtotal: number;
+  discountAmount: number;
+  taxAmount: number;
+  total: number;
+};
+
 interface LineItemRowProps {
-  item: LineItemInputFormData & { subtotal: number; discountAmount: number; taxAmount: number; total: number };
+  item: ProcessedLineItem;
   index: number;
   onUpdate: (index: number, item: LineItemInputFormData) => void;
   onRemove: (index: number) => void;
@@ -163,7 +171,7 @@ export function QuoteForm({
   loading = false,
   mode = 'create'
 }: QuoteFormProps) {
-  const [items, setItems] = useState<(LineItemInputFormData & { subtotal: number; discountAmount: number; taxAmount: number; total: number })[]>([]);
+const [items, setItems] = useState<ProcessedLineItem[]>([]);
   const [totals, setTotals] = useState({
     subtotal: 0,
     discountTotal: 0,

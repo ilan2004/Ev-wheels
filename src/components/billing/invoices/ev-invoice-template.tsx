@@ -202,7 +202,7 @@ export function EVInvoiceTemplate({
                   <th className="px-4 py-3 text-left font-semibold">Description</th>
                   <th className="px-4 py-3 text-center font-semibold w-20">Qty</th>
                   <th className="px-4 py-3 text-right font-semibold w-28">Unit Price</th>
-                  {invoice.items.some(item => item.discount > 0) && (
+                  {invoice.items.some(item => (item.discount ?? 0) > 0) && (
                     <th className="px-4 py-3 text-center font-semibold w-20">Disc %</th>
                   )}
                   <th className="px-4 py-3 text-center font-semibold w-20">Tax %</th>
@@ -226,13 +226,13 @@ export function EVInvoiceTemplate({
                     </td>
                     <td className="px-4 py-4 text-center font-medium">{item.quantity}</td>
                     <td className="px-4 py-4 text-right">{formatCurrency(item.unitPrice)}</td>
-                    {invoice.items.some(item => item.discount > 0) && (
+                    {invoice.items.some(item => (item.discount ?? 0) > 0) && (
                       <td className="px-4 py-4 text-center">
-                        {item.discount > 0 ? `${item.discount}%` : '-'}
+                        {(item.discount ?? 0) > 0 ? `${item.discount}%` : '-'}
                       </td>
                     )}
                     <td className="px-4 py-4 text-center">
-                      {item.taxRate > 0 ? `${item.taxRate}%` : '-'}
+                      {(item.taxRate ?? 0) > 0 ? `${item.taxRate}%` : '-'}
                     </td>
                     <td className="px-4 py-4 text-right font-semibold">
                       {formatCurrency(item.total)}
@@ -341,7 +341,7 @@ export function EVInvoiceTemplate({
             <div className="bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg p-6">
               <h3 className="text-xl font-bold mb-2">⚡ Thank You for Choosing Electric!</h3>
               <p className="text-green-100">
-                Together, we're driving towards a sustainable future with clean energy solutions.
+                Together, we&apos;re driving towards a sustainable future with clean energy solutions.
               </p>
             </div>
             

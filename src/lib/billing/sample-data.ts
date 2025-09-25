@@ -286,7 +286,7 @@ export const sampleInvoices: Invoice[] = [
  */
 export function seedSampleData() {
   console.log('Seeding sample billing data...');
-  billingRepository.seed(sampleQuotes, sampleInvoices, []);
+  (billingRepository as any).seed(sampleQuotes, sampleInvoices, []);
   console.log('Sample data seeded successfully!');
   console.log(`- ${sampleQuotes.length} quotes`);
   console.log(`- ${sampleInvoices.length} invoices`);
@@ -297,7 +297,7 @@ export function seedSampleData() {
  */
 export function clearAllData() {
   console.log('Clearing all billing data...');
-  billingRepository.clear();
+  (billingRepository as any).clear();
   console.log('All data cleared successfully!');
 }
 
@@ -305,5 +305,5 @@ export function clearAllData() {
  * Get current repository statistics
  */
 export function getRepositoryStats() {
-  return billingRepository.getStats();
+  return (billingRepository as any).getStats();
 }

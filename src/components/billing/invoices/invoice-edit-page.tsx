@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { InvoiceForm } from './invoice-form';
-import { UpdateInvoiceFormData } from '@/lib/billing/schemas';
+import { UpdateInvoiceFormData, CreateInvoiceFormData } from '@/lib/billing/schemas';
 import { billingRepository } from '@/lib/billing/repository';
 import { Invoice } from '@/types/billing';
 import PageContainer from '@/components/layout/page-container';
@@ -95,7 +95,7 @@ export function InvoiceEditPage({ invoiceId }: InvoiceEditPageProps) {
   }
 
   // Convert invoice to form data
-  const initialData: UpdateInvoiceFormData = {
+  const initialData: CreateInvoiceFormData = {
     customer: invoice.customer,
     items: invoice.items.map(item => ({
       id: item.id,

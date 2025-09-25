@@ -89,7 +89,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
             </div>
           </div>
           <p className="text-muted-foreground text-lg">
-            Here's what's happening at E-Wheels today.
+            Here&apos;s what&apos;s happening at E-Wheels today.
           </p>
         </div>
         <div className={`flex items-center gap-4 ${isMobile ? 'justify-between' : ''}`}>

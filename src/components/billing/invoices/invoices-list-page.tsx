@@ -58,7 +58,7 @@ function getStatusBadge(status: InvoiceStatus) {
   const variants = {
     [InvoiceStatus.DRAFT]: 'secondary',
     [InvoiceStatus.SENT]: 'default', 
-    [InvoiceStatus.PAID]: 'success',
+    [InvoiceStatus.PAID]: 'secondary',
     [InvoiceStatus.VOID]: 'destructive'
   } as const;
   

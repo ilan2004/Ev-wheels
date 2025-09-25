@@ -2,8 +2,18 @@ import { User } from '@clerk/nextjs/server';
 import type { UserResource } from '@clerk/types';
 import { UserRole, Permission, hasPermission, hasAnyPermission, NAVIGATION_PERMISSIONS } from './roles';
 
-// Re-export UserRole for convenience
-export { UserRole };
+// Re-export UserRole and NAVIGATION_PERMISSIONS for convenience
+export { UserRole, NAVIGATION_PERMISSIONS };
+
+// Use a more generic approach to handle both User and UserResource types
+type ClerkUserLike = {
+  publicMetadata?: any;
+  privateMetadata?: any;
+  emailAddresses?: any[];
+  firstName?: string | null;
+  lastName?: string | null;
+  username?: string | null;
+};
 
 // Extend the Clerk User type to include our custom metadata
 export interface EVWheelsUser extends User {
@@ -18,7 +28,7 @@ export interface EVWheelsUser extends User {
 /**
  * Get user role from Clerk user metadata
  */
-export function getUserRole(user: User | null): UserRole | null {
+export function getUserRole(user: ClerkUserLike | null | undefined): UserRole | null {
   if (!user) return null;
   
   const role = user.publicMetadata?.role as UserRole;
@@ -28,8 +38,8 @@ export function getUserRole(user: User | null): UserRole | null {
 /**
  * Check if user has a specific permission
  */
-export function userHasPermission(user: any, permission: Permission): boolean {
-  const role = getUserRole(user as User);
+export function userHasPermission(user: ClerkUserLike | null | undefined, permission: Permission): boolean {
+  const role = getUserRole(user);
   if (!role) return false;
   
   return hasPermission(role, permission);
@@ -38,17 +48,17 @@ export function userHasPermission(user: any, permission: Permission): boolean {
 /**
  * Check if user has any of the specified permissions
  */
-export function userHasAnyPermission(user: any, permissions: Permission[]): boolean {
-  const role = getUserRole(user as User);
+export function userHasAnyPermission(user: ClerkUserLike | null | undefined, permissions: Permission[] | readonly Permission[]): boolean {
+  const role = getUserRole(user);
   if (!role) return false;
   
-  return hasAnyPermission(role, permissions);
+  return hasAnyPermission(role, [...permissions]);
 }
 
 /**
  * Check if user can access a specific navigation item
  */
-export function userCanAccessNavigation(user: User | null, navigationKey: keyof typeof NAVIGATION_PERMISSIONS): boolean {
+export function userCanAccessNavigation(user: ClerkUserLike | null | undefined, navigationKey: keyof typeof NAVIGATION_PERMISSIONS): boolean {
   const permissions = NAVIGATION_PERMISSIONS[navigationKey];
   return userHasAnyPermission(user, permissions);
 }
@@ -56,7 +66,7 @@ export function userCanAccessNavigation(user: User | null, navigationKey: keyof 
 /**
  * Get user display name
  */
-export function getUserDisplayName(user: User): string {
+export function getUserDisplayName(user: ClerkUserLike): string {
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`;
   }
@@ -83,7 +93,7 @@ export function getRoleDisplayName(role: UserRole): string {
 /**
  * Format user info for display
  */
-export function formatUserInfo(user: User): {
+export function formatUserInfo(user: ClerkUserLike): {
   displayName: string;
   role: UserRole | null;
   roleDisplayName: string;

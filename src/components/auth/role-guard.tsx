@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { UserRole, Permission } from '@/lib/auth/roles';
-import { useAuth, usePermission, useAnyPermission } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, ShieldAlert } from 'lucide-react';
 
@@ -45,7 +45,7 @@ export function RoleGuard({
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertDescription>
-            You don't have a role assigned. Please contact your administrator.
+            You don&apos;t have a role assigned. Please contact your administrator.
           </AlertDescription>
         </Alert>
       );
@@ -62,7 +62,7 @@ export function RoleGuard({
           <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4" />
             <AlertDescription>
-              You don't have permission to access this content.
+              You don&apos;t have permission to access this content.
             </AlertDescription>
           </Alert>
         );
@@ -73,7 +73,7 @@ export function RoleGuard({
 
   // Check permission-based access
   if (permissions && permissions.length > 0) {
-    // This will be handled by child components using permission hooks
+    // This will be handled by child components using permission checks
     return <PermissionGuard permissions={permissions} requireAll={requireAll} fallback={fallback} showError={showError}>{children}</PermissionGuard>;
   }
 
@@ -98,18 +98,19 @@ function PermissionGuard({
   fallback = null,
   showError = false,
 }: PermissionGuardProps) {
-  const hasPermissions = useAnyPermission(permissions);
+  const { hasAnyPermission, hasPermission } = useAuth();
+  const hasPermissions = hasAnyPermission(permissions);
   
-  // For requireAll, we need to check each permission individually
+  // For requireAll, check each permission using the non-hook function
   if (requireAll) {
-    const allPermissions = permissions.every(permission => usePermission(permission));
+    const allPermissions = permissions.every((permission) => hasPermission(permission));
     if (!allPermissions) {
       if (showError) {
         return (
           <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4" />
             <AlertDescription>
-              You don't have all the required permissions to access this content.
+              You don&apos;t have all the required permissions to access this content.
             </AlertDescription>
           </Alert>
         );
@@ -123,7 +124,7 @@ function PermissionGuard({
           <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4" />
             <AlertDescription>
-              You don't have permission to access this content.
+              You don&apos;t have permission to access this content.
             </AlertDescription>
           </Alert>
         );

@@ -225,7 +225,20 @@ export function InvoiceForm({
 
   // Recalculate totals when items, shipping, or adjustment changes
   useEffect(() => {
-    const calculatedTotals = calculateBillingTotals(items, watchedShipping, watchedAdjustment);
+    const normalizedItems = items.map((it, idx) => ({
+      id: it.id ?? `tmp-${idx}`,
+      description: it.description,
+      quantity: it.quantity,
+      unitPrice: it.unitPrice,
+      discount: it.discount,
+      taxRate: it.taxRate,
+      subtotal: it.subtotal,
+      discountAmount: it.discountAmount,
+      taxAmount: it.taxAmount,
+      total: it.total,
+    }));
+
+    const calculatedTotals = calculateBillingTotals(normalizedItems as any, watchedShipping, watchedAdjustment);
     setTotals({
       subtotal: calculatedTotals.subtotal,
       discountTotal: calculatedTotals.discountTotal,
@@ -250,7 +263,7 @@ export function InvoiceForm({
   const updateItem = useCallback((index: number, updatedItem: LineItemInputFormData) => {
     const processedItem = updateLineItemTotals({
       ...updatedItem,
-      id: items[index].id
+      id: items[index].id ?? `item-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
     });
     
     setItems(prev => {
