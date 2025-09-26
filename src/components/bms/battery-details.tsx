@@ -20,6 +20,11 @@ import { BatteryRecord, BatteryStatus, BatteryStatusHistory, TechnicalDiagnostic
 import { BatteryStatusWorkflow } from './battery-status-workflow';
 import { BatteryDiagnostics } from './battery-diagnostics';
 import { batteryApi } from '@/lib/api/batteries';
+import { serviceTicketsApi } from '@/lib/api/service-tickets';
+import Link from 'next/link';
+import { FormFileUpload, type FileUploadConfig } from '@/components/forms/form-file-upload';
+import type { TicketAttachment } from '@/lib/types/service-tickets';
+import { supabase } from '@/lib/supabase/client';
 
 interface BatteryDetailsProps {
   batteryId: string;
@@ -34,6 +39,10 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkedTicket, setLinkedTicket] = useState<{ id: string; ticket_number: string } | null>(null);
+  const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
+  const [photoProgresses, setPhotoProgresses] = useState<Record<string, number>>({});
+  const [audioProgresses, setAudioProgresses] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchBatteryData = async () => {
@@ -66,6 +75,23 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
     fetchBatteryData();
   }, [batteryId]);
 
+  useEffect(() => {
+    const loadLinked = async () => {
+      const res = await serviceTicketsApi.findTicketByBatteryCaseId(batteryId);
+      if (res.success) setLinkedTicket(res.data || null);
+    };
+    loadLinked();
+  }, [batteryId]);
+
+  useEffect(() => {
+    const loadAtt = async () => {
+      if (!linkedTicket) return;
+      const res = await serviceTicketsApi.listBatteryAttachments(linkedTicket.id, batteryId);
+      if (res.success && res.data) setAttachments(res.data);
+    };
+    loadAtt();
+  }, [linkedTicket, batteryId]);
+
   const fetchDiagnostics = async () => {
     setDiagnosticsLoading(true);
     try {
@@ -80,9 +106,24 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
     }
   };
 
-  const handleDiagnosticsSave = async (diagnosticsData: DiagnosticsFormData) => {
+  const handleDiagnosticsSave = async (diagnosticsData: any) => {
     try {
-      const response = await batteryApi.saveDiagnostics(batteryId, diagnosticsData);
+      const payload: DiagnosticsFormData = {
+        total_cells: diagnosticsData.total_cells,
+        healthy_cells: diagnosticsData.healthy_cells,
+        weak_cells: diagnosticsData.weak_cells,
+        dead_cells: diagnosticsData.dead_cells,
+        ir_threshold: diagnosticsData.ir_threshold ?? 30,
+        current_capacity: diagnosticsData.current_capacity,
+        load_test_current: diagnosticsData.load_test_current,
+        load_test_duration: diagnosticsData.load_test_duration,
+        efficiency_rating: diagnosticsData.efficiency_rating,
+        bms_error_codes: diagnosticsData.bms_error_codes,
+        balancing_status: diagnosticsData.balancing_status,
+        test_temperature: diagnosticsData.test_temperature,
+      };
+
+      const response = await batteryApi.saveDiagnostics(batteryId, payload);
       if (response.success && response.data) {
         setDiagnostics(response.data);
       }
@@ -188,6 +229,12 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Battery Details</h1>
             <p className="text-muted-foreground font-mono text-sm">{battery.serial_number}</p>
+            {linkedTicket && (
+              <div className="mt-2 text-xs">
+                <span className="text-muted-foreground">Linked Ticket: </span>
+                <Link className="underline" href={`/dashboard/tickets/${linkedTicket.id}`}>{linkedTicket.ticket_number}</Link>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
@@ -412,6 +459,84 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
               />
             </TabsContent>
 
+            <TabsContent value="attachments">
+              {linkedTicket ? (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Upload</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <FormFileUpload control={{} as any} name={"photos" as any} label="Photos" config={{
+                        acceptedTypes: ['image/*'],
+                        multiple: true,
+                        maxFiles: 8,
+                        maxSize: 10 * 1024 * 1024,
+                        progresses: photoProgresses,
+                        onUpload: async (files) => {
+                          const api = serviceTicketsApi;
+                          const res = await api.uploadAttachments({ ticketId: linkedTicket.id, files, type: 'photo', caseType: 'battery', caseId: batteryId, onProgress: (file, progress) => setPhotoProgresses(p => ({ ...p, [file.name]: progress })) });
+                          if (!res.success) throw new Error(res.error || 'Upload failed');
+                          const listed = await api.listBatteryAttachments(linkedTicket.id, batteryId);
+                          if (listed.success && listed.data) setAttachments(listed.data);
+                        }
+                      } as FileUploadConfig} />
+                      <FormFileUpload control={{} as any} name={"audio" as any} label="Voice Notes" config={{
+                        acceptedTypes: ['audio/*'],
+                        multiple: true,
+                        maxFiles: 3,
+                        maxSize: 15 * 1024 * 1024,
+                        progresses: audioProgresses,
+                        onUpload: async (files) => {
+                          const api = serviceTicketsApi;
+                          const res = await api.uploadAttachments({ ticketId: linkedTicket.id, files, type: 'audio', caseType: 'battery', caseId: batteryId, onProgress: (file, progress) => setAudioProgresses(p => ({ ...p, [file.name]: progress })) });
+                          if (!res.success) throw new Error(res.error || 'Upload failed');
+                          const listed = await api.listBatteryAttachments(linkedTicket.id, batteryId);
+                          if (listed.success && listed.data) setAttachments(listed.data);
+                        }
+                      } as FileUploadConfig} />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Existing</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {attachments.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No attachments yet.</div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {attachments.map((a) => (
+                            <BatteryAttachmentCard key={a.id} att={a} onDeleted={async () => {
+                              const api = serviceTicketsApi;
+                              await api.deleteTicketAttachment(a.id);
+                              const listed = await api.listBatteryAttachments(linkedTicket.id!, batteryId);
+                              if (listed.success && listed.data) setAttachments(listed.data);
+                            }} onReplaced={async (file) => {
+                              const api = serviceTicketsApi;
+                              await api.uploadAttachments({ ticketId: linkedTicket.id!, files: [file], type: a.attachment_type, caseType: 'battery', caseId: batteryId });
+                              await api.deleteTicketAttachment(a.id);
+                              const listed = await api.listBatteryAttachments(linkedTicket.id!, batteryId);
+                              if (listed.success && listed.data) setAttachments(listed.data);
+                            }} />
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Attachments</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-muted-foreground">This battery is not linked to a ticket. Link it via a ticket to manage attachments.</div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             <TabsContent value="history">
               <Card>
                 <CardHeader>
@@ -439,6 +564,49 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+function BatteryAttachmentCard({ att, onDeleted, onReplaced }: { att: TicketAttachment; onDeleted: () => Promise<void>; onReplaced: (file: File) => Promise<void> }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const loadUrl = async () => {
+      try {
+        const bucket = att.attachment_type === 'audio' ? 'media-audio' : 'media-photos';
+        const { data, error } = await supabase.storage.from(bucket).createSignedUrl(att.storage_path, 60 * 60);
+        if (!error) setUrl(data?.signedUrl || null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUrl();
+  }, [att]);
+
+  return (
+    <div className="border rounded p-2 text-xs flex flex-col gap-2">
+      <div className="font-medium break-all">{att.original_name}</div>
+      <div className="text-muted-foreground">{att.attachment_type}</div>
+      {!loading && url && att.attachment_type === 'photo' && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt={att.original_name} className="w-full h-32 object-cover rounded" />
+      )}
+      {!loading && url && att.attachment_type === 'audio' && (
+        <>
+          <audio src={url} controls className="w-full" />
+          {typeof att.duration === 'number' && (
+            <div className="text-muted-foreground">Duration: {att.duration}s</div>
+          )}
+        </>
+      )}
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>Replace</Button>
+        <Button variant="destructive" size="sm" onClick={onDeleted}>Delete</Button>
+      </div>
+      <input ref={fileInputRef} type="file" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) await onReplaced(f); }} />
     </div>
   );
 }

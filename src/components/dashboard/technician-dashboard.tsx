@@ -188,6 +188,12 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
             </p>
             <div className="grid gap-3">
               <Button asChild variant="default" className="justify-start h-12">
+                <Link href="/dashboard/tickets/new">
+                  <IconClipboardList className="mr-3 h-5 w-5" />
+                  New Service Ticket
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start h-12">
                 <Link href="/dashboard/batteries/new">
                   <IconBattery className="mr-3 h-5 w-5" />
                   New Battery Record

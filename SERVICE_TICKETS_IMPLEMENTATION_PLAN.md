@@ -66,23 +66,10 @@ Screens
 UI fit
 - Reuse Badge (status), Card (sections), Tabs, Table (TanStack)
 
-Customer upload portal via QR link (mobile-friendly) — Phase 2
-- Purpose: allow customers/drivers to upload photos and voice notes from their phone without login.
-- Ticket Detail shows:
-  - "Share Upload Link" button (copies a short URL) and a QR code for the same link.
-  - Public upload URL: `/tickets/[id]/upload?token=JWT`
-- Token & security:
-  - Short-lived JWT scoped to: `ticket_id`, action=`attachment:create`, max_files, max_size, expiry (e.g., 15–60 minutes), and optional CAPTCHA.
-  - Token grants only upload (no list/read). Server validates and writes `ticket_attachments` with `source='customer-portal'`.
-  - Rate limiting per token/IP to prevent abuse.
-- Public upload page UX:
-  - Actions: Take Photo (rear camera), Upload from Gallery, Record Voice Note.
-  - Show progress bars, filesize, and success confirmation; limit counts per token.
-  - On success, files land in `media-photos/intakes/{ticket_id}/...` and `media-audio/intakes/{ticket_id}/...` with signed upload.
-- Auditing & traceability:
-  - Store `source` (customer-portal) and `uploader_fingerprint`/IP (if allowed) in `ticket_attachments`.
-- Technician in-app capture on Ticket Detail:
-  - The same capture component from Phase 1 is available under the Attachments tab for internal uploads.
+Customer upload portal via QR link (mobile-friendly) — Deferred (separate folder)
+- Note: The customer-facing upload portal will be implemented in a separate folder/module and is not part of Phase 2 scope in this app.
+- For Phase 2, focus on internal UI only: tickets list, ticket detail (Overview | Attachments | Activity), and triage widget.
+- Optional placeholder: A disabled/hidden "Share Upload Link" button can be shown in Ticket Detail and wired up later when the portal is ready.
 
 ---
 

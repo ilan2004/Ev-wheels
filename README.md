@@ -1,229 +1,231 @@
-# 🔋 E-Wheels - Battery Service Management System
+# E-Wheels Battery Status Ingestion
 
-<div align="center">
-  <h3>Comprehensive Battery Service Management with Role-Based Authentication</h3>
-  <p>Built with Next.js 15, TypeScript, Clerk Auth, and shadcn/ui</p>
-</div>
+This repository includes a script to ingest rows from the exported PDF:
 
----
+- File: E-Wheels - Battery Status - 21 Aug.xlsx - MAIN.pdf
+- Script: scripts/ingest_battery_status_pdf.py
 
-## 🚀 Features
+What it does
+- Parses the PDF tables (including the separate price/status table) using pdfplumber
+- Maps the fields to the existing BMS schema (customers, battery_records)
+- Upserts customers by (name, contact)
+- Upserts battery records by serial_number
+- Infers voltage/capacity, cell type, BMS status, and rows/cells replaced from the comments
+- Sets final_cost when Status is Delivered; otherwise stores as estimated_cost
 
-### ✅ Completed: Role-Based Authentication System
-- **🔐 Secure Authentication**: Powered by Clerk with custom role management
-- **👥 Two User Roles**:
-  - **Admin**: Full system access, user management, financial reports, settings
-  - **Technician**: Battery & customer management, quotes, inventory updates
-- **🛡️ Permission-Based Access**: Granular permissions with 25+ specific controls
-- **🚦 Route Protection**: Middleware-level security for all dashboard routes
-- **🎨 Role-Specific UI**: Dynamic navigation and dashboards based on user permissions
+Prerequisites
+- Python 3.10+
+- Install deps: pip install -r requirements.ingest.txt
+- Set env vars in a .env or the shell
+  - SUPABASE_DB_URL=postgres://USER:PASSWORD@HOST:PORT/postgres
+  - Optional: INGEST_USER_ID=<some-uuid>
 
-### 🔄 Planned Features
-- **📦 Inventory Management System**: Track battery stock, parts, and supplies
-- **📋 Invoice & Quotation Generator**: Automated billing with customer data
-- **🏷️ QR Code Label Printer**: Generate and print battery tracking labels
-- **📊 Analytics Dashboard**: Performance metrics and business insights
+Usage examples
 
-## 🛠️ Tech Stack
+Dry run (no DB writes):
 
-- **Framework**: [Next.js 15](https://nextjs.org/) with App Router
-- **Language**: [TypeScript](https://www.typescriptlang.org) for type safety
-- **Authentication**: [Clerk](https://clerk.com/) with custom role management
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)
-- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) validation
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
-- **Icons**: [Tabler Icons](https://tabler-icons.io/)
-- **Error Tracking**: [Sentry](https://sentry.io/) (optional)
-
-## 📋 Business Context
-
-E-Wheels is a battery service management system designed for electric vehicle battery repair shops. The application manages:
-
-- **Battery Repairs**: Track repair status, parts needed, and customer communications
-- **Customer Management**: Store customer details, contact information, and service history
-- **Inventory Control**: Monitor battery stock, replacement parts, and tools
-- **Financial Tracking**: Generate quotes, invoices, and track revenue
-- **Quality Control**: Manage repair workflows and ensure consistent service quality
-
-## 🏗️ Application Structure
-
-### Authentication Pages
-- **`/sign-in`**: Custom sign-in page with E-Wheels branding
-- **`/sign-up`**: User registration with automatic role assignment
-- **`/auth/assign-role`**: Role assignment page for new users
-
-### Dashboard Pages
-- **`/dashboard`**: Role-specific dashboard (Admin vs Technician)
-- **`/dashboard/batteries`**: Battery management and repair tracking
-- **`/dashboard/customers`**: Customer information and history
-- **`/dashboard/inventory`**: Stock management and alerts
-- **`/dashboard/invoices`**: Quote and invoice generation
-- **`/dashboard/reports`**: Analytics and financial reports (Admin only)
-- **`/dashboard/users`**: User management and role assignment (Admin only)
-- **`/dashboard/settings`**: System configuration (Admin only)
-- **`/dashboard/profile`**: User profile management
-
-### Role-Based Features
-
-| Feature | Admin | Technician |
-|---------|-------|------------|
-| View/Create Batteries | ✅ | ✅ |
-| Update Battery Status | ✅ | ✅ |
-| Delete Battery Records | ✅ | ❌ |
-| Customer Management | ✅ | ✅ (View only) |
-| Generate Quotes | ✅ | ✅ |
-| Generate Invoices | ✅ | ❌ |
-| Financial Reports | ✅ | ❌ |
-| User Management | ✅ | ❌ |
-| System Settings | ✅ | ❌ |
-| Print Labels | ✅ | ✅ |
-
-## 📜 Project Structure
-
-```
-src/
-├── app/
-│   ├── (auth)/                    # Authentication route group
-│   │   ├── sign-in/[[...sign-in]]/   # Clerk sign-in pages
-│   │   └── sign-up/[[...sign-up]]/   # Clerk sign-up pages
-│   ├── auth/assign-role/         # Role assignment for new users
-│   ├── dashboard/                # Protected dashboard routes
-│   │   ├── batteries/             # Battery management
-│   │   ├── customers/             # Customer management
-│   │   ├── inventory/             # Inventory management
-│   │   ├── invoices/              # Quote & invoice generation
-│   │   ├── reports/               # Analytics (Admin only)
-│   │   ├── users/                 # User management (Admin only)
-│   │   └── settings/              # System settings (Admin only)
-│   └── globals.css
-│
-├── components/
-│   ├── auth/                     # Authentication components
-│   │   └── role-guard.tsx         # Role-based access control
-│   ├── dashboard/               # Dashboard components
-│   │   ├── admin-dashboard.tsx
-│   │   └── technician-dashboard.tsx
-│   ├── layout/                  # Layout components
-│   │   └── app-sidebar.tsx        # Role-filtered navigation
-│   └── ui/                      # shadcn/ui components
-│
-├── lib/
-│   ├── auth/                    # Authentication utilities
-│   │   ├── roles.ts               # Role definitions & permissions
-│   │   └── utils.ts               # Auth helper functions
-│   └── utils.ts                 # General utilities
-│
-├── hooks/                       # Custom React hooks
-│   └── use-auth.ts               # Authentication hooks
-│
-├── types/                       # TypeScript definitions
-│   └── index.ts
-│
-└── middleware.ts                # Route protection middleware
+```bash path=null start=null
+python scripts/ingest_battery_status_pdf.py --dry-run
 ```
 
-## 🚀 Quick Start
+Actually ingest (writes to Supabase):
 
-### Prerequisites
-- **Node.js 18+** and **pnpm**
-- **Clerk Account** (free tier available)
+```bash path=null start=null
+$env:SUPABASE_DB_URL="postgres://USER:PASSWORD@HOST:6543/postgres"
+$env:INGEST_USER_ID="00000000-0000-0000-0000-000000000000"
+python scripts/ingest_battery_status_pdf.py
+```
 
-### Installation
+Options
+- Provide a custom path to the PDF if needed
+- Use --limit N to process only the first N rows
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/ilan2004/Ev-wheels.git
-   cd Ev-wheels
-   ```
+Notes
+- Rows without a serial number are skipped (serial_number is required by schema)
+- If Delivered Date is present but Status is empty, status is inferred as delivered
+- If contact is missing, a phone number is searched inside comments
+- Default battery_type is li-ion unless the text mentions NMC or LFP
 
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+# Supabase CLI
 
-3. **Set up environment variables**
-   ```bash
-   # .env.local is already created - add your Clerk keys
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
-   CLERK_SECRET_KEY=sk_test_your_secret_here
-   ```
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-4. **Get Clerk API Keys**
-   - Go to [dashboard.clerk.com](https://dashboard.clerk.com/)
-   - Create a new application: "E-Wheels"
-   - Copy your API keys to `.env.local`
-   - Set redirect URLs in Clerk dashboard:
-     - Sign-in URL: `/sign-in`
-     - Sign-up URL: `/sign-up`
-     - After sign-in: `/dashboard`
-     - After sign-up: `/auth/assign-role`
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-5. **Run the development server**
-   ```bash
-   pnpm dev
-   ```
+This repository contains all the functionality for Supabase CLI.
 
-6. **Access the application**
-   - Open [http://localhost:3000](http://localhost:3000)
-   - Sign up for your first account (gets Technician role)
-   - Manually promote to Admin in Clerk dashboard if needed
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### 📝 Creating Your First Admin User
+## Getting started
 
-1. Sign up through the application
-2. Go to your Clerk Dashboard → Users
-3. Find your user and edit "Public metadata"
-4. Add this JSON:
-   ```json
-   {
-     "role": "admin",
-     "employeeId": "EW001", 
-     "department": "Administration",
-     "hireDate": "2025-01-24"
-   }
-   ```
-5. Refresh the application to see admin features
+### Install the CLI
 
-## 🔧 Development
-
-### Available Scripts
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm start        # Start production server
-pnpm lint         # Run ESLint
-pnpm lint:fix     # Fix ESLint issues
-pnpm format       # Format with Prettier
+npm i supabase --save-dev
 ```
 
-### Key Development Files
+To install the beta release channel:
 
-- **`/src/lib/auth/roles.ts`**: Define roles and permissions
-- **`/src/middleware.ts`**: Route protection logic
-- **`/src/constants/data.ts`**: Navigation configuration
-- **`/src/components/auth/role-guard.tsx`**: Component access control
+```bash
+npm i supabase@beta --save-dev
+```
 
-## 🚀 Deployment
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-This application is ready to deploy to Vercel, Netlify, or any Node.js hosting provider.
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-1. **Environment Variables**: Add your Clerk keys to your hosting provider
-2. **Build Command**: `pnpm build`
-3. **Output Directory**: `.next` (for Vercel, this is automatic)
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-## 🤝 Contributing
+<details>
+  <summary><b>macOS</b></summary>
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Commit changes: `git commit -am 'Add new feature'`
-4. Push to branch: `git push origin feature/new-feature`
-5. Submit a Pull Request
+  Available via [Homebrew](https://brew.sh). To install:
 
-## 📝 License
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-This project is private and proprietary to E-Wheels.
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
----
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-**Built with ♥️ for E-Wheels Battery Service Management**
+<details>
+  <summary><b>Windows</b></summary>
+
+  Available via [Scoop](https://scoop.sh). To install:
+
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
+
+  To upgrade:
+
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```

@@ -24,6 +24,32 @@ export const navItems: NavItem[] = [
     permissions: [Permission.VIEW_BATTERIES, Permission.VIEW_CUSTOMERS]
   },
   {
+    title: 'Search',
+    url: '/dashboard/search',
+    icon: 'search',
+    isActive: false,
+    shortcut: ['/', '/'],
+    items: [],
+    // visible to most users who can at least view either batteries or customers
+    permissions: [Permission.VIEW_BATTERIES, Permission.VIEW_CUSTOMERS]
+  },
+  {
+    title: 'Vehicles',
+    url: '/dashboard/vehicles',
+    icon: 'car',
+    isActive: false,
+    shortcut: ['v', 'v'],
+    items: [
+      {
+        title: 'Vehicle Cases',
+        url: '/dashboard/vehicles',
+        icon: 'list',
+        permissions: [Permission.VIEW_BATTERIES]
+      }
+    ],
+    permissions: [Permission.VIEW_BATTERIES]
+  },
+  {
     title: 'Batteries',
     url: '/dashboard/batteries',
     icon: 'battery',
@@ -50,6 +76,28 @@ export const navItems: NavItem[] = [
       }
     ],
     permissions: [Permission.VIEW_BATTERIES]
+  },
+  {
+    title: 'Tickets',
+    url: '/dashboard/tickets',
+    icon: 'list',
+    shortcut: ['t', 't'],
+    isActive: false,
+    items: [
+      {
+        title: 'All Tickets',
+        url: '/dashboard/tickets',
+        icon: 'list',
+        permissions: [Permission.VIEW_CUSTOMERS]
+      },
+      {
+        title: 'New Ticket',
+        url: '/dashboard/tickets/new',
+        icon: 'filePlus',
+        permissions: [Permission.VIEW_CUSTOMERS]
+      }
+    ],
+    permissions: [Permission.VIEW_CUSTOMERS]
   },
   {
     title: 'Customers',

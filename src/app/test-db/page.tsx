@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { testDatabaseConnection, getTestBattery } from '@/lib/api/test-connection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -113,7 +114,7 @@ export default function TestDatabasePage() {
               <p>🚀 You can now navigate to the battery details page to test the full functionality:</p>
               <div className="mt-4">
                 <Button asChild>
-                  <a href="/dashboard/batteries">Go to Batteries</a>
+                  <Link href="/dashboard/batteries">Go to Batteries</Link>
                 </Button>
               </div>
             </div>

@@ -47,7 +47,9 @@ import {
   IconTrendingUp,
   IconChartPie3,
   IconDownload,
-  IconDots
+  IconDots,
+  IconCar,
+  IconSearch
 } from '@tabler/icons-react';
 
 export type Icon = React.ComponentType<IconProps>;
@@ -104,5 +106,7 @@ export const Icons = {
   download: IconDownload,
   dot: IconDots,
   alertTriangle: IconAlertTriangle,
-  plus: IconPlus
+  plus: IconPlus,
+  car: IconCar,
+  search: IconSearch
 };

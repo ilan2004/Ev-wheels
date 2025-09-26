@@ -1,5 +1,6 @@
 // API Contract for Battery Operations
-import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, DiagnosticsFormData, BatteryStatus, BatteryFormData, Customer } from '@/types/bms';
+import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, DiagnosticsFormData, BatteryStatus, BatteryFormData, Customer, BatteryType, CellType } from '@/types/bms';
+import { isValidUUID, extractSimpleId } from '@/lib/uuid-utils';
 
 // Base API Response structure
 export interface ApiResponse<T = any> {
@@ -92,7 +93,6 @@ export class MockBatteryApi implements BatteryApiContract {
       ]
     };
   }
-  }
 
   async fetchBattery(batteryId: string): Promise<ApiResponse<BatteryRecord>> {
     await this.delay();
@@ -106,10 +106,10 @@ export class MockBatteryApi implements BatteryApiContract {
       id: simpleId,
       serial_number: 'RGEKE72390722KLB07783',
       brand: 'E-Wheels',
-      battery_type: 'li-ion' as const,
+      battery_type: BatteryType.LITHIUM_ION,
       voltage: 72,
       capacity: 39,
-      cell_type: '18650' as const,
+      cell_type: CellType.CYLINDRICAL_18650,
       customer_id: 'cust-1',
       customer: {
         id: 'cust-1',
@@ -120,7 +120,7 @@ export class MockBatteryApi implements BatteryApiContract {
       },
       received_date: '2025-07-29T00:00:00Z',
       delivered_date: '2025-08-07T00:00:00Z',
-      status: 'completed' as const,
+      status: BatteryStatus.COMPLETED,
       bms_status: 'ok',
       repair_notes: '72v 39Ah. All cell ok, bms ok, Cell above 40 Ohms',
       technician_notes: 'Customer reported reduced range. Initial testing shows cell imbalance.',
@@ -152,8 +152,8 @@ export class MockBatteryApi implements BatteryApiContract {
       {
         id: 'hist-1',
         battery_id: simpleId,
-        previous_status: 'received' as const,
-        new_status: 'diagnosed' as const,
+        previous_status: BatteryStatus.RECEIVED,
+        new_status: BatteryStatus.DIAGNOSED,
         changed_by: 'user-1',
         changed_at: '2025-07-30T10:00:00Z',
         notes: 'Initial diagnosis completed. Cell imbalance detected, BMS functioning normally.'
@@ -161,8 +161,8 @@ export class MockBatteryApi implements BatteryApiContract {
       {
         id: 'hist-2',
         battery_id: simpleId,
-        previous_status: 'diagnosed' as const,
-        new_status: 'in_progress' as const,
+        previous_status: BatteryStatus.DIAGNOSED,
+        new_status: BatteryStatus.IN_PROGRESS,
         changed_by: 'user-1',
         changed_at: '2025-07-31T09:00:00Z',
         notes: 'Started cell balancing procedure.'
@@ -170,8 +170,8 @@ export class MockBatteryApi implements BatteryApiContract {
       {
         id: 'hist-3',
         battery_id: simpleId,
-        previous_status: 'in_progress' as const,
-        new_status: 'completed' as const,
+        previous_status: BatteryStatus.IN_PROGRESS,
+        new_status: BatteryStatus.COMPLETED,
         changed_by: 'user-1',
         changed_at: '2025-08-06T16:30:00Z',
         notes: 'Cell balancing completed. Load test passed at 85% efficiency. Ready for delivery.'
@@ -285,5 +285,3 @@ const USE_MOCK = process.env.NODE_ENV === 'development' && process.env.USE_MOCK_
 // Create singleton instance - switch between mock and real implementation
 export const batteryApi = USE_MOCK ? new MockBatteryApi() : supabaseBatteryRepository;
 
-// Export types for use in components
-export type { ApiResponse, BatteryApiContract };

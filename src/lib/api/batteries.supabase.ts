@@ -316,17 +316,17 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         weak_cells: diagnostics.weak_cells,
         dead_cells: diagnostics.dead_cells,
         cells_above_threshold: diagnostics.cells_above_threshold,
-        ir_threshold: parseFloat(diagnostics.ir_threshold),
-        current_capacity: diagnostics.current_capacity ? parseFloat(diagnostics.current_capacity) : undefined,
-        capacity_retention: diagnostics.capacity_retention ? parseFloat(diagnostics.capacity_retention) : undefined,
-        load_test_current: diagnostics.load_test_current ? parseFloat(diagnostics.load_test_current) : undefined,
+        ir_threshold: parseFloat(diagnostics.ir_threshold ?? '0'),
+        current_capacity: diagnostics.current_capacity != null ? parseFloat(diagnostics.current_capacity) : 0,
+        capacity_retention: diagnostics.capacity_retention != null ? parseFloat(diagnostics.capacity_retention) : 0,
+        load_test_current: diagnostics.load_test_current != null ? parseFloat(diagnostics.load_test_current) : 0,
         load_test_duration: diagnostics.load_test_duration,
-        efficiency_rating: diagnostics.efficiency_rating ? parseFloat(diagnostics.efficiency_rating) : undefined,
+        efficiency_rating: diagnostics.efficiency_rating != null ? parseFloat(diagnostics.efficiency_rating) : 0,
         bms_firmware_version: diagnostics.bms_firmware_version,
         bms_error_codes: diagnostics.bms_error_codes || [],
         balancing_status: diagnostics.balancing_status,
-        test_temperature: parseFloat(diagnostics.test_temperature),
-        humidity: diagnostics.humidity ? parseFloat(diagnostics.humidity) : undefined,
+        test_temperature: diagnostics.test_temperature != null ? parseFloat(diagnostics.test_temperature) : 0,
+        humidity: diagnostics.humidity != null ? parseFloat(diagnostics.humidity) : undefined,
         diagnosed_at: diagnostics.diagnosed_at,
         diagnosed_by: diagnostics.diagnosed_by
       };
@@ -391,6 +391,29 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
           console.error('Error creating status history:', historyError);
           // Don't fail the request if history creation fails
         }
+      }
+
+      // Phase 3: Reflect battery status change in parent service ticket timeline (if linked)
+      try {
+        const { data: linkedTicket } = await supabase
+          .from('service_tickets')
+          .select('id')
+          .eq('battery_case_id', batteryId)
+          .single();
+        if (linkedTicket && (linkedTicket as any).id) {
+          await supabase
+            .from('service_ticket_history')
+            .insert({
+              ticket_id: (linkedTicket as any).id,
+              action: 'updated',
+              previous_values: null,
+              new_values: null,
+              changed_by: updatedBattery?.updated_by || currentBattery.data.updated_by,
+              notes: `Battery status changed to ${newStatus}`,
+            });
+        }
+      } catch (err) {
+        console.error('Error reflecting battery status in ticket history:', err);
       }
 
       // Return updated battery data
@@ -477,17 +500,17 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         weak_cells: result.weak_cells,
         dead_cells: result.dead_cells,
         cells_above_threshold: result.cells_above_threshold,
-        ir_threshold: parseFloat(result.ir_threshold),
-        current_capacity: result.current_capacity ? parseFloat(result.current_capacity) : undefined,
-        capacity_retention: result.capacity_retention ? parseFloat(result.capacity_retention) : undefined,
-        load_test_current: result.load_test_current ? parseFloat(result.load_test_current) : undefined,
+        ir_threshold: parseFloat(result.ir_threshold ?? '0'),
+        current_capacity: result.current_capacity != null ? parseFloat(result.current_capacity) : 0,
+        capacity_retention: result.capacity_retention != null ? parseFloat(result.capacity_retention) : 0,
+        load_test_current: result.load_test_current != null ? parseFloat(result.load_test_current) : 0,
         load_test_duration: result.load_test_duration,
-        efficiency_rating: result.efficiency_rating ? parseFloat(result.efficiency_rating) : undefined,
+        efficiency_rating: result.efficiency_rating != null ? parseFloat(result.efficiency_rating) : 0,
         bms_firmware_version: result.bms_firmware_version,
         bms_error_codes: result.bms_error_codes || [],
         balancing_status: result.balancing_status,
-        test_temperature: parseFloat(result.test_temperature),
-        humidity: result.humidity ? parseFloat(result.humidity) : undefined,
+        test_temperature: result.test_temperature != null ? parseFloat(result.test_temperature) : 0,
+        humidity: result.humidity != null ? parseFloat(result.humidity) : undefined,
         diagnosed_at: result.diagnosed_at,
         diagnosed_by: result.diagnosed_by
       };

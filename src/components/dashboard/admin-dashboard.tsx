@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 // Removed User import - using SerializedUser interface
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,8 @@ import {
   IconAlertTriangle,
   IconPlus,
   IconCalendar,
-  IconClock
+  IconClock,
+  IconClipboardList
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -29,6 +31,9 @@ import {
   formatDashboardDate, 
   getLayoutClasses
 } from '@/lib/dashboard-utils';
+import { fetchKpis, fetchWeeklyDeliveredBatteries, type Kpis, type WeeklyPoint } from '@/lib/api/kpis';
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 // Serialized user data for client components
 interface SerializedUser {
@@ -47,6 +52,17 @@ interface AdminDashboardProps {
 export function AdminDashboard({ user }: AdminDashboardProps) {
   const userName = user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
   const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  const [kpis, setKpis] = React.useState<Kpis | null>(null);
+  const [trend, setTrend] = React.useState<WeeklyPoint[] | null>(null);
+
+  React.useEffect(() => {
+    (async () => {
+      const [k, t] = await Promise.all([fetchKpis(), fetchWeeklyDeliveredBatteries(8)]);
+      if (k.success && k.data) setKpis(k.data);
+      if (t.success && t.data) setTrend(t.data);
+    })();
+  }, []);
   
   // Animation variants for staggered loading
   const containerVariants = {
@@ -114,10 +130,10 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Batteries"
-            value={245}
+            value={kpis?.totalBatteries ?? 0}
             change={{
-              value: "+12 from last month",
-              trend: "up"
+              value: kpis ? `${kpis.pendingRepairs} pending` : '—',
+              trend: 'neutral'
             }}
             icon={<IconBattery className="h-5 w-5" />}
             variant="elevated"
@@ -128,10 +144,10 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           
           <MetricCard
             title="Active Customers"
-            value={89}
+            value={kpis?.activeCustomers ?? 0}
             change={{
-              value: "+7 new this month",
-              trend: "up"
+              value: 'this month',
+              trend: 'neutral'
             }}
             icon={<IconUsers className="h-5 w-5" />}
             variant="elevated"
@@ -141,25 +157,25 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           />
           
           <MetricCard
-            title="Monthly Revenue"
-            value="₹2,45,890"
+            title="Completed This Month"
+            value={kpis?.completedThisMonth ?? 0}
             change={{
-              value: "+15.2% from last month",
-              trend: "up"
+              value: 'batteries delivered',
+              trend: 'up'
             }}
             icon={<IconTrendingUp className="h-5 w-5" />}
             variant="elevated"
             accent="revenue"
             actionable
-            onClick={() => window.location.href = '/dashboard/reports/financial'}
+            onClick={() => window.location.href = '/dashboard/batteries?delivered=month'}
           />
           
           <MetricCard
             title="Pending Repairs"
-            value={23}
+            value={kpis?.pendingRepairs ?? 0}
             change={{
-              value: "8 urgent repairs",
-              trend: "neutral"
+              value: 'awaiting action',
+              trend: 'neutral'
             }}
             icon={<IconClock className="h-5 w-5" />}
             variant="elevated"
@@ -186,6 +202,12 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
             </p>
             <div className="grid gap-3">
               <Button asChild variant="default" className="justify-start h-11">
+                <Link href="/dashboard/tickets/new">
+                  <IconClipboardList className="mr-3 h-4 w-4" />
+                  New Service Ticket
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start h-11">
                 <Link href="/dashboard/batteries/new">
                   <IconBattery className="mr-3 h-4 w-4" />
                   Add Battery Record
@@ -317,6 +339,34 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
                 Manage Settings
               </Link>
             </Button>
+          </div>
+        </EnhancedCard>
+      </motion.div>
+
+      {/* Weekly Deliveries Trend */}
+      <motion.div variants={itemVariants}>
+        <EnhancedCard variant="elevated" animated>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <IconCalendar className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Weekly Deliveries</h3>
+              </div>
+            </div>
+            <ChartContainer
+              config={{ deliveries: { label: 'Deliveries', color: 'hsl(var(--chart-1))' } }}
+            >
+              <AreaChart
+                data={(trend || []).map(p => ({ week: p.weekStart.slice(5), deliveries: p.count }))}
+                margin={{ left: 12, right: 12 }}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Area dataKey="deliveries" type="natural" fill="var(--color-deliveries)" stroke="var(--color-deliveries)" fillOpacity={0.4} />
+                <ChartLegend content={<ChartLegendContent />} />
+              </AreaChart>
+            </ChartContainer>
           </div>
         </EnhancedCard>
       </motion.div>

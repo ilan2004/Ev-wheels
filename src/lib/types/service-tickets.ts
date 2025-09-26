@@ -70,6 +70,17 @@ export interface TicketAttachment {
   processing_error?: string | null;
 }
 
+export interface ServiceTicketHistory {
+  id: string;
+  ticket_id: string;
+  action: string;
+  previous_values?: any | null;
+  new_values?: any | null;
+  changed_by: string;
+  changed_at: string;
+  notes?: string | null;
+}
+
 export interface VehicleCase {
   id: string;
   service_ticket_id: string;
@@ -98,5 +109,15 @@ export interface VehicleCase {
   updated_at: string;
   created_by: string;
   updated_by: string;
+}
+
+export interface VehicleStatusHistory {
+  id: string;
+  vehicle_case_id: string;
+  previous_status?: VehicleStatus | null;
+  new_status: VehicleStatus;
+  changed_by: string;
+  changed_at: string;
+  notes?: string | null;
 }
 

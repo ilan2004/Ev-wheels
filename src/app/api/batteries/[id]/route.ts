@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics } from '@/types/bms';
+import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, BatteryType, CellType, BatteryStatus } from '@/types/bms';
 
 // GET /api/batteries/[id]
 export async function GET(
@@ -20,10 +20,10 @@ export async function GET(
       id,
       serial_number: 'RGEKE72390722KLB07783',
       brand: 'E-Wheels',
-      battery_type: 'li-ion',
+      battery_type: BatteryType.LITHIUM_ION,
       voltage: 72,
       capacity: 39,
-      cell_type: '18650',
+      cell_type: CellType.CYLINDRICAL_18650,
       customer_id: 'cust-1',
       customer: {
         id: 'cust-1',
@@ -34,7 +34,7 @@ export async function GET(
       },
       received_date: '2025-07-29T00:00:00Z',
       delivered_date: '2025-08-07T00:00:00Z',
-      status: 'completed',
+      status: BatteryStatus.COMPLETED,
       bms_status: 'ok',
       repair_notes: '72v 39Ah. All cell ok, bms ok, Cell above 40 Ohms',
       technician_notes: 'Customer reported reduced range. Initial testing shows cell imbalance.',
