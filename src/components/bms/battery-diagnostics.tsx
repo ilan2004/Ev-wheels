@@ -41,14 +41,14 @@ const diagnosticsSchema = z.object({
   healthy_cells: z.number().min(0, 'Cannot be negative'),
   weak_cells: z.number().min(0, 'Cannot be negative'),
   dead_cells: z.number().min(0, 'Cannot be negative'),
-  ir_threshold: z.number().min(0, 'Cannot be negative').default(30),
+  ir_threshold: z.number().min(0, 'Cannot be negative').optional(),
   current_capacity: z.number().min(0, 'Cannot be negative'),
   load_test_current: z.number().min(0, 'Cannot be negative'),
   load_test_duration: z.number().min(0, 'Cannot be negative'),
   efficiency_rating: z.number().min(0, 'Cannot be negative').max(100, 'Cannot exceed 100%'),
-  bms_error_codes: z.string().optional().default(''),
+  bms_error_codes: z.string().optional(),
   balancing_status: z.enum(['required', 'completed', 'not_needed']),
-  test_temperature: z.number().default(25)
+  test_temperature: z.number().optional()
 });
 
 type DiagnosticsFormValues = z.infer<typeof diagnosticsSchema>;

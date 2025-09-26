@@ -139,9 +139,6 @@ export function EVInvoiceTemplate({
             </h3>
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
               <div className="font-semibold text-lg text-gray-800">{invoice.customer.name}</div>
-              {invoice.customer.email && (
-                <div className="text-sm text-gray-600">✉️ {invoice.customer.email}</div>
-              )}
               {invoice.customer.phone && (
                 <div className="text-sm text-gray-600">📞 {invoice.customer.phone}</div>
               )}

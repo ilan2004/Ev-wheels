@@ -57,15 +57,15 @@ interface InvoiceDetailViewProps {
 }
 
 function getStatusBadge(status: InvoiceStatus) {
-  const variants = {
-    [InvoiceStatus.DRAFT]: 'secondary',
-    [InvoiceStatus.SENT]: 'default', 
-    [InvoiceStatus.PAID]: 'secondary',
-    [InvoiceStatus.VOID]: 'destructive'
+  const colorMap: Record<InvoiceStatus, string> = {
+    [InvoiceStatus.DRAFT]: 'bg-gray-100 text-gray-800 border-gray-200',
+    [InvoiceStatus.SENT]: 'bg-blue-100 text-blue-800 border-blue-200',
+    [InvoiceStatus.PAID]: 'bg-green-100 text-green-800 border-green-200',
+    [InvoiceStatus.VOID]: 'bg-red-100 text-red-800 border-red-200',
   } as const;
   
   return (
-    <Badge variant={variants[status] || 'secondary'} className="capitalize">
+    <Badge variant="outline" className={cn('capitalize border', colorMap[status])}>
       {status}
     </Badge>
   );

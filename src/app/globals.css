@@ -39,6 +39,16 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* KPI accent tokens (light) */
+  --kpi-batteries-strong: #4F46E5; /* indigo-600 */
+  --kpi-batteries-tint: #EEF2FF;
+  --kpi-customers-strong: #059669; /* emerald-600 */
+  --kpi-customers-tint: #ECFDF5;
+  --kpi-revenue-strong: #0D9488; /* teal-600 */
+  --kpi-revenue-tint: #F0FDFA;
+  --kpi-repairs-strong: #D97706; /* amber-600 */
+  --kpi-repairs-tint: #FFFBEB;
 }
 
 .dark {
@@ -73,6 +83,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.439 0 0);
+
+  /* KPI accent tokens (dark) */
+  --kpi-batteries-strong: #818CF8; /* indigo-400 */
+  --kpi-batteries-tint: rgba(129,140,248,0.12);
+  --kpi-customers-strong: #34D399; /* emerald-400 */
+  --kpi-customers-tint: rgba(52,211,153,0.10);
+  --kpi-revenue-strong: #2DD4BF; /* teal-400 */
+  --kpi-revenue-tint: rgba(45,212,191,0.10);
+  --kpi-repairs-strong: #FBBF24; /* amber-400 */
+  --kpi-repairs-tint: rgba(251,191,36,0.10);
 }
 
 @theme inline {
@@ -192,5 +212,31 @@
 
   .dark .table-container {
     scrollbar-color: oklch(0.708 0 0 / 30%) oklch(0.269 0 0);
+  }
+}
+
+/* Hover accent glow for KPI cards */
+@layer utilities {
+  .kpi-card { position: relative; }
+  .kpi-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px; /* slight outside ring */
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .25s ease, box-shadow .25s ease;
+    /* light mode ambient + ring using accent */
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--kpi-accent) 24%, transparent),
+      0 20px 42px -22px color-mix(in oklch, var(--kpi-accent) 18%, transparent);
+  }
+  .kpi-card:hover::after,
+  .kpi-card:focus-within::after { opacity: 1; }
+
+  .dark .kpi-card::after {
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--kpi-accent) 32%, transparent),
+      0 24px 48px -20px color-mix(in oklch, var(--kpi-accent) 22%, transparent);
   }
 }

@@ -1,4 +1,4 @@
-import { type Table as TanstackTable, flexRender } from '@tanstack/react-table';
+import { type Table as TanstackTable, type Row as TanstackRow, flexRender } from '@tanstack/react-table';
 import type * as React from 'react';
 
 import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
@@ -16,17 +16,21 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 interface DataTableProps<TData> extends React.ComponentProps<'div'> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
+  onRowClick?: (row: TanstackRow<TData>) => void;
+  bodyMinHeightClass?: string; // e.g., 'min-h-[500px]'
 }
 
 export function DataTable<TData>({
   table,
   actionBar,
-  children
+  children,
+  onRowClick,
+  bodyMinHeightClass,
 }: DataTableProps<TData>) {
   return (
     <div className='flex flex-1 flex-col space-y-4'>
       {children}
-      <div className='relative flex flex-1'>
+      <div className={`relative flex flex-1 ${bodyMinHeightClass ?? 'min-h-[240px]'}`}>
         <div className='absolute inset-0 flex overflow-hidden rounded-lg border'>
           <ScrollArea className='h-full w-full'>
             <Table>
@@ -55,10 +59,12 @@ export function DataTable<TData>({
               <TableBody>
                 {table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={onRowClick ? 'cursor-pointer' : undefined}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
                           key={cell.id}

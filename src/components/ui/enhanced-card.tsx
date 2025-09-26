@@ -71,6 +71,8 @@ export function EnhancedCard({
 }
 
 // Metric Card for displaying key statistics
+export type MetricAccent = 'batteries' | 'customers' | 'revenue' | 'repairs';
+
 interface MetricCardProps {
   title: string;
   value: string | number;
@@ -85,6 +87,7 @@ interface MetricCardProps {
   loading?: boolean;
   actionable?: boolean;
   onClick?: () => void;
+  accent?: MetricAccent; // controls subtle icon chip color
 }
 
 export function MetricCard({
@@ -97,7 +100,8 @@ export function MetricCard({
   animated = true,
   loading = false,
   actionable = false,
-  onClick
+  onClick,
+  accent
 }: MetricCardProps) {
   const getTrendColor = (trend: 'up' | 'down' | 'neutral') => {
     switch (trend) {
@@ -113,6 +117,16 @@ export function MetricCard({
       case 'down': return '↘️';
       case 'neutral': return '→';
     }
+  };
+
+  const getChipStyles = (accent?: MetricAccent) => {
+    if (!accent) return {} as React.CSSProperties;
+    const strongVar = `var(--kpi-${accent}-strong)`;
+    const tintVar = `var(--kpi-${accent}-tint)`;
+    return {
+      backgroundColor: tintVar,
+      color: strongVar
+    } as React.CSSProperties;
   };
 
   if (loading) {
@@ -141,7 +155,8 @@ export function MetricCard({
       animated={animated}
       hoverable={actionable}
       onClick={onClick}
-      className={actionable ? 'cursor-pointer' : ''}
+      className={cn(actionable ? 'cursor-pointer' : '', accent && 'kpi-card')}
+      style={accent ? ({ ['--kpi-accent' as any]: `var(--kpi-${accent}-strong)` } as React.CSSProperties) : undefined}
     >
       <div className="p-4 pb-2">
         <div className="flex items-center justify-between mb-3">
@@ -149,7 +164,13 @@ export function MetricCard({
             {title}
           </div>
           {icon && (
-            <div className="text-muted-foreground">
+            <div
+              className={cn(
+                'h-8 w-8 rounded-full grid place-items-center',
+                accent ? '' : 'text-muted-foreground bg-muted'
+              )}
+              style={getChipStyles(accent)}
+            >
               {icon}
             </div>
           )}

@@ -121,6 +121,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
             }}
             icon={<IconBattery className="h-5 w-5" />}
             variant="elevated"
+            accent="batteries"
             actionable
             onClick={() => window.location.href = '/dashboard/batteries'}
           />
@@ -133,7 +134,8 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
               trend: "up"
             }}
             icon={<IconUsers className="h-5 w-5" />}
-            variant="info"
+            variant="elevated"
+            accent="customers"
             actionable
             onClick={() => window.location.href = '/dashboard/customers'}
           />
@@ -146,7 +148,8 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
               trend: "up"
             }}
             icon={<IconTrendingUp className="h-5 w-5" />}
-            variant="success"
+            variant="elevated"
+            accent="revenue"
             actionable
             onClick={() => window.location.href = '/dashboard/reports/financial'}
           />
@@ -159,7 +162,8 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
               trend: "neutral"
             }}
             icon={<IconClock className="h-5 w-5" />}
-            variant="warning"
+            variant="elevated"
+            accent="repairs"
             actionable
             onClick={() => window.location.href = '/dashboard/batteries/status'}
           />

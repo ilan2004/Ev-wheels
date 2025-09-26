@@ -54,14 +54,15 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 function getStatusBadge(status: QuoteStatus) {
-  const variants = {
-    [QuoteStatus.DRAFT]: 'secondary',
-    [QuoteStatus.SENT]: 'default', 
-    [QuoteStatus.EXPIRED]: 'destructive'
+  // Color map for clear UX
+  const colorMap: Record<QuoteStatus, string> = {
+    [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-800 border-gray-200',
+    [QuoteStatus.SENT]: 'bg-blue-100 text-blue-800 border-blue-200',
+    [QuoteStatus.EXPIRED]: 'bg-red-100 text-red-800 border-red-200',
   } as const;
-  
+
   return (
-    <Badge variant={variants[status]} className="capitalize">
+    <Badge variant="outline" className={cn('capitalize border', colorMap[status])}>
       {status}
     </Badge>
   );
@@ -167,11 +168,6 @@ export function QuotesListPage() {
         return (
           <div className="flex flex-col max-w-[200px]">
             <span className="font-medium truncate">{customer.name}</span>
-            {customer.email && (
-              <span className="text-xs text-muted-foreground truncate">
-                {customer.email}
-              </span>
-            )}
           </div>
         );
       },

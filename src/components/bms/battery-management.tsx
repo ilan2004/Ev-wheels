@@ -40,65 +40,8 @@ import {
   IconQrcode,
   IconPrinter
 } from '@tabler/icons-react';
-import { BatteryRecord, BatteryStatus, BatteryType } from '@/types/bms';
-
-// Mock data - replace with actual API call
-const mockBatteries: BatteryRecord[] = [
-  {
-    id: '1',
-    serial_number: 'RGEKE72390722KLB07783',
-    brand: 'E-Wheels',
-    battery_type: BatteryType.LITHIUM_ION,
-    voltage: 72,
-    capacity: 39,
-    cell_type: '18650' as any,
-    customer_id: 'cust-1',
-    customer: {
-      id: 'cust-1',
-      name: 'Basheer',
-      contact: '9946467546',
-      created_at: '2025-07-29T00:00:00Z',
-      updated_at: '2025-07-29T00:00:00Z'
-    },
-    received_date: '2025-07-29T00:00:00Z',
-    delivered_date: '2025-08-07T00:00:00Z',
-    status: BatteryStatus.DELIVERED,
-    bms_status: 'ok' as any,
-    repair_notes: '72v 39Ah. All cell ok, bms ok, Cell above 40 Ohms',
-    estimated_cost: 4400,
-    final_cost: 4400,
-    created_at: '2025-07-29T00:00:00Z',
-    updated_at: '2025-08-07T00:00:00Z',
-    created_by: 'user-1',
-    updated_by: 'user-1'
-  },
-  {
-    id: '2',
-    serial_number: 'RGEGP72361221KMB09981',
-    brand: 'E-Wheels',
-    battery_type: BatteryType.LITHIUM_ION,
-    voltage: 72,
-    capacity: 36,
-    cell_type: '18650' as any,
-    customer_id: 'cust-2',
-    customer: {
-      id: 'cust-2',
-      name: 'Abdhul Manaf',
-      contact: '',
-      created_at: '2025-07-29T00:00:00Z',
-      updated_at: '2025-07-29T00:00:00Z'
-    },
-    received_date: '2025-07-29T00:00:00Z',
-    status: BatteryStatus.DIAGNOSED,
-    bms_status: 'faulty' as any,
-    repair_notes: 'Opened Battery. 72v,39ah,above 42+ Resister value BMS not ok',
-    estimated_cost: 34600,
-    created_at: '2025-07-29T00:00:00Z',
-    updated_at: '2025-07-29T00:00:00Z',
-    created_by: 'user-1',
-    updated_by: 'user-1'
-  }
-];
+import { BatteryRecord, BatteryStatus } from '@/types/bms';
+import { batteryApi } from '@/lib/api/batteries';
 
 const getStatusColor = (status: BatteryStatus): string => {
   switch (status) {
@@ -123,7 +66,7 @@ const formatCurrency = (amount?: number): string => {
 };
 
 export function BatteryManagement() {
-  const [batteries, setBatteries] = useState<BatteryRecord[]>(mockBatteries);
+  const [batteries, setBatteries] = useState<BatteryRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [brandFilter, setBrandFilter] = useState<string>('all');
@@ -138,6 +81,21 @@ export function BatteryManagement() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    const fetchBatteries = async () => {
+      const res = await batteryApi.listBatteries({
+        search: searchTerm || undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        brand: brandFilter !== 'all' ? brandFilter : undefined,
+        limit: 200,
+      });
+      if (res.success && res.data) {
+        setBatteries(res.data);
+      }
+    };
+    fetchBatteries();
+  }, [searchTerm, statusFilter, brandFilter]);
 
   const filteredBatteries = batteries.filter(battery => {
     const matchesSearch = 
@@ -309,7 +267,7 @@ export function BatteryManagement() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => window.location.href = `/dashboard/batteries/${battery.id}`}>
+<DropdownMenuItem onClick={() => window.location.href = `/dashboard/batteries/${battery.id}`}>
                             <IconEye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
@@ -452,7 +410,7 @@ export function BatteryManagement() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => window.location.href = `/dashboard/batteries/${battery.id}`}>
+<DropdownMenuItem onClick={() => window.location.href = `/dashboard/batteries/${battery.id}`}>
                               <IconEye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>

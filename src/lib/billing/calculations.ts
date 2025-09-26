@@ -4,9 +4,9 @@ import { LineItem, BillingTotals } from '@/types/billing';
  * Default billing configuration
  */
 export const DEFAULT_BILLING_CONFIG = {
-  currency: 'USD',
-  currencySymbol: '$',
-  currencyLocale: 'en-US',
+  currency: 'INR',
+  currencySymbol: '₹',
+  currencyLocale: 'en-IN',
   taxRate: 18, // 18% default tax rate
   precision: 2, // decimal places for currency
 };

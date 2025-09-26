@@ -33,8 +33,14 @@ import {
   DEFAULT_INVOICE_CONFIG,
 } from '@/lib/billing/numbering';
 
-// Helper to map DB rows to typed Invoice with Dates
+// Helper to map DB rows to typed Invoice with Dates (guards against invalid dates)
 function mapInvoiceRow(row: any): Invoice {
+  const parseDate = (value: any): Date | undefined => {
+    if (!value) return undefined;
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? undefined : d;
+  };
+
   return {
     id: row.id,
     number: row.number,
@@ -44,12 +50,12 @@ function mapInvoiceRow(row: any): Invoice {
     totals: row.totals,
     currency: row.currency || 'USD',
     balanceDue: row.balance_due ?? row.balanceDue ?? 0,
-    dueDate: new Date(row.due_date ?? row.dueDate),
+    dueDate: parseDate(row.due_date ?? row.dueDate) as Date,
     notes: row.notes ?? undefined,
     terms: row.terms ?? undefined,
     createdBy: row.created_by ?? row.createdBy,
-    createdAt: new Date(row.created_at ?? row.createdAt),
-    updatedAt: new Date(row.updated_at ?? row.updatedAt),
+    createdAt: parseDate(row.created_at ?? row.createdAt) as Date,
+    updatedAt: parseDate(row.updated_at ?? row.updatedAt) as Date,
     sourceQuoteId: row.source_quote_id ?? row.sourceQuoteId ?? undefined,
     payments: row.payments || [],
   };
@@ -327,7 +333,7 @@ export class SupabaseBillingRepository implements BillingRepository {
         status: InvoiceStatus.DRAFT,
         customer: input.customer,
         totals,
-        currency: 'USD',
+        currency: 'INR',
         balance_due: totals.grandTotal,
         due_date: input.dueDate.toISOString(),
         notes: input.notes ?? null,
@@ -366,7 +372,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       customer: input.customer,
       items: processedItems,
       totals,
-      currency: 'USD',
+      currency: 'INR',
       balanceDue: totals.grandTotal,
       dueDate: input.dueDate,
       notes: input.notes,

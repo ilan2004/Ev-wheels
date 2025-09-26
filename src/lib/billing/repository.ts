@@ -254,7 +254,7 @@ export class InMemoryBillingRepository implements BillingRepository {
       customer: { ...input.customer },
       items: processedItems,
       totals,
-      currency: 'USD',
+      currency: 'INR',
       balanceDue: totals.grandTotal,
       dueDate: input.dueDate,
       notes: input.notes,
@@ -463,26 +463,41 @@ export class InMemoryBillingRepository implements BillingRepository {
 
 // Global instance for the application
 // Switch to Supabase-backed repository if env is present
-let instance: BillingRepository;
+let instance: BillingRepository | null = null;
 
-async function createBillingRepository(): Promise<BillingRepository> {
-  const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+function createBillingRepository(): BillingRepository {
+  const hasSupabase = Boolean(
+    typeof window !== 'undefined' 
+      ? process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      : process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+  
+  console.log('Creating billing repository. Has Supabase config:', hasSupabase);
+  
   if (hasSupabase) {
     try {
-      // Dynamically import to avoid circular deps at build
-      const { SupabaseBillingRepository } = await import('./repository.supabase');
+      // Import Supabase repository synchronously
+      const { SupabaseBillingRepository } = require('./repository.supabase');
+      console.log('✅ Using Supabase billing repository');
       return new SupabaseBillingRepository();
     } catch (e) {
-      console.warn('Failed to initialize Supabase repository, falling back to in-memory. Error:', e);
+      console.warn('⚠️  Failed to initialize Supabase repository, falling back to in-memory. Error:', e);
       return new InMemoryBillingRepository();
     }
   } else {
+    console.log('ℹ️  Using in-memory billing repository (no Supabase config found)');
     return new InMemoryBillingRepository();
   }
 }
 
-// Initialize with in-memory by default, can be replaced by calling getBillingRepository()
-instance = new InMemoryBillingRepository();
+// Lazy initialization function that ensures we get the right repository
+function getBillingRepositoryInstance(): BillingRepository {
+  if (!instance) {
+    instance = createBillingRepository();
+  }
+  return instance;
+}
 
-export const billingRepository = instance;
-export const getBillingRepository = createBillingRepository;
+// Export the repository instance
+export const billingRepository = getBillingRepositoryInstance();
+export const getBillingRepository = () => getBillingRepositoryInstance();

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,8 +25,9 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { BatteryType, CellType, BatteryFormData } from '@/types/bms';
+import { BatteryType, CellType, BatteryFormData, Customer } from '@/types/bms';
 import { IconDeviceFloppy, IconX, IconUser, IconBattery } from '@tabler/icons-react';
+import { batteryApi } from '@/lib/api/batteries';
 
 // Form validation schema
 const batteryFormSchema = z.object({
@@ -49,14 +50,7 @@ interface BatteryFormProps {
   isEditing?: boolean;
 }
 
-// Mock customers - replace with actual API call
-const mockCustomers = [
-  { id: 'cust-1', name: 'Basheer', contact: '9946467546' },
-  { id: 'cust-2', name: 'Abdhul Manaf', contact: '' },
-  { id: 'cust-3', name: 'Marwell Group', contact: '7510712721' },
-  { id: 'cust-4', name: 'Anand', contact: '9846161043' },
-  { id: 'cust-5', name: 'Shaji', contact: '9947510061' },
-];
+// Customers loaded from Supabase
 
 const commonBrands = [
   'E-Wheels', 'TVS', 'PURE', 'Okinawa', 'Ampere', 'Ather', 'Hero Electric', 
@@ -66,6 +60,8 @@ const commonBrands = [
 export function BatteryForm({ initialData, isEditing = false }: BatteryFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
 
   const form = useForm<BatteryFormValues>({
     resolver: zodResolver(batteryFormSchema),
@@ -83,15 +79,20 @@ export function BatteryForm({ initialData, isEditing = false }: BatteryFormProps
     }
   });
 
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      const res = await batteryApi.listCustomers();
+      if (res.success && res.data) setCustomers(res.data);
+      setLoadingCustomers(false);
+    };
+    fetchCustomers();
+  }, []);
+
   const onSubmit = async (data: BatteryFormValues) => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      console.log('Form submitted:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const res = await batteryApi.createBattery(data);
+      if (!res.success) throw new Error(res.error || 'Failed to create battery');
       // Navigate back to batteries list
       router.push('/dashboard/batteries');
     } catch (error) {
@@ -297,18 +298,24 @@ export function BatteryForm({ initialData, isEditing = false }: BatteryFormProps
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {mockCustomers.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                              <div className="flex flex-col">
-                                <span>{customer.name}</span>
-                                {customer.contact && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {customer.contact}
-                                  </span>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
+                          {loadingCustomers ? (
+                            <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                          ) : customers.length === 0 ? (
+                            <div className="p-2 text-sm text-muted-foreground">No customers found</div>
+                          ) : (
+                            customers.map((customer) => (
+                              <SelectItem key={customer.id} value={customer.id}>
+                                <div className="flex flex-col">
+                                  <span>{customer.name}</span>
+                                  {customer.contact && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {customer.contact}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       <FormDescription>

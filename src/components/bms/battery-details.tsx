@@ -16,119 +16,106 @@ import {
   IconClock,
   IconCurrency
 } from '@tabler/icons-react';
-import { BatteryRecord, BatteryStatus, BatteryStatusHistory, BatteryType, CellType } from '@/types/bms';
+import { BatteryRecord, BatteryStatus, BatteryStatusHistory, TechnicalDiagnostics, DiagnosticsFormData } from '@/types/bms';
 import { BatteryStatusWorkflow } from './battery-status-workflow';
+import { BatteryDiagnostics } from './battery-diagnostics';
+import { batteryApi } from '@/lib/api/batteries';
 
 interface BatteryDetailsProps {
   batteryId: string;
 }
 
-// Mock data - replace with actual API call
-const mockBattery: BatteryRecord = {
-  id: '1',
-  serial_number: 'RGEKE72390722KLB07783',
-  brand: 'E-Wheels',
-  battery_type: BatteryType.LITHIUM_ION,
-  voltage: 72,
-  capacity: 39,
-  cell_type: CellType.CYLINDRICAL_18650,
-  customer_id: 'cust-1',
-  customer: {
-    id: 'cust-1',
-    name: 'Basheer',
-    contact: '9946467546',
-    created_at: '2025-07-29T00:00:00Z',
-    updated_at: '2025-07-29T00:00:00Z'
-  },
-  received_date: '2025-07-29T00:00:00Z',
-  delivered_date: '2025-08-07T00:00:00Z',
-  status: BatteryStatus.COMPLETED,
-  bms_status: 'ok',
-  repair_notes: '72v 39Ah. All cell ok, bms ok, Cell above 40 Ohms',
-  technician_notes: 'Customer reported reduced range. Initial testing shows cell imbalance.',
-  estimated_cost: 4400,
-  final_cost: 4400,
-  parts_cost: 3200,
-  labor_cost: 1200,
-  load_test_result: 85,
-  initial_voltage: 68.2,
-  created_at: '2025-07-29T00:00:00Z',
-  updated_at: '2025-08-07T00:00:00Z',
-  created_by: 'user-1',
-  updated_by: 'user-1'
-};
-
-const mockStatusHistory: BatteryStatusHistory[] = [
-  {
-    id: 'hist-1',
-    battery_id: '1',
-    previous_status: BatteryStatus.RECEIVED,
-    new_status: BatteryStatus.DIAGNOSED,
-    changed_by: 'user-1',
-    changed_at: '2025-07-30T10:00:00Z',
-    notes: 'Initial diagnosis completed. Cell imbalance detected, BMS functioning normally.'
-  },
-  {
-    id: 'hist-2',
-    battery_id: '1',
-    previous_status: BatteryStatus.DIAGNOSED,
-    new_status: BatteryStatus.IN_PROGRESS,
-    changed_by: 'user-1',
-    changed_at: '2025-07-31T09:00:00Z',
-    notes: 'Started cell balancing procedure.'
-  },
-  {
-    id: 'hist-3',
-    battery_id: '1',
-    previous_status: BatteryStatus.IN_PROGRESS,
-    new_status: BatteryStatus.COMPLETED,
-    changed_by: 'user-1',
-    changed_at: '2025-08-06T16:30:00Z',
-    notes: 'Cell balancing completed. Load test passed at 85% efficiency. Ready for delivery.'
-  }
-];
 
 export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
   const router = useRouter();
   const [battery, setBattery] = useState<BatteryRecord | null>(null);
   const [statusHistory, setStatusHistory] = useState<BatteryStatusHistory[]>([]);
+  const [diagnostics, setDiagnostics] = useState<TechnicalDiagnostics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API call
-    const fetchBattery = async () => {
+    const fetchBatteryData = async () => {
       setIsLoading(true);
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setBattery(mockBattery);
-      setStatusHistory(mockStatusHistory);
-      setIsLoading(false);
+      setError(null);
+      
+      try {
+        // Fetch battery details and status history in parallel
+        const [batteryResponse, historyResponse] = await Promise.all([
+          batteryApi.fetchBattery(batteryId),
+          batteryApi.fetchStatusHistory(batteryId)
+        ]);
+
+        if (batteryResponse.success && batteryResponse.data) {
+          setBattery(batteryResponse.data);
+        } else {
+          setError(batteryResponse.error || 'Failed to fetch battery details');
+        }
+
+        if (historyResponse.success && historyResponse.data) {
+          setStatusHistory(historyResponse.data);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchBattery();
+    fetchBatteryData();
   }, [batteryId]);
+
+  const fetchDiagnostics = async () => {
+    setDiagnosticsLoading(true);
+    try {
+      const response = await batteryApi.fetchDiagnostics(batteryId);
+      if (response.success && response.data) {
+        setDiagnostics(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch diagnostics:', err);
+    } finally {
+      setDiagnosticsLoading(false);
+    }
+  };
+
+  const handleDiagnosticsSave = async (diagnosticsData: DiagnosticsFormData) => {
+    try {
+      const response = await batteryApi.saveDiagnostics(batteryId, diagnosticsData);
+      if (response.success && response.data) {
+        setDiagnostics(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to save diagnostics:', err);
+      throw err; // Re-throw to let the diagnostics component handle the error
+    }
+  };
 
   const handleStatusChange = async (newStatus: BatteryStatus, notes: string) => {
     if (!battery) return;
 
-    // TODO: Replace with actual API call
-    console.log('Updating status:', { batteryId, newStatus, notes });
-    
-    // Update local state
-    const updatedBattery = { ...battery, status: newStatus };
-    setBattery(updatedBattery);
-
-    // Add to status history
-    const newHistoryEntry: BatteryStatusHistory = {
-      id: `hist-${Date.now()}`,
-      battery_id: batteryId,
-      previous_status: battery.status,
-      new_status: newStatus,
-      changed_by: 'current-user', // TODO: Get from auth context
-      changed_at: new Date().toISOString(),
-      notes
-    };
-    setStatusHistory([...statusHistory, newHistoryEntry]);
+    try {
+      const response = await batteryApi.updateBatteryStatus(batteryId, newStatus, notes);
+      
+      if (response.success && response.data) {
+        setBattery(response.data);
+        
+        // Add to status history
+        const newHistoryEntry: BatteryStatusHistory = {
+          id: `hist-${Date.now()}`,
+          battery_id: batteryId,
+          previous_status: battery.status,
+          new_status: newStatus,
+          changed_by: 'current-user', // TODO: Get from auth context
+          changed_at: new Date().toISOString(),
+          notes
+        };
+        setStatusHistory([...statusHistory, newHistoryEntry]);
+      }
+    } catch (err) {
+      console.error('Failed to update battery status:', err);
+    }
   };
 
   const handleGoBack = () => {
@@ -149,6 +136,25 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading battery details...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={handleGoBack}>
+            <IconArrowLeft className="h-4 w-4 mr-2" />
+            Back to Batteries
+          </Button>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-destructive mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -203,7 +209,16 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="xl:col-span-2 order-2 xl:order-1">
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs 
+            defaultValue="overview" 
+            className="space-y-6"
+            onValueChange={(value) => {
+              // Load diagnostics data when diagnostics tab is selected
+              if (value === 'diagnostics' && !diagnostics && !diagnosticsLoading) {
+                fetchDiagnostics();
+              }
+            }}
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="diagnostics">Diagnostics</TabsTrigger>
@@ -377,18 +392,24 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
             </TabsContent>
 
             <TabsContent value="diagnostics">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Technical Diagnostics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      Diagnostics data will be displayed here once implemented.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <BatteryDiagnostics
+                batteryId={batteryId}
+                initialData={diagnostics ? {
+                  total_cells: diagnostics.total_cells,
+                  healthy_cells: diagnostics.healthy_cells,
+                  weak_cells: diagnostics.weak_cells,
+                  dead_cells: diagnostics.dead_cells,
+                  ir_threshold: diagnostics.ir_threshold,
+                  current_capacity: diagnostics.current_capacity,
+                  load_test_current: diagnostics.load_test_current,
+                  load_test_duration: diagnostics.load_test_duration,
+                  efficiency_rating: diagnostics.efficiency_rating,
+                  bms_error_codes: diagnostics.bms_error_codes?.join(', ') || '',
+                  balancing_status: diagnostics.balancing_status,
+                  test_temperature: diagnostics.test_temperature
+                } : undefined}
+                onSave={handleDiagnosticsSave}
+              />
             </TabsContent>
 
             <TabsContent value="history">
