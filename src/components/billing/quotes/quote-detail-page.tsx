@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 import { Quote } from '@/types/billing';
 import { QuoteForm } from './quote-form';
 import { CreateQuoteFormData, UpdateQuoteFormData, quoteToInvoiceFormData } from '@/lib/billing/schemas';
@@ -249,7 +249,7 @@ function QuoteViewMode({ quote, onEdit, onConvertToInvoice }: {
 export function QuoteDetailPage({ id }: QuoteDetailPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

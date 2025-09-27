@@ -95,7 +95,23 @@ export class SupabaseServiceTicketsRepository {
     vehicle_year?: number | null;
   }): Promise<ApiResponse<ServiceTicket>> {
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      if (!uid) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      // Fallback local ticket number in case DB trigger is not installed
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}${mm}${dd}`;
+      const seq = Math.floor(Math.random() * 900) + 100; // 3-digit
+      const fallbackTicketNumber = `T-${todayStr}-${seq}`;
+
       const payload: any = {
+        ticket_number: fallbackTicketNumber,
         customer_id: input.customer_id,
         symptom: input.symptom,
         description: input.description ?? null,
@@ -103,8 +119,8 @@ export class SupabaseServiceTicketsRepository {
         vehicle_model: input.vehicle_model ?? null,
         vehicle_reg_no: input.vehicle_reg_no ?? null,
         vehicle_year: input.vehicle_year ?? null,
-        created_by: '00000000-0000-4000-8000-000000000001',
-        updated_by: '00000000-0000-4000-8000-000000000001'
+        created_by: uid,
+        updated_by: uid
       };
 
       const { data, error } = await supabase
@@ -132,6 +148,10 @@ export class SupabaseServiceTicketsRepository {
   }): Promise<ApiResponse<TicketAttachment[]>> {
     const { ticketId, files, type, onProgress } = params;
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      if (!uid) return { success: false, error: 'Not authenticated' };
+
       const bucket = type === 'audio' ? 'media-audio' : 'media-photos';
       const uploaded: TicketAttachment[] = [];
       const rootFolder = params.caseType === 'vehicle' && params.caseId
@@ -164,7 +184,7 @@ export class SupabaseServiceTicketsRepository {
           attachment_type: type,
           thumbnail_path: null,
           duration: null,
-          uploaded_by: '00000000-0000-4000-8000-000000000001',
+          uploaded_by: uid,
           source: 'internal',
           processed: false,
           processing_error: null
@@ -201,6 +221,9 @@ export class SupabaseServiceTicketsRepository {
         .single();
       if (tErr) throw tErr;
 
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+
       if (routeTo === 'vehicle' || routeTo === 'both') {
         const vehiclePayload: any = {
           service_ticket_id: ticketId,
@@ -210,9 +233,9 @@ export class SupabaseServiceTicketsRepository {
           vehicle_year: ticket.vehicle_year,
           customer_id: ticket.customer_id,
           status: 'received',
-          created_by: ticket.created_by,
-          updated_by: ticket.updated_by,
-          initial_diagnosis: note || null
+          initial_diagnosis: note || null,
+          created_by: uid ?? ticket.updated_by,
+          updated_by: uid ?? ticket.updated_by
         };
         const { data: vcase, error: vErr } = await supabase
           .from('vehicle_cases')
@@ -236,7 +259,9 @@ export class SupabaseServiceTicketsRepository {
           cell_type: 'prismatic',
           customer_id: ticket.customer_id,
           repair_notes: note || 'Created from ticket triage',
-          estimated_cost: null
+          estimated_cost: null,
+          created_by: uid ?? ticket.updated_by,
+          updated_by: uid ?? ticket.updated_by
         } as any;
 
         const { data: bInserted, error: bErr } = await supabase
@@ -253,8 +278,8 @@ export class SupabaseServiceTicketsRepository {
       const updatePayload: any = {
         status: 'assigned',
         triaged_at: new Date().toISOString(),
-        triage_notes: note || null,
-        updated_by: ticket.updated_by
+        triage_notes: note || null
+        // updated_by will be set by trigger
       };
       if (vehicle_case_id) updatePayload.vehicle_case_id = vehicle_case_id;
       if (battery_case_id) updatePayload.battery_case_id = battery_case_id;
@@ -264,23 +289,6 @@ export class SupabaseServiceTicketsRepository {
         .update(updatePayload)
         .eq('id', ticketId);
       if (uErr) throw uErr;
-
-      // Insert history entry for triage
-      try {
-        await supabase
-          .from('service_ticket_history')
-          .insert({
-            ticket_id: ticketId,
-            action: 'triaged',
-            previous_values: { status: ticket.status },
-            new_values: { status: 'assigned', vehicle_case_id, battery_case_id },
-            changed_by: ticket.updated_by,
-            changed_at: new Date().toISOString(),
-            notes: note || null,
-          });
-      } catch (err) {
-        console.error('Error inserting triage history:', err);
-      }
 
       // Optional Slack notification for assignment
       try {
@@ -308,30 +316,18 @@ export class SupabaseServiceTicketsRepository {
         .single();
       if (currErr) throw currErr;
 
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+
       const { data, error } = await supabase
         .from('service_tickets')
-        .update({ status: newStatus, updated_at: new Date().toISOString(), triage_notes: note ?? null })
+        .update({ status: newStatus, updated_at: new Date().toISOString(), updated_by: uid ?? (current as any).updated_by, triage_notes: note ?? null })
         .eq('id', ticketId)
         .select('*')
         .single();
       if (error) throw error;
 
-      // Insert history for status change
-      try {
-        await supabase
-          .from('service_ticket_history')
-          .insert({
-            ticket_id: ticketId,
-            action: 'status_changed',
-            previous_values: { status: (current as any).status },
-            new_values: { status: newStatus },
-            changed_by: (current as any).updated_by,
-            changed_at: new Date().toISOString(),
-            notes: note ?? null,
-          });
-      } catch (hErr) {
-        console.error('Error inserting ticket status history:', hErr);
-      }
+      // History is recorded via DB trigger; no manual insert needed
 
       // Slack notification for status changes
       try {
@@ -449,6 +445,35 @@ export class SupabaseServiceTicketsRepository {
     } catch (error) {
       console.error('Error deleting attachment:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Failed to delete attachment' };
+    }
+  }
+
+  async updateAssignee(ticketId: string, assigneeId: string, opts?: { notify?: boolean; note?: string }): Promise<ApiResponse<import('@/lib/types/service-tickets').ServiceTicket>> {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      const { data, error } = await supabase
+        .from('service_tickets')
+        .update({ assigned_to: assigneeId, updated_at: new Date().toISOString(), updated_by: uid ?? assigneeId, triage_notes: opts?.note ?? null })
+        .eq('id', ticketId)
+        .select('*')
+        .single();
+      if (error) throw error;
+
+      if (opts?.notify) {
+        try {
+          await fetch('/api/notifications/slack', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: `Ticket ${(data as any).ticket_number || ticketId} assigned to ${assigneeId}${opts?.note ? ` — ${opts.note}` : ''}` })
+          });
+        } catch {}
+      }
+
+      return { success: true, data: data as any };
+    } catch (error) {
+      console.error('Error updating assignee:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to update assignee' };
     }
   }
 }

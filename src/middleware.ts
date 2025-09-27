@@ -1,29 +1,10 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const isProtectedRouteCheck = createRouteMatcher(['/dashboard(.*)']);
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/auth/assign-role']);
-
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  const pathname = req.nextUrl.pathname;
-
-  // Allow public routes
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
-  }
-
-  // Protect dashboard routes - just ensure user is authenticated
-  if (isProtectedRouteCheck(req)) {
-    await auth.protect();
-  }
-
+export default function middleware() {
+  // No-op middleware now that Clerk is removed.
   return NextResponse.next();
-});
+}
+
 export const config = {
-  matcher: [
-    // Run middleware on the homepage so auth() works there
-    '/',
-    // And on dashboard routes (protected via auth.protect in the handler above)
-    '/dashboard/:path*'
-  ]
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)']
 };

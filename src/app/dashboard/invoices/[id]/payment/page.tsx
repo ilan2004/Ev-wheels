@@ -1,32 +1,18 @@
-import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import { getUserRole, userHasPermission } from '@/lib/auth/utils';
-import { Permission } from '@/lib/auth/roles';
+'use client';
+
 import { AddPaymentPage } from '@/components/billing/invoices/add-payment-page';
+import { RoleGuard } from '@/components/auth/role-guard';
+import { Permission } from '@/lib/auth/roles';
+import { useRequireAuth } from '@/lib/auth/use-require-auth';
+import { useParams } from 'next/navigation';
 
-interface PaymentPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function PaymentPage({ params }: PaymentPageProps) {
-  const { id } = await params;
-  const user = await currentUser();
-
-  if (!user) {
-    return redirect('/sign-in');
-  }
-
-  const userRole = getUserRole(user);
-  
-  // If user has no role assigned, redirect to role assignment
-  if (!userRole) {
-    return redirect('/auth/assign-role');
-  }
-
-  // Check if user has permission to add payments
-  if (!userHasPermission(user, Permission.GENERATE_INVOICE)) {
-    return redirect('/dashboard');
-  }
-
-  return <AddPaymentPage invoiceId={id} />;
+export default function PaymentPage() {
+  useRequireAuth();
+  const params = useParams<{ id: string }>();
+  const id = params?.id as string;
+  return (
+    <RoleGuard permissions={[Permission.GENERATE_INVOICE]} showError>
+      <AddPaymentPage invoiceId={id} />
+    </RoleGuard>
+  );
 }

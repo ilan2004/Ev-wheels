@@ -11,13 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SectionHeader } from '@/components/layout/section-header';
 import { serviceTicketsApi } from '@/lib/api/service-tickets';
-import type { Customer } from '@/types/bms';
 import { FormFileUpload, FileUploadConfig } from '@/components/forms/form-file-upload';
+import CaptureControls from '@/components/media/capture-controls';
+import { CustomerPicker } from '@/components/customers/customer-picker';
 import { toast } from 'sonner';
 import PageContainer from '@/components/layout/page-container';
+import { useRequireAuth } from '@/lib/auth/use-require-auth';
 
 const schema = z.object({
   customer_id: z.string().min(1, 'Please select a customer'),
@@ -46,9 +47,10 @@ const schema = z.object({
 type FormValues = z.input<typeof schema>;
 
 export default function NewServiceTicketPage() {
+  // Require an authenticated session to create tickets
+  // Redirects to /login if not signed in
+  useRequireAuth();
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [photoProgresses, setPhotoProgresses] = useState<Record<string, number>>({});
@@ -69,14 +71,6 @@ defaultValues: {
     }
   });
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await serviceTicketsApi.listCustomers();
-      if (res.success && res.data) setCustomers(res.data);
-      setLoadingCustomers(false);
-    };
-    load();
-  }, []);
 
   const photoUploadConfig: FileUploadConfig = useMemo(
     () => ({
@@ -84,19 +78,7 @@ defaultValues: {
       maxFiles: 8,
       multiple: true,
       maxSize: 10 * 1024 * 1024,
-      progresses: photoProgresses,
-      onUpload: async (files) => {
-        const ticketId = createdTicketId.current;
-        if (!ticketId) throw new Error('Ticket must be created before uploading files');
-        const res = await serviceTicketsApi.uploadAttachments({
-          ticketId,
-          files,
-          type: 'photo',
-          onProgress: (file, progress) =>
-            setPhotoProgresses((p) => ({ ...p, [file.name]: progress }))
-        });
-        if (!res.success) throw new Error(res.error || 'Failed to upload photos');
-      }
+      progresses: photoProgresses
     }),
     [photoProgresses]
   );
@@ -107,19 +89,7 @@ defaultValues: {
       maxFiles: 3,
       multiple: true,
       maxSize: 15 * 1024 * 1024,
-      progresses: audioProgresses,
-      onUpload: async (files) => {
-        const ticketId = createdTicketId.current;
-        if (!ticketId) throw new Error('Ticket must be created before uploading files');
-        const res = await serviceTicketsApi.uploadAttachments({
-          ticketId,
-          files,
-          type: 'audio',
-          onProgress: (file, progress) =>
-            setAudioProgresses((p) => ({ ...p, [file.name]: progress }))
-        });
-        if (!res.success) throw new Error(res.error || 'Failed to upload audio');
-      }
+      progresses: audioProgresses
     }),
     [audioProgresses]
   );
@@ -139,10 +109,38 @@ defaultValues: {
         vehicle_year: values.vehicle_year ? Number(values.vehicle_year) : null
       });
       if (!res.success || !res.data) throw new Error(res.error || 'Failed to create ticket');
-      createdTicketId.current = res.data.id;
+      const newTicketId = res.data.id;
+      createdTicketId.current = newTicketId;
       toast.success(`Ticket ${res.data.ticket_number || ''} created`);
-      // Navigate to tickets list (will be built in Phase 2). For now, go to dashboard.
-      router.push('/dashboard');
+
+      // If user added files in the form, upload them now before navigating
+      const photos = (values.photos as unknown as File[]) || [];
+      const audio = (values.audio as unknown as File[]) || [];
+
+      if (photos.length > 0) {
+        const up = await serviceTicketsApi.uploadAttachments({
+          ticketId: newTicketId,
+          files: photos,
+          type: 'photo',
+          onProgress: (file, progress) =>
+            setPhotoProgresses((p) => ({ ...p, [file.name]: progress }))
+        });
+        if (!up.success) throw new Error(up.error || 'Failed to upload photos');
+      }
+
+      if (audio.length > 0) {
+        const upa = await serviceTicketsApi.uploadAttachments({
+          ticketId: newTicketId,
+          files: audio,
+          type: 'audio',
+          onProgress: (file, progress) =>
+            setAudioProgresses((p) => ({ ...p, [file.name]: progress }))
+        });
+        if (!upa.success) throw new Error(upa.error || 'Failed to upload audio');
+      }
+
+      // Navigate to detail page after uploads
+      router.push(`/dashboard/tickets/${newTicketId}`);
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : 'Failed to create ticket');
@@ -173,16 +171,12 @@ defaultValues: {
                         <FormItem>
                           <FormLabel>Customer *</FormLabel>
                           <FormControl>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingCustomers}>
-                              <SelectTrigger>
-                                <SelectValue placeholder={loadingCustomers ? 'Loading...' : 'Select customer'} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {customers.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>{c.name}{c.contact ? ` (${c.contact})` : ''}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <CustomerPicker
+                              value={field.value || null}
+                              onChange={(id) => field.onChange(id || '')}
+                              allowQuickAdd
+                              placeholder="Search or add customer"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -253,22 +247,35 @@ defaultValues: {
                   <CardTitle>Media Attachments</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <FormFileUpload
-                    control={form.control}
-                    name={"photos" as any}
-                    label="Photos"
-                    description="Upload intake photos (up to 8, 10MB each)"
-                    config={photoUploadConfig}
-                    className=""
-                  />
-                  <FormFileUpload
-                    control={form.control}
-                    name={"audio" as any}
-                    label="Voice Notes"
-                    description="Upload short voice notes (up to 3, 15MB each)"
-                    config={audioUploadConfig}
-                    className=""
-                  />
+                  <div className="space-y-2">
+                    <FormFileUpload
+                      control={form.control}
+                      name={"photos" as any}
+                      label="Photos"
+                      description="Upload intake photos (up to 8, 10MB each)"
+                      config={photoUploadConfig}
+                      className=""
+                    />
+                    <CaptureControls onPhotos={(files) => {
+                      const current = (form.getValues("photos") as unknown as File[]) || [];
+                      form.setValue("photos" as any, [...current, ...files]);
+                    }} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <FormFileUpload
+                      control={form.control}
+                      name={"audio" as any}
+                      label="Voice Notes"
+                      description="Upload short voice notes (up to 3, 15MB each)"
+                      config={audioUploadConfig}
+                      className=""
+                    />
+                    <CaptureControls onAudio={(files) => {
+                      const current = (form.getValues("audio") as unknown as File[]) || [];
+                      form.setValue("audio" as any, [...current, ...files]);
+                    }} />
+                  </div>
                 </CardContent>
               </Card>
 

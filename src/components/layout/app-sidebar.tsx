@@ -32,7 +32,6 @@ import { UserAvatarProfile } from '@/components/user-avatar-profile';
 import { navItems } from '@/constants/data';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useAuth } from '@/hooks/use-auth';
-import { userHasAnyPermission } from '@/lib/auth/utils';
 import {
   IconBell,
   IconChevronRight,
@@ -42,7 +41,7 @@ import {
   IconBattery,
   IconUserCircle
 } from '@tabler/icons-react';
-import { SignOutButton } from '@clerk/nextjs';
+import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -57,10 +56,10 @@ export const company = {
 export default function AppSidebar() {
   const pathname = usePathname();
   const { isOpen } = useMediaQuery();
-  const { user, userInfo, isLoaded } = useAuth();
+  const { user, userInfo, isLoaded, hasAnyPermission } = useAuth();
   const router = useRouter();
   
-  // Filter navigation items based on user permissions
+  // Filter navigation items based on user permissions (role-aware)
   const filteredNavItems = React.useMemo(() => {
     if (!user || !isLoaded) return [];
     
@@ -68,17 +67,17 @@ export default function AppSidebar() {
       // If no permissions specified, show to all authenticated users
       if (!item.permissions || item.permissions.length === 0) return true;
       
-      // Check if user has any of the required permissions
-      return userHasAnyPermission(user, item.permissions);
+      // Check if user has any of the required permissions using role-aware checker
+      return hasAnyPermission(item.permissions);
     }).map(item => ({
       ...item,
       items: item.items?.filter(subItem => {
         // Filter sub-items based on permissions
         if (!subItem.permissions || subItem.permissions.length === 0) return true;
-        return userHasAnyPermission(user, subItem.permissions);
+        return hasAnyPermission(subItem.permissions);
       }) || []
     }));
-  }, [user, isLoaded]);
+  }, [user, isLoaded, hasAnyPermission]);
 
   React.useEffect(() => {
     // Side effects based on sidebar state changes
@@ -189,7 +188,11 @@ export default function AppSidebar() {
                     <UserAvatarProfile
                       className='h-8 w-8 rounded-lg'
                       showInfo
-                      user={user}
+                      user={{
+                        imageUrl: '',
+                        fullName: `${(user as any).user_metadata?.firstName ?? ''} ${(user as any).user_metadata?.lastName ?? ''}`.trim() || null,
+                        emailAddresses: [{ emailAddress: (user as any).email }]
+                      }}
                     />
                   )}
                   <IconChevronsDown className='ml-auto size-4' />
@@ -207,7 +210,11 @@ export default function AppSidebar() {
                       <UserAvatarProfile
                         className='h-8 w-8 rounded-lg'
                         showInfo
-                        user={user}
+                        user={{
+                          imageUrl: '',
+                          fullName: `${(user as any).user_metadata?.firstName ?? ''} ${(user as any).user_metadata?.lastName ?? ''}`.trim() || null,
+                          emailAddresses: [{ emailAddress: (user as any).email }]
+                        }}
                       />
                     )}
                     {userInfo?.role && (
@@ -247,9 +254,14 @@ export default function AppSidebar() {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = '/sign-in';
+                  }}
+                >
                   <IconLogout className='mr-2 h-4 w-4' />
-                  <SignOutButton redirectUrl='/sign-in' />
+                  Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

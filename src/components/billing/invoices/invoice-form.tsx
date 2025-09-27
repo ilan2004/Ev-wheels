@@ -57,6 +57,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CustomerPicker } from '@/components/customers/customer-picker';
 
 interface InvoiceFormProps {
   initialData?: CreateInvoiceFormData;
@@ -185,6 +187,9 @@ export function InvoiceForm({
   loading = false,
   mode = 'create'
 }: InvoiceFormProps) {
+  const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
+  const [linkedCustomerName, setLinkedCustomerName] = useState<string | null>(null);
+  const linkedCustomerId = watch('linkedCustomerId');
   
   const [items, setItems] = useState<(LineItemInputFormData & { subtotal: number; discountAmount: number; taxAmount: number; total: number })[]>([]);
   const [totals, setTotals] = useState({
@@ -339,10 +344,15 @@ export function InvoiceForm({
           {/* Customer Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconUser className="h-5 w-5" />
-                Customer Information
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <IconUser className="h-5 w-5" />
+                  Customer Information
+                </CardTitle>
+                <Button type="button" variant="outline" size="sm" onClick={() => setCustomerPickerOpen(true)}>
+                  Select from Customers
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -403,6 +413,29 @@ export function InvoiceForm({
               />
             </CardContent>
           </Card>
+
+          <Dialog open={customerPickerOpen} onOpenChange={setCustomerPickerOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Select Customer</DialogTitle>
+              </DialogHeader>
+              <CustomerPicker
+                value={null}
+                onChange={(id, c) => {
+                  if (c) {
+                    setValue('customer.name', c.name as any);
+                    setValue('customer.phone', (c.contact || '') as any);
+                    setValue('customer.address', (c.address || '') as any);
+                    setValue('customer.gstNumber', (c.gst_number || '') as any);
+                    setValue('linkedCustomerId', c.id as any);
+                    setLinkedCustomerName(c.name);
+                  }
+                  setCustomerPickerOpen(false);
+                }}
+                allowQuickAdd
+              />
+            </DialogContent>
+          </Dialog>
 
           {/* Line Items */}
           <Card>
@@ -554,6 +587,16 @@ export function InvoiceForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {linkedCustomerId && (
+                <div className="flex items-center justify-between rounded border p-2 text-sm">
+                  <div>
+                    Linked to: <span className="font-medium">{linkedCustomerName || 'Selected customer'}</span>
+                  </div>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => { setValue('linkedCustomerId', undefined as any); setLinkedCustomerName(null); }}>
+                    Clear link
+                  </Button>
+                </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={control}

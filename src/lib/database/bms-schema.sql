@@ -260,6 +260,28 @@ INSERT INTO customers (id, name, contact) VALUES
   (uuid_generate_v4(), 'VINEESH', '9745284468'),
   (uuid_generate_v4(), 'Afzal', '9633173698');
 
+-- Phase 1: Customers module additions (idempotent)
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS gst_number TEXT;
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS alt_contact TEXT;
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS notes TEXT;
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+
+-- Phase 4: Customers audit table (optional)
+CREATE TABLE IF NOT EXISTS customers_audit (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  customer_id UUID,
+  action TEXT NOT NULL,
+  previous_values JSONB,
+  new_values JSONB,
+  changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Phase 5: Performance indexes (optional)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX IF NOT EXISTS idx_customers_name_trgm ON customers USING gin (name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_customers_email_trgm ON customers USING gin (email gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_customers_contact_trgm ON customers USING gin (contact gin_trgm_ops);
+
 -- Sample battery records from PDF data
 -- Note: In production, you'd want proper user IDs instead of uuid_generate_v4()
 INSERT INTO battery_records (

@@ -1,42 +1,64 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabase/client';
 import { UserRole, Permission } from '@/lib/auth/roles';
-import { 
-  getUserRole, 
-  userHasPermission, 
+import {
+  getUserRole,
+  userHasPermission,
   userHasAnyPermission,
   userCanAccessNavigation,
   formatUserInfo,
   NAVIGATION_PERMISSIONS
 } from '@/lib/auth/utils';
-import { useMemo } from 'react';
 
-/**
- * Hook to get current user role and permission checking functions
- */
 export function useAuth() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const [user, setUser] = useState<any | null>(null);
+  const [isLoaded, setLoaded] = useState(false);
+  const [isSignedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setUser(user);
+      setSignedIn(!!user);
+      setLoaded(true);
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setSignedIn(!!session?.user);
+      setLoaded(true);
+    });
+    return () => sub.subscription?.unsubscribe?.();
+  }, []);
 
   const userInfo = useMemo(() => {
     if (!user) return null;
-    return formatUserInfo(user);
+    return formatUserInfo({
+      emailAddresses: [{ emailAddress: user.email ?? user?.email_addresses?.[0]?.email || '' }],
+      firstName: user.user_metadata?.firstName ?? null,
+      lastName: user.user_metadata?.lastName ?? null,
+      publicMetadata: { role: user.user_metadata?.role },
+      username: null,
+    } as any);
   }, [user]);
 
-  const role = useMemo(() => getUserRole(user), [user]);
+  const role = useMemo(() => getUserRole({ publicMetadata: { role: user?.user_metadata?.role } } as any) || UserRole.TECHNICIAN, [user]);
 
   const hasPermission = useMemo(() => {
-    return (permission: Permission) => userHasPermission(user, permission);
-  }, [user]);
+    return (permission: Permission) => userHasPermission({ publicMetadata: { role } } as any, permission);
+  }, [role]);
 
   const hasAnyPermission = useMemo(() => {
-    return (permissions: Permission[]) => userHasAnyPermission(user, permissions);
-  }, [user]);
+    return (permissions: Permission[]) => userHasAnyPermission({ publicMetadata: { role } } as any, permissions);
+  }, [role]);
 
   const canAccessNavigation = useMemo(() => {
-    return (navigationKey: keyof typeof NAVIGATION_PERMISSIONS) => 
-      userCanAccessNavigation(user, navigationKey);
-  }, [user]);
+    return (navigationKey: keyof typeof NAVIGATION_PERMISSIONS) =>
+      userCanAccessNavigation({ publicMetadata: { role } } as any, navigationKey);
+  }, [role]);
 
   const isAdmin = role === UserRole.ADMIN;
   const isTechnician = role === UserRole.TECHNICIAN;

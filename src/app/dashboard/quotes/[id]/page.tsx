@@ -1,32 +1,18 @@
-import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import { getUserRole, userHasPermission } from '@/lib/auth/utils';
-import { Permission } from '@/lib/auth/roles';
+'use client';
+
 import { QuoteDetailPage } from '@/components/billing/quotes/quote-detail-page';
+import { RoleGuard } from '@/components/auth/role-guard';
+import { Permission } from '@/lib/auth/roles';
+import { useRequireAuth } from '@/lib/auth/use-require-auth';
+import { useParams } from 'next/navigation';
 
-interface QuotePageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function QuotePage({ params }: QuotePageProps) {
-  const { id } = await params;
-  const user = await currentUser();
-
-  if (!user) {
-    return redirect('/sign-in');
-  }
-
-  const userRole = getUserRole(user);
-  
-  // If user has no role assigned, redirect to role assignment
-  if (!userRole) {
-    return redirect('/auth/assign-role');
-  }
-
-  // Check if user has permission to view quotes
-  if (!userHasPermission(user, Permission.GENERATE_QUOTATION)) {
-    return redirect('/dashboard');
-  }
-
-  return <QuoteDetailPage id={id} />;
+export default function QuotePage() {
+  useRequireAuth();
+  const params = useParams<{ id: string }>();
+  const id = params?.id as string;
+  return (
+    <RoleGuard permissions={[Permission.GENERATE_QUOTATION]} showError>
+      <QuoteDetailPage id={id} />
+    </RoleGuard>
+  );
 }

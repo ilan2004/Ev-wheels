@@ -25,6 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
+import { supabase } from '@/lib/supabase/client';
 
 export function NavUser({
   user
@@ -98,7 +99,12 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/sign-in';
+              }}
+            >
               <IconLogout className='mr-2 h-4 w-4' />
               Log out
             </DropdownMenuItem>

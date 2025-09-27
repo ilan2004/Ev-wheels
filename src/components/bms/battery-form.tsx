@@ -25,7 +25,8 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { BatteryType, CellType, BatteryFormData, Customer } from '@/types/bms';
+import { BatteryType, CellType, BatteryFormData } from '@/types/bms';
+import { CustomerPicker } from '@/components/customers/customer-picker';
 import { IconDeviceFloppy, IconX, IconUser, IconBattery } from '@tabler/icons-react';
 import { batteryApi } from '@/lib/api/batteries';
 
@@ -60,8 +61,6 @@ const commonBrands = [
 export function BatteryForm({ initialData, isEditing = false }: BatteryFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loadingCustomers, setLoadingCustomers] = useState(true);
 
   const form = useForm<BatteryFormValues>({
     resolver: zodResolver(batteryFormSchema),
@@ -79,14 +78,6 @@ export function BatteryForm({ initialData, isEditing = false }: BatteryFormProps
     }
   });
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      const res = await batteryApi.listCustomers();
-      if (res.success && res.data) setCustomers(res.data);
-      setLoadingCustomers(false);
-    };
-    fetchCustomers();
-  }, []);
 
   const onSubmit = async (data: BatteryFormValues) => {
     setIsLoading(true);
@@ -291,35 +282,16 @@ export function BatteryForm({ initialData, isEditing = false }: BatteryFormProps
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Customer *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select customer" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {loadingCustomers ? (
-                            <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-                          ) : customers.length === 0 ? (
-                            <div className="p-2 text-sm text-muted-foreground">No customers found</div>
-                          ) : (
-                            customers.map((customer) => (
-                              <SelectItem key={customer.id} value={customer.id}>
-                                <div className="flex flex-col">
-                                  <span>{customer.name}</span>
-                                  {customer.contact && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {customer.contact}
-                                    </span>
-                                  )}
-                                </div>
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <CustomerPicker
+                          value={field.value || null}
+                          onChange={(id) => field.onChange(id || '')}
+                          allowQuickAdd
+                          placeholder="Search or add customer"
+                        />
+                      </FormControl>
                       <FormDescription>
-                        Select the customer who owns this battery
+                        Select or quickly add the customer who owns this battery
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

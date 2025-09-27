@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 import { InvoiceForm } from './invoice-form';
 import { CreateInvoiceFormData } from '@/lib/billing/schemas';
 import { billingRepository } from '@/lib/billing/repository';
@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 export function CreateInvoicePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [initialData, setInitialData] = useState<CreateInvoiceFormData | undefined>();
   const [createdInvoice, setCreatedInvoice] = useState<string | null>(null);

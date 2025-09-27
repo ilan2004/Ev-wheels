@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { UserRole, DEFAULT_USER_ROLE, getRoleDisplayName } from '@/lib/auth/util
 import { toast } from 'sonner';
 
 export default function AssignRolePage() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth() as any;
   const router = useRouter();
   const [isAssigning, setIsAssigning] = useState(false);
 
@@ -21,8 +21,8 @@ export default function AssignRolePage() {
       return;
     }
 
-    // Check if user already has a role assigned
-    if (user?.publicMetadata?.role) {
+    // For Supabase: we default to technician via metadata at signup; just go to dashboard
+    if (user) {
       router.push('/dashboard');
       return;
     }
@@ -36,19 +36,9 @@ export default function AssignRolePage() {
     setIsAssigning(true);
     
     try {
-      // Check if user already has role assigned
-      console.log('User metadata:', user.publicMetadata);
-      
-      if (user.publicMetadata?.role) {
-        toast.success(`Role found: ${user.publicMetadata.role}! Redirecting to dashboard...`);
-        
-        // Force immediate navigation
-        router.replace('/dashboard');
-        return;
-      }
-
-      // If no role is found, show message to contact admin
-      toast.error('No role assigned. Please contact your administrator to assign a role in Clerk dashboard.');
+      // With Supabase, role is in user_metadata. Just continue.
+      toast.success('Account ready! Redirecting...');
+      router.replace('/dashboard');
       
     } catch (error) {
       console.error('Error checking role:', error);
@@ -89,7 +79,7 @@ export default function AssignRolePage() {
           <CardContent className="space-y-4">
             <div className="text-center">
               <div className="text-sm text-gray-600 mb-2">
-                Hello, <span className="font-medium">{user.firstName || user.emailAddresses[0]?.emailAddress}</span>
+                Hello, <span className="font-medium">{(user as any).email}</span>
               </div>
               <p className="text-sm text-gray-500">
                 We&apos;re assigning you the default role to get you started. An administrator can update your permissions later if needed.

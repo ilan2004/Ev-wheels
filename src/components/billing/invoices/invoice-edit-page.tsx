@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 import { InvoiceForm } from './invoice-form';
 import { UpdateInvoiceFormData, CreateInvoiceFormData } from '@/lib/billing/schemas';
 import { billingRepository } from '@/lib/billing/repository';
@@ -18,7 +18,7 @@ interface InvoiceEditPageProps {
 
 export function InvoiceEditPage({ invoiceId }: InvoiceEditPageProps) {
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [invoice, setInvoice] = useState<Invoice | null>(null);

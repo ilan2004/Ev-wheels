@@ -27,7 +27,8 @@ export const createQuoteSchema = z.object({
   terms: z.string().optional(),
   validUntil: z.date().optional(),
   shippingAmount: z.number().min(0, 'Shipping amount cannot be negative').optional(),
-  adjustmentAmount: z.number().optional()
+  adjustmentAmount: z.number().optional(),
+  linkedCustomerId: z.string().optional()
 });
 
 export const updateQuoteSchema = createQuoteSchema.partial().extend({
@@ -50,7 +51,8 @@ export const createInvoiceSchema = z.object({
   terms: z.string().optional(),
   shippingAmount: z.number().min(0, 'Shipping amount cannot be negative').optional(),
   adjustmentAmount: z.number().optional(),
-  sourceQuoteId: z.string().optional()
+  sourceQuoteId: z.string().optional(),
+  linkedCustomerId: z.string().optional()
 });
 
 export const updateInvoiceSchema = createInvoiceSchema.partial().extend({

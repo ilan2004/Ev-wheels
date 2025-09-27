@@ -1,5 +1,3 @@
-import { User } from '@clerk/nextjs/server';
-import type { UserResource } from '@clerk/types';
 import { UserRole, Permission, hasPermission, hasAnyPermission, NAVIGATION_PERMISSIONS } from './roles';
 
 // Re-export UserRole and NAVIGATION_PERMISSIONS for convenience
@@ -15,8 +13,8 @@ type ClerkUserLike = {
   username?: string | null;
 };
 
-// Extend the Clerk User type to include our custom metadata
-export interface EVWheelsUser extends User {
+// Extended user shape used across the app (agnostic to auth provider)
+export interface EVWheelsUser {
   publicMetadata: {
     role: UserRole;
     employeeId?: string;

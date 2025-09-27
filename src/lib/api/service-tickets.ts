@@ -49,6 +49,7 @@ export interface ServiceTicketsApiContract {
   listTicketHistory(ticketId: string): Promise<ApiResponse<import('@/lib/types/service-tickets').ServiceTicketHistory[]>>;
   triageTicket(params: { ticketId: string; routeTo: 'vehicle' | 'battery' | 'both'; note?: string }): Promise<ApiResponse<{ vehicle_case_id?: string; battery_case_id?: string }>>;
   updateTicketStatus(ticketId: string, newStatus: import('@/lib/types/service-tickets').ServiceTicketStatus, note?: string): Promise<ApiResponse<ServiceTicket>>;
+  updateAssignee(ticketId: string, assigneeId: string, opts?: { notify?: boolean; note?: string }): Promise<ApiResponse<ServiceTicket>>;
 }
 
 import { supabaseServiceTicketsRepository } from './service-tickets.supabase';

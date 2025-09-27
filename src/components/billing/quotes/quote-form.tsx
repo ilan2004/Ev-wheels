@@ -55,6 +55,8 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CustomerPicker } from '@/components/customers/customer-picker';
 
 interface QuoteFormProps {
   initialData?: CreateQuoteFormData;
@@ -171,6 +173,9 @@ export function QuoteForm({
   loading = false,
   mode = 'create'
 }: QuoteFormProps) {
+const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
+const [linkedCustomerName, setLinkedCustomerName] = useState<string | null>(null);
+const linkedCustomerId = watch('linkedCustomerId');
 const [items, setItems] = useState<ProcessedLineItem[]>([]);
   const [totals, setTotals] = useState({
     subtotal: 0,
@@ -266,12 +271,27 @@ const [items, setItems] = useState<ProcessedLineItem[]>([]);
           {/* Customer Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconUser className="h-5 w-5" />
-                Customer Information
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <IconUser className="h-5 w-5" />
+                  Customer Information
+                </CardTitle>
+                <Button type="button" variant="outline" size="sm" onClick={() => setCustomerPickerOpen(true)}>
+                  Select from Customers
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {linkedCustomerId && (
+                <div className="flex items-center justify-between rounded border p-2 text-sm">
+                  <div>
+                    Linked to: <span className="font-medium">{linkedCustomerName || 'Selected customer'}</span>
+                  </div>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => { setValue('linkedCustomerId', undefined as any); setLinkedCustomerName(null); }}>
+                    Clear link
+                  </Button>
+                </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={control}
@@ -330,6 +350,29 @@ const [items, setItems] = useState<ProcessedLineItem[]>([]);
               />
             </CardContent>
           </Card>
+
+          <Dialog open={customerPickerOpen} onOpenChange={setCustomerPickerOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Select Customer</DialogTitle>
+              </DialogHeader>
+              <CustomerPicker
+                value={null}
+                onChange={(id, c) => {
+                  if (c) {
+                    setValue('customer.name', c.name as any);
+                    setValue('customer.phone', (c.contact || '') as any);
+                    setValue('customer.address', (c.address || '') as any);
+                    setValue('customer.gstNumber', (c.gst_number || '') as any);
+                    setValue('linkedCustomerId', c.id as any);
+                    setLinkedCustomerName(c.name);
+                  }
+                  setCustomerPickerOpen(false);
+                }}
+                allowQuickAdd
+              />
+            </DialogContent>
+          </Dialog>
 
           {/* Line Items */}
           <Card>

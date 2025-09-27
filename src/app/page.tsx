@@ -1,12 +1,17 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function Page() {
-  const { userId } = await auth();
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 
-  if (!userId) {
-    return redirect('/sign-in');
-  } else {
-    redirect('/dashboard');
-  }
+export default function Page() {
+  const router = useRouter();
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) router.replace('/sign-in');
+      else router.replace('/dashboard');
+    })();
+  }, [router]);
+  return null;
 }

@@ -1,27 +1,15 @@
-import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import { getUserRole, userHasPermission } from '@/lib/auth/utils';
-import { Permission } from '@/lib/auth/roles';
+'use client';
+
 import { InvoicesListPage } from '@/components/billing/invoices/invoices-list-page';
+import { RoleGuard } from '@/components/auth/role-guard';
+import { Permission } from '@/lib/auth/roles';
+import { useRequireAuth } from '@/lib/auth/use-require-auth';
 
-export default async function InvoicesPage() {
-  const user = await currentUser();
-
-  if (!user) {
-    return redirect('/sign-in');
-  }
-
-  const userRole = getUserRole(user);
-  
-  // If user has no role assigned, redirect to role assignment
-  if (!userRole) {
-    return redirect('/auth/assign-role');
-  }
-
-  // Check if user has permission to view invoices
-  if (!userHasPermission(user, Permission.GENERATE_INVOICE)) {
-    return redirect('/dashboard');
-  }
-
-  return <InvoicesListPage />;
+export default function InvoicesPage() {
+  useRequireAuth();
+  return (
+    <RoleGuard permissions={[Permission.GENERATE_INVOICE]} showError>
+      <InvoicesListPage />
+    </RoleGuard>
+  );
 }

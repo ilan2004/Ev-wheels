@@ -17,7 +17,7 @@ export default function TicketsListPage() {
   const [tickets, setTickets] = useState<(ServiceTicket & { customer?: Customer })[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -25,7 +25,8 @@ export default function TicketsListPage() {
     const load = async () => {
       setLoading(true);
       const offset = (page - 1) * pageSize;
-      const res = await serviceTicketsApi.listTickets({ search, status: status as any, limit: pageSize, offset });
+      const effectiveStatus = status === 'all' ? undefined : (status as any);
+      const res = await serviceTicketsApi.listTickets({ search, status: effectiveStatus, limit: pageSize, offset });
       if (res.success && res.data) setTickets(res.data);
       setLoading(false);
     };
@@ -55,7 +56,7 @@ export default function TicketsListPage() {
                   <SelectValue placeholder="Filter status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   {['reported','triaged','assigned','in_progress','completed','delivered','closed','cancelled','on_hold','waiting_approval'].map(s => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 import { QuoteForm } from './quote-form';
 import { CreateQuoteFormData } from '@/lib/billing/schemas';
 import { billingRepository } from '@/lib/billing/repository';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 export function CreateQuotePage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data: CreateQuoteFormData) => {

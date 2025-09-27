@@ -125,6 +125,15 @@ function SidebarProvider({
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
   );
 
+  // When mobile sidebar/sheet opens, ensure no element behind retains focus
+  React.useEffect(() => {
+    if (openMobile) {
+      try {
+        (document.activeElement as HTMLElement | null)?.blur?.();
+      } catch {}
+    }
+  }, [openMobile]);
+
   return (
     <SidebarContext.Provider value={contextValue}>
       <TooltipProvider delayDuration={0}>
