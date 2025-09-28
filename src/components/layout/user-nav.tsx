@@ -18,7 +18,7 @@ export function UserNav() {
   const { user } = useAuth();
   const router = useRouter();
   if (!user) return null;
-  const email = (user as any).email ?? (user as any)?.email_addresses?.[0]?.email || '';
+  const email = ((user as any).email ?? (user as any)?.email_addresses?.[0]?.email) || '';
 
   return (
     <DropdownMenu>

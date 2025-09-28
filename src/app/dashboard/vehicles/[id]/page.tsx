@@ -12,7 +12,12 @@ import { vehiclesApi, type VehicleCase, type VehicleStatus } from "@/lib/api/veh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { VehicleStatusHistory, TicketAttachment } from "@/lib/types/service-tickets";
 import { FormFileUpload, type FileUploadConfig } from "@/components/forms/form-file-upload";
+import { EnhancedStatusWorkflow } from "@/components/vehicles/enhanced-status-workflow";
 import { supabase } from "@/lib/supabase/client";
+import PageContainer from "@/components/layout/page-container";
+import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const STATUSES: VehicleStatus[] = [
   "received",
@@ -38,6 +43,10 @@ export default function VehicleDetailPage() {
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
   const [photoProgresses, setPhotoProgresses] = useState<Record<string, number>>({});
   const [audioProgresses, setAudioProgresses] = useState<Record<string, number>>({});
+
+  const form = useForm<{ photos: File[]; audio: File[] }>({
+    defaultValues: { photos: [], audio: [] }
+  });
 
   const load = async () => {
     setLoading(true);
@@ -115,22 +124,41 @@ export default function VehicleDetailPage() {
     }
   };
 
-  const onChangeStatus = async (newStatus: VehicleStatus) => {
+  const onChangeStatus = async (newStatus: VehicleStatus, statusNotes?: string) => {
     if (!vehicle) return;
     setIsUpdating(true);
-    const res = await vehiclesApi.updateVehicleStatus(vehicle.id, newStatus, notes || undefined);
-    if (res.success && res.data) {
-      setVehicle(res.data);
-      setNotes("");
+    
+    try {
+      const res = await vehiclesApi.updateVehicleStatus(vehicle.id, newStatus, statusNotes);
+      if (res.success && res.data) {
+        setVehicle(res.data);
+        setNotes("");
+        
+        toast.success(`Vehicle status changed to ${newStatus.replace("_", " ")}`);
+        
+        // Refresh history
+        const historyRes = await vehiclesApi.listVehicleHistory(vehicleId);
+        if (historyRes.success && historyRes.data) {
+          setHistory(historyRes.data);
+        }
+      } else {
+        throw new Error(res.error || "Failed to update status");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update status");
+      throw error; // Re-throw for the component to handle
+    } finally {
+      setIsUpdating(false);
     }
-    setIsUpdating(false);
   };
 
   if (loading) return <div>Loading...</div>;
   if (!vehicle) return <div>Vehicle case not found</div>;
 
+
   return (
-    <div className="flex flex-col gap-6">
+    <PageContainer>
+      <div className="flex flex-col gap-6">
       <SectionHeader title="Vehicle Case Details" description="Diagnosis and repair status" />
 
       <div className="flex items-center gap-3">
@@ -139,7 +167,7 @@ export default function VehicleDetailPage() {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="mb-4">
+        <TabsList className="sticky top-0 z-10 mb-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/50">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="attachments">Attachments</TabsTrigger>
@@ -170,29 +198,11 @@ export default function VehicleDetailPage() {
         </CardContent>
       </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Status Workflow</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {STATUSES.map((s) => (
-              <Button key={s} variant={vehicle.status === s ? "default" : "outline"} disabled={isUpdating} onClick={() => onChangeStatus(s)}>
-                {s.replace("_"," ")}
-              </Button>
-            ))}
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">Optional note for this change</div>
-            <Textarea placeholder="Add a brief note (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
-            <div className="flex gap-2">
-              <Button variant="outline" disabled={isUpdating} onClick={async () => { if (!vehicle) return; const res = await vehiclesApi.updateVehicleNotes(vehicle.id, notes); if (res.success && res.data) { setVehicle(res.data); setNotes(""); } }}>
-                Save Notes
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-          </Card>
+          <EnhancedStatusWorkflow
+            vehicle={vehicle}
+            onStatusChange={onChangeStatus}
+            isUpdating={isUpdating}
+          />
         </TabsContent>
 
         <TabsContent value="history">
@@ -232,8 +242,12 @@ export default function VehicleDetailPage() {
               <CardTitle>Upload</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <FormFileUpload control={{} as any} name={"photos" as any} label="Photos" config={photoUploadConfig} />
-              <FormFileUpload control={{} as any} name={"audio" as any} label="Voice Notes" config={audioUploadConfig} />
+              <Form {...form}>
+                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                  <FormFileUpload control={form.control} name={"photos"} label="Photos" config={photoUploadConfig} />
+                  <FormFileUpload control={form.control} name={"audio"} label="Voice Notes" config={audioUploadConfig} />
+                </form>
+              </Form>
             </CardContent>
           </Card>
           <Card>
@@ -266,6 +280,7 @@ export default function VehicleDetailPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </PageContainer>
   );
 }
 

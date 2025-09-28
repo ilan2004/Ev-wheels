@@ -37,7 +37,7 @@ export function useAuth() {
   const userInfo = useMemo(() => {
     if (!user) return null;
     return formatUserInfo({
-      emailAddresses: [{ emailAddress: user.email ?? user?.email_addresses?.[0]?.email || '' }],
+      emailAddresses: [{ emailAddress: (user.email ?? user?.email_addresses?.[0]?.email) || '' }],
       firstName: user.user_metadata?.firstName ?? null,
       lastName: user.user_metadata?.lastName ?? null,
       publicMetadata: { role: user.user_metadata?.role },
@@ -62,6 +62,7 @@ export function useAuth() {
 
   const isAdmin = role === UserRole.ADMIN;
   const isTechnician = role === UserRole.TECHNICIAN;
+  const isManager = role === UserRole.MANAGER;
 
   return {
     user,
@@ -71,6 +72,7 @@ export function useAuth() {
     isSignedIn,
     isAdmin,
     isTechnician,
+    isManager,
     hasPermission,
     hasAnyPermission,
     canAccessNavigation,
@@ -106,7 +108,7 @@ export function useNavigationAccess(navigationKey: keyof typeof NAVIGATION_PERMI
  * Hook for role-specific redirects and guards
  */
 export function useRoleGuard() {
-  const { isAdmin, isTechnician, hasRole, isLoaded } = useAuth();
+  const { isAdmin, isTechnician, isManager, hasRole, isLoaded } = useAuth();
 
   const requireAdmin = () => {
     if (isLoaded && !isAdmin) {
@@ -122,6 +124,13 @@ export function useRoleGuard() {
     return isTechnician;
   };
 
+  const requireManager = () => {
+    if (isLoaded && !isManager) {
+      throw new Error('Manager access required');
+    }
+    return isManager;
+  };
+
   const requireRole = () => {
     if (isLoaded && !hasRole) {
       throw new Error('Role assignment required');
@@ -132,9 +141,11 @@ export function useRoleGuard() {
   return {
     requireAdmin,
     requireTechnician,
+    requireManager,
     requireRole,
     isAdmin,
     isTechnician,
+    isManager,
     hasRole,
   };
 }

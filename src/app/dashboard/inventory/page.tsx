@@ -52,6 +52,10 @@ export default function InventoryOverviewPage() {
               <div className="text-base font-semibold">Stock Adjustments</div>
               <div className="text-sm text-muted-foreground">Audit trail of stock changes</div>
             </Link>
+            <Link href="/dashboard/inventory/movements" className="group rounded-xl border p-4 hover:bg-muted/40 transition">
+              <div className="text-base font-semibold">Movements</div>
+              <div className="text-sm text-muted-foreground">Request issue/receive/transfer; approve as admin</div>
+            </Link>
           </div>
 
           <div className="rounded-xl border p-6 text-sm text-muted-foreground">

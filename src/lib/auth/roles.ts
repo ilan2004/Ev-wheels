@@ -1,5 +1,6 @@
 export enum UserRole {
   ADMIN = 'admin',
+  MANAGER = 'manager',
   TECHNICIAN = 'technician'
 }
 
@@ -76,6 +77,20 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.PRINT_LABELS,
     Permission.GENERATE_QR_CODES
   ],
+  [UserRole.MANAGER]: [
+    // Managers: full access within their location(s), inventory read-only
+    Permission.VIEW_BATTERIES,
+    Permission.CREATE_BATTERY_RECORD,
+    Permission.UPDATE_BATTERY_STATUS,
+    Permission.VIEW_CUSTOMERS,
+    Permission.CREATE_CUSTOMER,
+    Permission.UPDATE_CUSTOMER,
+    Permission.VIEW_INVENTORY,
+    Permission.VIEW_PRICING,
+    Permission.GENERATE_QUOTATION,
+    Permission.PRINT_LABELS,
+    Permission.GENERATE_QR_CODES
+  ],
   [UserRole.TECHNICIAN]: [
     // Limited access for technicians
     Permission.VIEW_BATTERIES,
@@ -109,6 +124,10 @@ export function isAdmin(userRole: UserRole): boolean {
 
 export function isTechnician(userRole: UserRole): boolean {
   return userRole === UserRole.TECHNICIAN;
+}
+
+export function isManager(userRole: UserRole): boolean {
+  return userRole === UserRole.MANAGER;
 }
 
 // Navigation permissions

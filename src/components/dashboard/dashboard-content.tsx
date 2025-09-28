@@ -3,6 +3,7 @@
 import { UserRole } from '@/lib/auth/roles';
 import { AdminDashboard } from './admin-dashboard';
 import { TechnicianDashboard } from './technician-dashboard';
+import { ManagerDashboard } from './manager-dashboard';
 
 // Serialized user data for client components
 interface SerializedUser {
@@ -23,6 +24,8 @@ export default function DashboardContent({ user, role }: DashboardContentProps) 
   switch (role) {
     case UserRole.ADMIN:
       return <AdminDashboard user={user} />;
+    case UserRole.MANAGER:
+      return <ManagerDashboard user={user} />;
     case UserRole.TECHNICIAN:
       return <TechnicianDashboard user={user} />;
     default:

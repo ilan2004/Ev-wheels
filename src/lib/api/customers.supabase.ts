@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
 import type { CustomersApiContract, ApiResponse, ListCustomersParams } from './customers';
 import type { Customer, CreateCustomerInput, UpdateCustomerInput } from '@/lib/types/customers';
+import { scopeQuery, withLocationId } from '@/lib/location/scope';
 
 class CustomersSupabaseRepository implements CustomersApiContract {
   async list(params: ListCustomersParams = {}): Promise<ApiResponse<Customer[]>> {
@@ -13,6 +14,7 @@ class CustomersSupabaseRepository implements CustomersApiContract {
           .from('customers')
           .select(selectCols)
           .order('name', { ascending: true }) as any;
+        q = scopeQuery('customers', q);
         if (params.search && params.search.trim()) {
           const term = `%${params.search.trim()}%`;
           q = q.or(`name.ilike.${term},contact.ilike.${term},email.ilike.${term}`);
@@ -51,9 +53,9 @@ class CustomersSupabaseRepository implements CustomersApiContract {
       if (error) {
         const { data: data2, error: err2 } = await selectOnce(SELECT_NO_GST);
         if (err2) throw err2;
-        return { success: true, data: (data2 as Customer) || null };
+        return { success: true, data: (data2 as unknown as Customer) || null };
       }
-      return { success: true, data: (data as Customer) || null };
+      return { success: true, data: (data as unknown as Customer) || null };
     } catch (error) {
       if ((error as any)?.code === 'PGRST116') return { success: true, data: null };
       console.error('customers.getById error', error);
@@ -82,7 +84,7 @@ class CustomersSupabaseRepository implements CustomersApiContract {
 
       let { data, error } = await supabase
         .from('customers')
-        .insert(payloadWithGst)
+        .insert(withLocationId('customers', payloadWithGst))
         .select(SELECT_WITH_GST)
         .single();
 
@@ -90,7 +92,7 @@ class CustomersSupabaseRepository implements CustomersApiContract {
         // Fallback if gst_number column does not exist yet
         const result2 = await supabase
           .from('customers')
-          .insert(payloadNoGst)
+          .insert(withLocationId('customers', payloadNoGst))
           .select(SELECT_NO_GST)
           .single();
         if (result2.error) throw result2.error;

@@ -27,9 +27,9 @@ export function MediaViewerModal({ attachments, index, open, onClose }: MediaVie
 
   const att = attachments[current];
   const [signedUrl, setSignedUrl] = React.useState<string | null>(null);
-  if (!att) return null;
 
   React.useEffect(() => {
+    if (!att) return;
     let cancelled = false;
     (async () => {
       const bucket = att.attachment_type === 'audio' ? 'media-audio' : 'media-photos';
@@ -42,6 +42,8 @@ export function MediaViewerModal({ attachments, index, open, onClose }: MediaVie
     })();
     return () => { cancelled = true; };
   }, [att]);
+
+  if (!att) return null;
 
   const prev = () => setCurrent((c) => Math.max(0, c - 1));
   const next = () => setCurrent((c) => Math.min(attachments.length - 1, c + 1));

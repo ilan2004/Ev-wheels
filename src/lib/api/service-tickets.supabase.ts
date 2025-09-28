@@ -2,15 +2,17 @@ import { supabase } from '@/lib/supabase/client';
 import type { ApiResponse } from './service-tickets';
 import type { ServiceTicket, TicketAttachment } from '@/lib/types/service-tickets';
 import type { Customer } from '@/types/bms';
+import { scopeQuery, withLocationId } from '@/lib/location/scope';
 
 export class SupabaseServiceTicketsRepository {
   async listCustomers(): Promise<ApiResponse<Customer[]>> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('customers')
         .select('id, name, contact, created_at, updated_at')
-        .order('name', { ascending: true })
-        .limit(200);
+        .order('name', { ascending: true }) as any;
+      query = scopeQuery('customers', query).limit(200);
+      const { data, error } = await query;
       if (error) throw error;
       return { success: true, data: data || [] };
     } catch (error) {
@@ -31,7 +33,8 @@ export class SupabaseServiceTicketsRepository {
       let query = supabase
         .from('service_tickets')
         .select('*, customer:customers(*)')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
+      query = scopeQuery('service_tickets', query);
 
       if (params.status) query = query.eq('status', params.status);
       if (params.from) query = query.gte('created_at', params.from);
@@ -110,7 +113,7 @@ export class SupabaseServiceTicketsRepository {
       const seq = Math.floor(Math.random() * 900) + 100; // 3-digit
       const fallbackTicketNumber = `T-${todayStr}-${seq}`;
 
-      const payload: any = {
+      const payloadBase: any = {
         ticket_number: fallbackTicketNumber,
         customer_id: input.customer_id,
         symptom: input.symptom,
@@ -123,9 +126,11 @@ export class SupabaseServiceTicketsRepository {
         updated_by: uid
       };
 
+      const insertPayload = withLocationId('service_tickets', payloadBase);
+
       const { data, error } = await supabase
         .from('service_tickets')
-        .insert(payload)
+        .insert(insertPayload)
         .select('*')
         .single();
 
@@ -276,7 +281,7 @@ export class SupabaseServiceTicketsRepository {
 
       // Update ticket: link cases and set status and triage fields
       const updatePayload: any = {
-        status: 'assigned',
+        status: 'triaged',
         triaged_at: new Date().toISOString(),
         triage_notes: note || null
         // updated_by will be set by trigger
@@ -290,12 +295,12 @@ export class SupabaseServiceTicketsRepository {
         .eq('id', ticketId);
       if (uErr) throw uErr;
 
-      // Optional Slack notification for assignment
+      // Optional Slack notification for triage routing
       try {
         await fetch('/api/notifications/slack', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: `Ticket ${ticket.ticket_number || ticketId} triaged → assigned. Vehicle case: ${vehicle_case_id ?? '-'} Battery case: ${battery_case_id ?? '-'}` })
+          body: JSON.stringify({ text: `Ticket ${ticket.ticket_number || ticketId} triaged. Vehicle case: ${vehicle_case_id ?? '-'} Battery case: ${battery_case_id ?? '-'}` })
         });
       } catch {}
 
@@ -448,34 +453,6 @@ export class SupabaseServiceTicketsRepository {
     }
   }
 
-  async updateAssignee(ticketId: string, assigneeId: string, opts?: { notify?: boolean; note?: string }): Promise<ApiResponse<import('@/lib/types/service-tickets').ServiceTicket>> {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData?.user?.id;
-      const { data, error } = await supabase
-        .from('service_tickets')
-        .update({ assigned_to: assigneeId, updated_at: new Date().toISOString(), updated_by: uid ?? assigneeId, triage_notes: opts?.note ?? null })
-        .eq('id', ticketId)
-        .select('*')
-        .single();
-      if (error) throw error;
-
-      if (opts?.notify) {
-        try {
-          await fetch('/api/notifications/slack', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: `Ticket ${(data as any).ticket_number || ticketId} assigned to ${assigneeId}${opts?.note ? ` — ${opts.note}` : ''}` })
-          });
-        } catch {}
-      }
-
-      return { success: true, data: data as any };
-    } catch (error) {
-      console.error('Error updating assignee:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to update assignee' };
-    }
-  }
 }
 
 export const supabaseServiceTicketsRepository = new SupabaseServiceTicketsRepository();

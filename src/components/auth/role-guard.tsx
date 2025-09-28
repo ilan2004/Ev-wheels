@@ -173,7 +173,30 @@ export function TechnicianAccess({
 }) {
   return (
     <RoleGuard 
-      roles={[UserRole.ADMIN, UserRole.TECHNICIAN]} 
+      roles={[UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN]} 
+      fallback={fallback} 
+      showError={showError}
+    >
+      {children}
+    </RoleGuard>
+  );
+}
+
+/**
+ * Component for manager-only content (admins included)
+ */
+export function ManagerOnly({ 
+  children, 
+  fallback = null, 
+  showError = false 
+}: { 
+  children: React.ReactNode; 
+  fallback?: React.ReactNode; 
+  showError?: boolean; 
+}) {
+  return (
+    <RoleGuard 
+      roles={[UserRole.ADMIN, UserRole.MANAGER]} 
       fallback={fallback} 
       showError={showError}
     >

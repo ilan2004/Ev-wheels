@@ -8,7 +8,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE service_ticket_status AS ENUM (
   'reported',
   'triaged',
-  'assigned', 
   'in_progress',
   'completed',
   'delivered',
@@ -63,7 +62,6 @@ CREATE TABLE service_tickets (
   -- Status and Assignment
   status service_ticket_status NOT NULL DEFAULT 'reported',
   priority INTEGER DEFAULT 3, -- 1=High, 2=Medium, 3=Low
-  assigned_to UUID, -- Reference to user/technician
   
   -- Linked Cases (nullable - set during triage)
   battery_case_id UUID REFERENCES battery_records(id) ON DELETE SET NULL,
@@ -180,7 +178,7 @@ CREATE TABLE service_ticket_history (
   ticket_id UUID NOT NULL REFERENCES service_tickets(id) ON DELETE CASCADE,
   
   -- Change Information
-  action VARCHAR(50) NOT NULL, -- 'created', 'updated', 'triaged', 'assigned', 'status_changed'
+  action VARCHAR(50) NOT NULL, -- 'created', 'updated', 'triaged', 'status_changed'
   previous_values JSONB, -- Store previous state for rollback
   new_values JSONB, -- Store new state
   
@@ -196,7 +194,6 @@ CREATE INDEX idx_service_tickets_ticket_number ON service_tickets(ticket_number)
 CREATE INDEX idx_service_tickets_customer ON service_tickets(customer_id);
 CREATE INDEX idx_service_tickets_status ON service_tickets(status);
 CREATE INDEX idx_service_tickets_created_at ON service_tickets(created_at);
-CREATE INDEX idx_service_tickets_assigned_to ON service_tickets(assigned_to);
 CREATE INDEX idx_service_tickets_battery_case ON service_tickets(battery_case_id);
 CREATE INDEX idx_service_tickets_vehicle_case ON service_tickets(vehicle_case_id);
 
@@ -314,8 +311,6 @@ BEGIN
         -- Determine the type of update
         IF (OLD.status IS DISTINCT FROM NEW.status) THEN
             action_type := 'status_changed';
-        ELSIF (OLD.assigned_to IS DISTINCT FROM NEW.assigned_to) THEN
-            action_type := 'assigned';
         ELSIF (OLD.triaged_at IS NULL AND NEW.triaged_at IS NOT NULL) THEN
             action_type := 'triaged';
         ELSE
@@ -342,7 +337,6 @@ BEGIN
         CASE 
             WHEN action_type = 'created' THEN 'Service ticket created'
             WHEN action_type = 'triaged' THEN 'Ticket triaged and routed to appropriate department'
-            WHEN action_type = 'assigned' THEN 'Ticket assigned to technician'
             WHEN action_type = 'status_changed' THEN 'Ticket status updated'
             ELSE 'Ticket updated'
         END

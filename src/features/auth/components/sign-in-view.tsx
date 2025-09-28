@@ -6,25 +6,121 @@ import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { fetchLocations, setActiveLocation, type LocationRow } from '@/lib/location/session';
 
 export default function SignInViewPage({ stars }: { stars: number }) {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [locations, setLocations] = useState<LocationRow[]>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const locs = await fetchLocations();
+        if (!mounted) return;
+        setLocations(locs);
+        if (locs.length && !selectedLocationId) setSelectedLocationId(locs[0].id);
+      } catch {
+        // fallback handled inside fetchLocations
+      }
+    })();
+    return () => { mounted = false; };
+  }, [selectedLocationId]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) return setError(error.message);
-    router.replace('/dashboard');
+    try {
+      // Resolve username -> email (fallback to username if it looks like an email)
+      let emailToUse = username;
+      if (!username.includes('@')) {
+        try {
+          const { data: rpcEmail, error: rpcErr } = await supabase.rpc('get_email_by_username', { p_username: username });
+          if (rpcEmail) emailToUse = rpcEmail as string;
+          if (rpcErr) {
+            // Attempt direct table lookup if RPC unavailable
+            const { data: prof, error: profErr } = await supabase
+              .from('profiles')
+              .select('email')
+              .eq('username', username)
+              .maybeSingle();
+            if (prof && (prof as any).email) emailToUse = (prof as any).email as string;
+            if (profErr) {
+              console.warn('username->email fallback lookup failed:', (profErr as any)?.message);
+            }
+          }
+        } catch (lookupErr) {
+          console.warn('username->email lookup threw, using fallback');
+        }
+      }
+
+      // If scoping is disabled, we do not require a location selection or membership check
+      const { isLocationScopeEnabled } = await import('@/lib/config/flags');
+      const scopedEnabled = isLocationScopeEnabled();
+      if (scopedEnabled) {
+        if (!selectedLocationId && selectedLocationId !== '') {
+          throw new Error('Please select a location.');
+        }
+      }
+
+      // Sign in first (secure), then validate membership if scoping is enabled
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: emailToUse, password });
+      if (signInErr) throw signInErr;
+
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes?.user?.id;
+      const role = (userRes?.user?.user_metadata as any)?.role as string | undefined;
+      const isAdmin = role === 'admin';
+
+      if (scopedEnabled) {
+        // Admins can access any location; others must have membership
+        if (!isAdmin) {
+          if (!selectedLocationId) {
+            await supabase.auth.signOut();
+            throw new Error('Not authorized for the selected location');
+          }
+          const { data: member, error: memErr } = await supabase
+            .from('user_locations')
+            .select('location_id')
+            .eq('user_id', uid)
+            .eq('location_id', selectedLocationId)
+            .maybeSingle();
+          if (memErr) {
+            await supabase.auth.signOut();
+            throw new Error('Not authorized for the selected location');
+          }
+          if (!member) {
+            await supabase.auth.signOut();
+            throw new Error('Not authorized for the selected location');
+          }
+        }
+      }
+
+      const sel = locations.find(l => l.id === selectedLocationId);
+      if (scopedEnabled) {
+        // Allow admin "All locations" selection via empty id
+        if (isAdmin && selectedLocationId === '') {
+          setActiveLocation({ id: null, name: 'All locations' });
+        } else {
+          setActiveLocation({ id: selectedLocationId, name: sel?.name || 'Unknown' });
+        }
+      }
+
+      router.replace('/dashboard');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to sign in');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,8 +159,21 @@ export default function SignInViewPage({ stars }: { stars: number }) {
           </Link>
 
           <form onSubmit={onSubmit} className='w-full space-y-3'>
-            <Input type='email' placeholder='Email' value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input type='text' placeholder='Username' value={username} onChange={(e) => setUsername(e.target.value)} required />
             <Input type='password' placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <div className='space-y-1'>
+              <label className='text-sm text-muted-foreground'>Location</label>
+              <select
+                className='w-full border rounded h-9 px-2 bg-background'
+                value={selectedLocationId}
+                onChange={(e) => setSelectedLocationId(e.target.value)}
+                required
+              >
+                {locations.map(loc => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </select>
+            </div>
             {error && <div className='text-red-600 text-sm'>{error}</div>}
             <Button className='w-full' type='submit' disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}

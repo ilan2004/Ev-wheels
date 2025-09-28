@@ -1,1 +1,5 @@
-pnpm run build
+#!/usr/bin/env sh
+
+# Husky pre-push hook (Windows-friendly)
+# Use npm to avoid requiring pnpm on all environments
+npm run build

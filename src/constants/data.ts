@@ -41,9 +41,21 @@ export const navItems: NavItem[] = [
     shortcut: ['v', 'v'],
     items: [
       {
-        title: 'Vehicle Cases',
+        title: 'Vehicle List',
         url: '/dashboard/vehicles',
         icon: 'list',
+        permissions: [Permission.VIEW_BATTERIES]
+      },
+      {
+        title: 'Workflow (Kanban)',
+        url: '/dashboard/vehicles/kanban',
+        icon: 'kanban',
+        permissions: [Permission.VIEW_BATTERIES]
+      },
+      {
+        title: 'Analytics Dashboard',
+        url: '/dashboard/vehicles/analytics',
+        icon: 'barChart3',
         permissions: [Permission.VIEW_BATTERIES]
       }
     ],

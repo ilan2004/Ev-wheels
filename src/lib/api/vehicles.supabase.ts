@@ -4,28 +4,130 @@ import type { VehiclesApiContract, ApiResponse } from './vehicles'
 import type { VehicleCase, VehicleStatus } from '@/lib/types/service-tickets'
 
 class SupabaseVehiclesRepository implements VehiclesApiContract {
-  async listVehicles(params: { search?: string; status?: VehicleStatus; limit?: number; offset?: number } = {}): Promise<ApiResponse<VehicleCase[]>> {
+  async listVehicles(params: { 
+    search?: string; 
+    status?: VehicleStatus | VehicleStatus[]; 
+    dateFrom?: string;
+    dateTo?: string;
+    technicianId?: string | 'unassigned';
+    customerId?: string;
+    limit?: number; 
+    offset?: number;
+    sortBy?: string;
+    sortDirection?: 'asc' | 'desc';
+  } = {}): Promise<ApiResponse<{ vehicles: VehicleCase[]; totalCount: number }>> {
     try {
+      // First get total count
+      let countQuery = supabase
+        .from('vehicle_cases')
+        .select('*', { count: 'exact', head: true })
+
+      // Apply filters to count query
+      if (params.status) {
+        if (Array.isArray(params.status)) {
+          countQuery = countQuery.in('status', params.status)
+        } else {
+          countQuery = countQuery.eq('status', params.status)
+        }
+      }
+      
+      if (params.search && params.search.trim()) {
+        const term = `%${params.search.trim()}%`
+        countQuery = countQuery.or(`vehicle_reg_no.ilike.${term},vehicle_make.ilike.${term},vehicle_model.ilike.${term}`)
+      }
+      
+      if (params.dateFrom) {
+        countQuery = countQuery.gte('received_date', params.dateFrom)
+      }
+      
+      if (params.dateTo) {
+        countQuery = countQuery.lte('received_date', params.dateTo)
+      }
+      
+      if (params.technicianId) {
+        if (params.technicianId === 'unassigned') {
+          countQuery = countQuery.is('assigned_technician', null)
+        } else {
+          countQuery = countQuery.eq('assigned_technician', params.technicianId)
+        }
+      }
+      
+      if (params.customerId) {
+        countQuery = countQuery.eq('customer_id', params.customerId)
+      }
+
+      const { count } = await countQuery
+      
+      // Then get paginated data with customer info
       let query = supabase
         .from('vehicle_cases')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .select(`
+          *,
+          customer:customers!customer_id(
+            id,
+            name,
+            contact,
+            email
+          )
+        `)
 
-      if (params.status) query = query.eq('status', params.status)
+      // Apply same filters to data query
+      if (params.status) {
+        if (Array.isArray(params.status)) {
+          query = query.in('status', params.status)
+        } else {
+          query = query.eq('status', params.status)
+        }
+      }
+      
       if (params.search && params.search.trim()) {
         const term = `%${params.search.trim()}%`
         query = query.or(`vehicle_reg_no.ilike.${term},vehicle_make.ilike.${term},vehicle_model.ilike.${term}`)
       }
-      if (params.limit) query = query.limit(params.limit)
-      if (params.offset) query = query.range(params.offset, (params.offset + (params.limit || 50)) - 1)
+      
+      if (params.dateFrom) {
+        query = query.gte('received_date', params.dateFrom)
+      }
+      
+      if (params.dateTo) {
+        query = query.lte('received_date', params.dateTo)
+      }
+      
+      if (params.technicianId) {
+        if (params.technicianId === 'unassigned') {
+          query = query.is('assigned_technician', null)
+        } else {
+          query = query.eq('assigned_technician', params.technicianId)
+        }
+      }
+      
+      if (params.customerId) {
+        query = query.eq('customer_id', params.customerId)
+      }
+
+      // Apply sorting
+      const sortColumn = params.sortBy || 'created_at'
+      const sortDirection = params.sortDirection || 'desc'
+      query = query.order(sortColumn, { ascending: sortDirection === 'asc' })
+
+      // Apply pagination
+      const limit = params.limit || 20
+      const offset = params.offset || 0
+      query = query.range(offset, offset + limit - 1)
 
       const { data, error } = await query
       if (error) throw error
 
-      return { success: true, data: (data || []) as any }
+      return { 
+        success: true, 
+        data: { 
+          vehicles: (data || []) as any,
+          totalCount: count || 0
+        } 
+      }
     } catch (error) {
       console.error('Error listing vehicles:', error)
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list vehicles' }
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to list vehicles', data: { vehicles: [], totalCount: 0 } }
     }
   }
 
@@ -33,7 +135,15 @@ class SupabaseVehiclesRepository implements VehiclesApiContract {
     try {
       const { data, error } = await supabase
         .from('vehicle_cases')
-        .select('*')
+        .select(`
+          *,
+          customer:customers!customer_id(
+            id,
+            name,
+            contact,
+            email
+          )
+        `)
         .eq('id', id)
         .single()
       if (error) throw error
@@ -46,27 +156,38 @@ class SupabaseVehiclesRepository implements VehiclesApiContract {
 
   async updateVehicleStatus(id: string, newStatus: VehicleStatus, notes?: string): Promise<ApiResponse<VehicleCase>> {
     try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        return { success: false, error: 'User not authenticated' }
+      }
+
       // Fetch current row for audit/context
       const current = await this.fetchVehicle(id)
       if (!current.success || !current.data) return { success: false, error: 'Vehicle case not found' }
 
       const { data, error } = await supabase
         .from('vehicle_cases')
-        .update({ status: newStatus, updated_at: new Date().toISOString(), updated_by: current.data.updated_by })
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString(), 
+          updated_by: user.id 
+        })
         .eq('id', id)
         .select('*')
         .single()
       if (error) throw error
 
-      // Optional: insert into vehicle_status_history if you later enable it via DB trigger or manually
-      // If you want to add manual history now, uncomment below:
-      // await supabase.from('vehicle_status_history').insert({
-      //   vehicle_case_id: id,
-      //   previous_status: current.data.status,
-      //   new_status: newStatus,
-      //   changed_by: current.data.updated_by,
-      //   notes: notes || null,
-      // })
+      // Insert into vehicle_status_history if notes are provided
+      if (notes) {
+        await supabase.from('vehicle_status_history').insert({
+          vehicle_case_id: id,
+          previous_status: current.data.status,
+          new_status: newStatus,
+          changed_by: user.id,
+          notes: notes
+        })
+      }
 
       return { success: true, data: data as any }
     } catch (error) {
@@ -76,9 +197,19 @@ class SupabaseVehiclesRepository implements VehiclesApiContract {
   }
   async updateVehicleNotes(id: string, technician_notes: string) {
     try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        return { success: false, error: 'User not authenticated' }
+      }
+
       const { data, error } = await supabase
         .from('vehicle_cases')
-        .update({ technician_notes, updated_at: new Date().toISOString() })
+        .update({ 
+          technician_notes, 
+          updated_at: new Date().toISOString(),
+          updated_by: user.id
+        })
         .eq('id', id)
         .select('*')
         .single()

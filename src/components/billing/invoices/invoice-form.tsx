@@ -189,7 +189,6 @@ export function InvoiceForm({
 }: InvoiceFormProps) {
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   const [linkedCustomerName, setLinkedCustomerName] = useState<string | null>(null);
-  const linkedCustomerId = watch('linkedCustomerId');
   
   const [items, setItems] = useState<(LineItemInputFormData & { subtotal: number; discountAmount: number; taxAmount: number; total: number })[]>([]);
   const [totals, setTotals] = useState({
@@ -206,6 +205,7 @@ export function InvoiceForm({
   });
 
   const { control, handleSubmit, watch, setValue } = form;
+  const linkedCustomerId = watch('linkedCustomerId');
   const watchedShipping = watch('shippingAmount') || 0;
   const watchedAdjustment = watch('adjustmentAmount') || 0;
 

@@ -1,1 +1,5 @@
-npx lint-staged
+#!/usr/bin/env sh
+
+# Husky pre-commit hook (Windows-friendly)
+# Run lint-staged using Node's npx without invoking WSL
+npx --no -- lint-staged

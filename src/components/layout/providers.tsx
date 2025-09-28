@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { ActiveThemeProvider } from '../active-theme';
+import { LocationProvider } from '@/lib/location/context';
 
 export default function Providers({
   activeThemeValue,
@@ -11,7 +12,9 @@ export default function Providers({
 }) {
   return (
     <ActiveThemeProvider initialTheme={activeThemeValue}>
-      {children}
+      <LocationProvider>
+        {children}
+      </LocationProvider>
     </ActiveThemeProvider>
   );
 }

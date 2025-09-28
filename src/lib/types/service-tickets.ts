@@ -3,7 +3,6 @@
 export type ServiceTicketStatus =
   | 'reported'
   | 'triaged'
-  | 'assigned'
   | 'in_progress'
   | 'completed'
   | 'delivered'
@@ -36,7 +35,6 @@ export interface ServiceTicket {
   vehicle_year?: number | null;
   status: ServiceTicketStatus;
   priority: number | null;
-  assigned_to?: string | null;
   battery_case_id?: string | null;
   vehicle_case_id?: string | null;
   created_at: string;

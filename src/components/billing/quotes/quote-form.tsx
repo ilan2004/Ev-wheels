@@ -175,7 +175,6 @@ export function QuoteForm({
 }: QuoteFormProps) {
 const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
 const [linkedCustomerName, setLinkedCustomerName] = useState<string | null>(null);
-const linkedCustomerId = watch('linkedCustomerId');
 const [items, setItems] = useState<ProcessedLineItem[]>([]);
   const [totals, setTotals] = useState({
     subtotal: 0,
@@ -190,6 +189,7 @@ const [items, setItems] = useState<ProcessedLineItem[]>([]);
   });
 
   const { control, handleSubmit, watch, setValue } = form;
+const linkedCustomerId = watch('linkedCustomerId');
   const watchedShipping = watch('shippingAmount') || 0;
   const watchedAdjustment = watch('adjustmentAmount') || 0;
 

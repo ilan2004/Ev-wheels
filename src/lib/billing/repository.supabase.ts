@@ -3,6 +3,7 @@ import {
   BillingRepository,
   InMemoryBillingRepository,
 } from '@/lib/billing/repository';
+import { withLocationId } from '@/lib/location/scope';
 import {
   Quote,
   Invoice,
@@ -90,21 +91,23 @@ export class SupabaseBillingRepository implements BillingRepository {
 
     const now = new Date().toISOString();
 
+    const quotePayload = withLocationId('quotes', {
+      number,
+      status: QuoteStatus.DRAFT,
+      customer: input.customer,
+      totals,
+      currency: 'USD',
+      notes: input.notes,
+      terms: input.terms,
+      valid_until: input.validUntil ? new Date(input.validUntil).toISOString() : null,
+      created_by: createdBy,
+      created_at: now,
+      updated_at: now,
+    });
+
     const { data, error } = await supabase
       .from('quotes')
-      .insert({
-        number,
-        status: QuoteStatus.DRAFT,
-        customer: input.customer,
-        totals,
-        currency: 'USD',
-        notes: input.notes,
-        terms: input.terms,
-        valid_until: input.validUntil ? new Date(input.validUntil).toISOString() : null,
-        created_by: createdBy,
-        created_at: now,
-        updated_at: now,
-      })
+      .insert(quotePayload as any)
       .select('id')
       .single();
     if (error) throw error;
@@ -193,6 +196,8 @@ export class SupabaseBillingRepository implements BillingRepository {
 
   async listQuotes(filters?: QuoteFilters, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Quote>> {
     let query = supabase.from('quotes').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+    if (locId) query = (query as any).eq('location_id', locId);
 
     if (filters?.status?.length) query = query.in('status', filters.status);
     if (filters?.customerName) query = query.ilike('customer->>name', `%${filters.customerName}%`);
@@ -326,23 +331,25 @@ export class SupabaseBillingRepository implements BillingRepository {
 
     const now = new Date().toISOString();
 
+    const invoicePayload = withLocationId('invoices', {
+      number,
+      status: InvoiceStatus.DRAFT,
+      customer: input.customer,
+      totals,
+      currency: 'INR',
+      balance_due: totals.grandTotal,
+      due_date: input.dueDate.toISOString(),
+      notes: input.notes ?? null,
+      terms: input.terms ?? null,
+      created_by: createdBy,
+      created_at: now,
+      updated_at: now,
+      source_quote_id: input.sourceQuoteId ?? null,
+    });
+
     const { data, error } = await supabase
       .from('invoices')
-      .insert({
-        number,
-        status: InvoiceStatus.DRAFT,
-        customer: input.customer,
-        totals,
-        currency: 'INR',
-        balance_due: totals.grandTotal,
-        due_date: input.dueDate.toISOString(),
-        notes: input.notes ?? null,
-        terms: input.terms ?? null,
-        created_by: createdBy,
-        created_at: now,
-        updated_at: now,
-        source_quote_id: input.sourceQuoteId ?? null,
-      })
+      .insert(invoicePayload as any)
       .select('id')
       .single();
     if (error) throw error;
@@ -439,6 +446,8 @@ export class SupabaseBillingRepository implements BillingRepository {
 
   async listInvoices(filters?: InvoiceFilters, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Invoice>> {
     let query = supabase.from('invoices').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+    if (locId) query = (query as any).eq('location_id', locId);
 
     if (filters?.status?.length) query = query.in('status', filters.status);
     if (filters?.customerName) query = query.ilike('customer->>name', `%${filters.customerName}%`);
@@ -537,18 +546,20 @@ export class SupabaseBillingRepository implements BillingRepository {
     const now = new Date();
     const received = input.receivedAt ?? now;
 
+    const paymentPayload = withLocationId('payments', {
+      invoice_id: input.invoiceId,
+      amount: input.amount,
+      method: input.method,
+      reference: input.reference ?? null,
+      notes: input.notes ?? null,
+      received_at: received.toISOString(),
+      created_by: createdBy,
+      created_at: now.toISOString(),
+    });
+
     const { data, error } = await supabase
       .from('payments')
-      .insert({
-        invoice_id: input.invoiceId,
-        amount: input.amount,
-        method: input.method,
-        reference: input.reference ?? null,
-        notes: input.notes ?? null,
-        received_at: received.toISOString(),
-        created_by: createdBy,
-        created_at: now.toISOString(),
-      })
+      .insert(paymentPayload as any)
       .select('*')
       .single();
     if (error) throw error;

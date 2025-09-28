@@ -2,6 +2,7 @@
 import { supabase } from '@/lib/supabase/client';
 import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, DiagnosticsFormData, BatteryStatus } from '@/types/bms';
 import { BatteryApiContract, ApiResponse } from './batteries';
+import { scopeQuery, withLocationId } from '@/lib/location/scope';
 
 export class SupabaseBatteryRepository implements BatteryApiContract {
   
@@ -13,7 +14,8 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
           *,
           customer:customers(*)
         `)
-        .order('received_date', { ascending: false });
+        .order('received_date', { ascending: false }) as any;
+      query = scopeQuery('battery_records', query);
 
       if (params.status) {
         query = query.eq('status', params.status);
@@ -115,9 +117,11 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         updated_by: '00000000-0000-4000-8000-000000000001'
       };
 
+      const payloadWithLoc = withLocationId('battery_records', payload);
+
       const { data: inserted, error } = await supabase
         .from('battery_records')
-        .insert(payload)
+        .insert(payloadWithLoc)
         .select(`
           *,
           customer:customers(*)

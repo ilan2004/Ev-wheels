@@ -37,12 +37,22 @@ export async function fetchKpis(): Promise<KpiResponse<Kpis>> {
   try {
     const monthStart = startOfMonthISO();
 
+    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+
+    const bCountQ = supabase.from('battery_records').select('id', { count: 'exact', head: true });
+    const pendingQ = supabase.from('battery_records').select('id', { count: 'exact', head: true }).in('status', ['received','diagnosed','in_progress']);
+    const completedMonthQ = supabase.from('battery_records').select('id', { count: 'exact', head: true }).gte('delivered_date', monthStart).in('status', ['completed','delivered']);
+    const customersQ = supabase.from('customers').select('id', { count: 'exact', head: true });
+    const ticketsQ = supabase.from('service_tickets').select('status');
+
+    const scoped = (table: string, q: any) => locId ? q.eq('location_id', locId) : q;
+
     const [bCount, pending, completedMonth, customers, tickets] = await Promise.all([
-      supabase.from('battery_records').select('id', { count: 'exact', head: true }),
-      supabase.from('battery_records').select('id', { count: 'exact', head: true }).in('status', ['received','diagnosed','in_progress']),
-      supabase.from('battery_records').select('id', { count: 'exact', head: true }).gte('delivered_date', monthStart).in('status', ['completed','delivered']),
-      supabase.from('customers').select('id', { count: 'exact', head: true }),
-      supabase.from('service_tickets').select('status')
+      scoped('battery_records', bCountQ),
+      scoped('battery_records', pendingQ),
+      scoped('battery_records', completedMonthQ),
+      scoped('customers', customersQ),
+      scoped('service_tickets', ticketsQ)
     ]);
 
     if (bCount.error) throw bCount.error;
@@ -78,10 +88,13 @@ export async function fetchWeeklyDeliveredBatteries(weeks = 8): Promise<KpiRespo
     const start = new Date(end);
     start.setDate(end.getDate() - weeks * 7);
 
-    const { data, error } = await supabase
+    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+    let q = supabase
       .from('battery_records')
       .select('delivered_date')
       .gte('delivered_date', start.toISOString());
+    if (locId) q = q.eq('location_id', locId);
+    const { data, error } = await q;
 
     if (error) throw error;
 
