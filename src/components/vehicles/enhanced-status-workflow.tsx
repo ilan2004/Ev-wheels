@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Card,
   CardContent,
@@ -29,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
+import { Stepper, StepperSteps, type StepItem } from '@/components/ui/stepper';
 import {
   Car,
   FileText,
@@ -310,62 +310,24 @@ export function EnhancedStatusWorkflow({
     }
   };
 
+  // Prepare steps for the Stepper component
+  const stepperSteps: StepItem[] = STATUS_FLOW.map((status) => ({
+    id: status,
+    title: STATUS_CONFIG[status].label,
+    description: `Est. ${STATUS_CONFIG[status].estimatedDays} days`,
+    icon: STATUS_CONFIG[status].icon
+  }));
+
   const StatusTimeline = () => (
-    <div className='mb-6 flex items-center justify-between'>
-      {STATUS_FLOW.map((status, index) => {
-        const config = STATUS_CONFIG[status];
-        const isCurrent = vehicle.status === status;
-        const isPassed = currentStageIndex > index;
-
-        return (
-          <div key={status} className='flex items-center'>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      'relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all',
-                      isCurrent &&
-                        'border-primary bg-primary text-primary-foreground',
-                      isPassed && 'border-green-500 bg-green-500 text-white',
-                      !isCurrent &&
-                        !isPassed &&
-                        'border-muted-foreground/30 bg-muted text-muted-foreground'
-                    )}
-                  >
-                    {renderStatusIcon(status, 'w-5 h-5')}
-                    {isCurrent && (
-                      <motion.div
-                        className='border-primary absolute inset-0 rounded-full border-2'
-                        initial={{ scale: 1 }}
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
-                    )}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className='text-center'>
-                    <p className='font-medium'>{config.label}</p>
-                    <p className='text-muted-foreground text-xs'>
-                      Est. {config.estimatedDays} days
-                    </p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            {index < STATUS_FLOW.length - 1 && (
-              <div
-                className={cn(
-                  'mx-2 h-0.5 w-12 transition-all',
-                  isPassed ? 'bg-green-500' : 'bg-muted-foreground/30'
-                )}
-              />
-            )}
-          </div>
-        );
-      })}
+    <div className='mb-6'>
+      <Stepper 
+        activeStep={currentStageIndex} 
+        steps={stepperSteps}
+        orientation="horizontal"
+        className="w-full"
+      >
+        <StepperSteps className="w-full justify-between" />
+      </Stepper>
     </div>
   );
 

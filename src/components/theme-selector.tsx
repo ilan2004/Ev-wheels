@@ -16,37 +16,89 @@ import {
 const DEFAULT_THEMES = [
   {
     name: 'Default',
-    value: 'default'
+    value: 'default',
+    color: '⚫'
   },
   {
     name: 'Blue',
-    value: 'blue'
+    value: 'blue',
+    color: '🔵'
   },
   {
     name: 'Green',
-    value: 'green'
+    value: 'green', 
+    color: '🟢'
   },
   {
     name: 'Amber',
-    value: 'amber'
+    value: 'amber',
+    color: '🟡'
   }
 ];
 
 const SCALED_THEMES = [
   {
     name: 'Default',
-    value: 'default-scaled'
+    value: 'default-scaled',
+    color: '⚫'
   },
   {
     name: 'Blue',
-    value: 'blue-scaled'
+    value: 'blue-scaled',
+    color: '🔵'
   }
 ];
 
 const MONO_THEMES = [
   {
-    name: 'Mono',
-    value: 'mono-scaled'
+    name: 'Mono Neutral',
+    value: 'mono-scaled',
+    color: '🔘'
+  },
+  {
+    name: 'Mono Blue',
+    value: 'mono-blue-scaled',
+    color: '🔵'
+  },
+  {
+    name: 'Mono Green', 
+    value: 'mono-green-scaled',
+    color: '🟢'
+  },
+  {
+    name: 'Mono Red',
+    value: 'mono-red-scaled', 
+    color: '🔴'
+  },
+  {
+    name: 'Mono Purple',
+    value: 'mono-purple-scaled',
+    color: '🟣'
+  },
+  {
+    name: 'Mono Orange',
+    value: 'mono-orange-scaled',
+    color: '🟠'
+  },
+  {
+    name: 'Mono Pink',
+    value: 'mono-pink-scaled',
+    color: '🩷'
+  },
+  {
+    name: 'Mono Cyan',
+    value: 'mono-cyan-scaled',
+    color: '🩵'
+  },
+  {
+    name: 'Mono Lime',
+    value: 'mono-lime-scaled',
+    color: '🟢'
+  },
+  {
+    name: 'Mono Amber',
+    value: 'mono-amber-scaled',
+    color: '🟡'
   }
 ];
 
@@ -74,7 +126,10 @@ export function ThemeSelector() {
             <SelectLabel>Default</SelectLabel>
             {DEFAULT_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
-                {theme.name}
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{theme.color}</span>
+                  <span>{theme.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectGroup>
@@ -83,7 +138,10 @@ export function ThemeSelector() {
             <SelectLabel>Scaled</SelectLabel>
             {SCALED_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
-                {theme.name}
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{theme.color}</span>
+                  <span>{theme.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectGroup>
@@ -91,7 +149,10 @@ export function ThemeSelector() {
             <SelectLabel>Monospaced</SelectLabel>
             {MONO_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
-                {theme.name}
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{theme.color}</span>
+                  <span>{theme.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectGroup>

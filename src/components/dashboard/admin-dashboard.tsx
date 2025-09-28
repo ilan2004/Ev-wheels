@@ -16,7 +16,9 @@ import {
   IconPlus,
   IconCalendar,
   IconClock,
-  IconClipboardList
+  IconClipboardList,
+  IconRefresh,
+  IconWifi
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -31,7 +33,11 @@ import {
   formatDashboardDate, 
   getLayoutClasses
 } from '@/lib/dashboard-utils';
-import { fetchKpis, fetchWeeklyDeliveredBatteries, type Kpis, type WeeklyPoint } from '@/lib/api/kpis';
+import { useDashboard } from '@/hooks/use-dashboard-data';
+import { useRealtimeSync } from '@/hooks/use-realtime';
+import { useMasterPrefetch } from '@/hooks/use-prefetch';
+import { QueryStateWrapper, DashboardKpiSkeleton, ChartSkeleton, RefreshIndicator, StaleDataIndicator } from '@/components/ui/query-states';
+import type { OptimizedKpis, WeeklyDeliveryPoint } from '@/lib/api/cache-layer';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
@@ -53,16 +59,25 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
   const userName = user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
   const isMobile = useMediaQuery({ maxWidth: 768 });
 
-  const [kpis, setKpis] = React.useState<Kpis | null>(null);
-  const [trend, setTrend] = React.useState<WeeklyPoint[] | null>(null);
-
-  React.useEffect(() => {
-    (async () => {
-      const [k, t] = await Promise.all([fetchKpis(), fetchWeeklyDeliveredBatteries(8)]);
-      if (k.success && k.data) setKpis(k.data);
-      if (t.success && t.data) setTrend(t.data);
-    })();
-  }, []);
+  // Use the new React Query dashboard hook
+  const dashboard = useDashboard();
+  
+  // Set up real-time synchronization
+  const realtimeSync = useRealtimeSync({
+    batteries: true,
+    customers: true,
+    serviceTickets: true,
+    backgroundSync: true,
+    visibilitySync: true
+  });
+  
+  // Set up intelligent prefetching
+  const prefetch = useMasterPrefetch({
+    hover: true,
+    route: true,
+    intelligent: true,
+    idle: true
+  });
   
   // Animation variants for staggered loading
   const containerVariants = {
@@ -125,65 +140,93 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
         </div>
       </motion.div>
 
-      {/* Enhanced Key Metrics */}
+      {/* Enhanced Key Metrics with React Query */}
       <motion.div variants={itemVariants}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard
-            title="Total Batteries"
-            value={kpis?.totalBatteries ?? 0}
-            change={{
-              value: kpis ? `${kpis.pendingRepairs} pending` : '—',
-              trend: 'neutral'
-            }}
-            icon={<IconBattery className="h-5 w-5" />}
-            variant="elevated"
-            accent="batteries"
-            actionable
-            onClick={() => window.location.href = '/dashboard/batteries'}
-          />
-          
-          <MetricCard
-            title="Active Customers"
-            value={kpis?.activeCustomers ?? 0}
-            change={{
-              value: 'this month',
-              trend: 'neutral'
-            }}
-            icon={<IconUsers className="h-5 w-5" />}
-            variant="elevated"
-            accent="customers"
-            actionable
-            onClick={() => window.location.href = '/dashboard/customers'}
-          />
-          
-          <MetricCard
-            title="Completed This Month"
-            value={kpis?.completedThisMonth ?? 0}
-            change={{
-              value: 'batteries delivered',
-              trend: 'up'
-            }}
-            icon={<IconTrendingUp className="h-5 w-5" />}
-            variant="elevated"
-            accent="revenue"
-            actionable
-            onClick={() => window.location.href = '/dashboard/batteries?delivered=month'}
-          />
-          
-          <MetricCard
-            title="Pending Repairs"
-            value={kpis?.pendingRepairs ?? 0}
-            change={{
-              value: 'awaiting action',
-              trend: 'neutral'
-            }}
-            icon={<IconClock className="h-5 w-5" />}
-            variant="elevated"
-            accent="repairs"
-            actionable
-            onClick={() => window.location.href = '/dashboard/batteries/status'}
-          />
-        </div>
+        <QueryStateWrapper
+          query={{
+            data: dashboard.kpis,
+            isLoading: dashboard.isLoading,
+            isError: dashboard.isError,
+            error: dashboard.error,
+            refetch: dashboard.refetch
+          }}
+          loadingSkeleton={<DashboardKpiSkeleton />}
+          errorTitle="Failed to load dashboard metrics"
+        >
+          {(kpis) => (
+            <div className="space-y-4">
+              {/* Stale data indicator */}
+              <StaleDataIndicator 
+                isStale={dashboard.isStale} 
+                lastUpdated={dashboard.dataUpdatedAt} 
+              />
+              
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <MetricCard
+                  title="Total Batteries"
+                  value={kpis.totalBatteries}
+                  change={{
+                    value: `${kpis.pendingRepairs} pending`,
+                    trend: 'neutral'
+                  }}
+                  icon={<IconBattery className="h-5 w-5" />}
+                  variant="elevated"
+                  accent="batteries"
+                  actionable
+                  onClick={() => {
+                    prefetch.prefetchForRouteChange('/dashboard/batteries');
+                    window.location.href = '/dashboard/batteries';
+                  }}
+                />
+                
+                <MetricCard
+                  title="Active Customers"
+                  value={kpis.activeCustomers}
+                  change={{
+                    value: 'this month',
+                    trend: 'neutral'
+                  }}
+                  icon={<IconUsers className="h-5 w-5" />}
+                  variant="elevated"
+                  accent="customers"
+                  actionable
+                  onClick={() => {
+                    prefetch.prefetchForRouteChange('/dashboard/customers');
+                    window.location.href = '/dashboard/customers';
+                  }}
+                />
+                
+                <MetricCard
+                  title="Completed This Month"
+                  value={kpis.completedThisMonth}
+                  change={{
+                    value: 'batteries delivered',
+                    trend: 'up'
+                  }}
+                  icon={<IconTrendingUp className="h-5 w-5" />}
+                  variant="elevated"
+                  accent="revenue"
+                  actionable
+                  onClick={() => window.location.href = '/dashboard/batteries?delivered=month'}
+                />
+                
+                <MetricCard
+                  title="Pending Repairs"
+                  value={kpis.pendingRepairs}
+                  change={{
+                    value: 'awaiting action',
+                    trend: 'neutral'
+                  }}
+                  icon={<IconClock className="h-5 w-5" />}
+                  variant="elevated"
+                  accent="repairs"
+                  actionable
+                  onClick={() => window.location.href = '/dashboard/batteries/status'}
+                />
+              </div>
+            </div>
+          )}
+        </QueryStateWrapper>
       </motion.div>
 
       {/* Enhanced Quick Actions & System Alerts */}
@@ -343,32 +386,59 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
         </EnhancedCard>
       </motion.div>
 
-      {/* Weekly Deliveries Trend */}
+      {/* Weekly Deliveries Trend with React Query */}
       <motion.div variants={itemVariants}>
-        <EnhancedCard variant="elevated" animated>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <IconCalendar className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Weekly Deliveries</h3>
+        <QueryStateWrapper
+          query={{
+            data: dashboard.trends,
+            isLoading: dashboard.isLoading,
+            isError: dashboard.isError,
+            error: dashboard.error,
+            refetch: dashboard.refetch
+          }}
+          loadingSkeleton={<ChartSkeleton height={300} />}
+          errorTitle="Failed to load delivery trends"
+          emptyState={{
+            icon: <IconTrendingUp className="h-12 w-12" />,
+            title: "No delivery data available",
+            description: "Delivery trends will appear here once you have completed battery deliveries."
+          }}
+        >
+          {(trends) => (
+            <EnhancedCard variant="elevated" animated>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <IconCalendar className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Weekly Deliveries</h3>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dashboard.refresh.refreshTrends()}
+                    disabled={dashboard.isFetching}
+                  >
+                    <IconRefresh className={`h-4 w-4 ${dashboard.isFetching ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+                <ChartContainer
+                  config={{ deliveries: { label: 'Deliveries', color: 'hsl(var(--chart-1))' } }}
+                >
+                  <AreaChart
+                    data={trends.map((p: any) => ({ week: p.weekStart.slice(5), deliveries: p.count }))}
+                    margin={{ left: 12, right: 12 }}
+                  >
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area dataKey="deliveries" type="natural" fill="var(--color-deliveries)" stroke="var(--color-deliveries)" fillOpacity={0.4} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                  </AreaChart>
+                </ChartContainer>
               </div>
-            </div>
-            <ChartContainer
-              config={{ deliveries: { label: 'Deliveries', color: 'hsl(var(--chart-1))' } }}
-            >
-              <AreaChart
-                data={(trend || []).map(p => ({ week: p.weekStart.slice(5), deliveries: p.count }))}
-                margin={{ left: 12, right: 12 }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Area dataKey="deliveries" type="natural" fill="var(--color-deliveries)" stroke="var(--color-deliveries)" fillOpacity={0.4} />
-                <ChartLegend content={<ChartLegendContent />} />
-              </AreaChart>
-            </ChartContainer>
-          </div>
-        </EnhancedCard>
+            </EnhancedCard>
+          )}
+        </QueryStateWrapper>
       </motion.div>
 
       {/* Enhanced Recent Activity */}
@@ -442,6 +512,19 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           </div>
         </EnhancedCard>
       </motion.div>
+      
+      {/* Global UI indicators */}
+      <RefreshIndicator isFetching={dashboard.isFetching} />
+      
+      {/* Real-time connection status */}
+      {!realtimeSync.isConnected && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="flex items-center space-x-2 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 px-3 py-2 rounded-md shadow-lg border border-amber-200 dark:border-amber-800">
+            <IconWifi className="h-4 w-4" />
+            <span className="text-sm">Reconnecting...</span>
+          </div>
+        </div>
+      )}
       </motion.div>
     </PageContainer>
   );

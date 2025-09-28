@@ -45,6 +45,7 @@ export interface ServiceTicket {
   triaged_at?: string | null;
   triaged_by?: string | null;
   triage_notes?: string | null;
+  due_date?: string | null;
 }
 
 export interface TicketAttachment {

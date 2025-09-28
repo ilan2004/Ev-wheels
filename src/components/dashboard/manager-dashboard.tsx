@@ -9,7 +9,6 @@ import {
   IconClipboardList,
   IconBattery,
   IconUsers,
-  IconArrowsExchange,
   IconTrendingUp,
   IconAlertTriangle,
   IconListDetails
@@ -25,6 +24,9 @@ import {
   StatusCard
 } from '@/components/ui/enhanced-card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EnhancedHeader } from './manager/enhanced-header';
+import { EssentialKPIs } from './manager/essential-kpis';
+import { AlertCenter } from './manager/alert-center';
 
 interface SerializedUser {
   id: string;
@@ -45,13 +47,14 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
     weeklyCompleted: 0,
     avgTatDays: 0
   });
+  const [loading, setLoading] = React.useState(true);
+  const [emergencyMode, setEmergencyMode] = React.useState(false);
   const [ticketsByStatus, setTicketsByStatus] = React.useState<
     Record<string, any[]>
   >({});
   const [teamWorkload, setTeamWorkload] = React.useState<
     { assignee: string | null; count: number }[]
   >([]);
-  const [movements, setMovements] = React.useState<any[]>([]);
   const [sales, setSales] = React.useState<{
     quotesPending: any[];
     invoicesDue: any[];
@@ -61,6 +64,7 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
 
   React.useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
         // Tickets (location-scoped via RLS): counts for open statuses
         const openStatuses = ['reported', 'triaged', 'assigned', 'in_progress'];
@@ -172,15 +176,6 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
         }));
         setTeamWorkload(workload);
 
-        // Inventory movements (recent)
-        const { data: mv } = await supabase
-          .from('inventory_movements')
-          .select(
-            'id, movement_type, from_location_id, to_location_id, quantity, status, created_at'
-          )
-          .order('created_at', { ascending: false })
-          .limit(5);
-        setMovements(mv || []);
 
         // Sales snapshot
         const [{ data: quotes }, { data: invoices }] = await Promise.all([
@@ -204,6 +199,8 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
       } catch (e) {
         // fail silently in MVP; sections will show zero-state
         console.error('manager-dashboard load error', e);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -212,321 +209,201 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
     ? `${user.firstName} ${user.lastName || ''}`.trim()
     : 'Manager';
 
-  // View switcher: Queue (default) | Kanban
-  const [view, setView] = React.useState<'queue' | 'kanban'>(() => {
-    if (typeof window === 'undefined') return 'queue';
-    return (
-      (localStorage.getItem('manager_view_mode') as 'queue' | 'kanban') ||
-      'queue'
-    );
-  });
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('manager_view_mode', view);
-    }
-  }, [view]);
-
+  // View switcher: Queue only (no Kanban for simplicity)
   const [queuePreset, setQueuePreset] = React.useState<QueuePreset | undefined>(
     undefined
   );
 
+  // Handle metric clicks to filter the queue
+  const handleMetricClick = (metric: 'overdue' | 'dueToday' | 'openTickets' | 'weeklyCompleted') => {
+    switch (metric) {
+      case 'overdue':
+        setQueuePreset({ overdue: true });
+        break;
+      case 'dueToday':
+        setQueuePreset({ dueToday: true });
+        break;
+      case 'openTickets':
+        setQueuePreset(undefined); // Show all open tickets
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Handle alert clicks to filter the queue
+  const handleAlertClick = (filter: string) => {
+    switch (filter) {
+      case 'overdue':
+        setQueuePreset({ overdue: true });
+        break;
+      case 'due-today':
+        setQueuePreset({ dueToday: true });
+        break;
+      case 'unassigned':
+        setQueuePreset({ unassigned: true });
+        break;
+      case 'all-critical':
+        setQueuePreset({ overdue: true, dueToday: true });
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleEmergencyToggle = () => {
+    setEmergencyMode(!emergencyMode);
+    if (!emergencyMode) {
+      // Enter emergency mode - focus on critical items only
+      setQueuePreset({ overdue: true, priority: 1 });
+    } else {
+      // Exit emergency mode - clear filters
+      setQueuePreset(undefined);
+    }
+  };
+
   return (
     <PageContainer>
-      {/* Header with quick actions */}
-      <div className='mb-6 flex items-center justify-between'>
-        <div>
-          <div className='flex items-center gap-3'>
-            <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
-              Hello, {userName}
-            </h1>
-            <Badge variant='secondary'>Manager</Badge>
-            {activeLocationName && (
-              <Badge variant='outline'>{activeLocationName}</Badge>
-            )}
-          </div>
-          <p className='text-muted-foreground mt-1'>
-            Here’s your location overview and quick actions.
-          </p>
-        </div>
-        <div className='hidden gap-2 md:flex'>
-          <Button asChild>
-            <Link href='/dashboard/tickets/new'>
-              <IconClipboardList className='mr-2 h-4 w-4' /> New Ticket
-            </Link>
-          </Button>
-          <Button asChild variant='outline'>
-            <Link href='/dashboard/quotes/new'>
-              <IconListDetails className='mr-2 h-4 w-4' /> New Quote
-            </Link>
-          </Button>
-          <Button asChild variant='outline'>
-            <Link href='/dashboard/customers/new'>
-              <IconUsers className='mr-2 h-4 w-4' /> Add Customer
-            </Link>
-          </Button>
-          <Button asChild variant='outline'>
-            <Link href='/dashboard/inventory/movements'>
-              <IconArrowsExchange className='mr-2 h-4 w-4' /> Request Movement
-            </Link>
-          </Button>
-        </div>
-      </div>
+      {/* Enhanced Header */}
+      <EnhancedHeader
+        user={user}
+        urgentAlerts={kpis.overdue + (kpis.dueToday > 5 ? 1 : 0)}
+        todaysSummary={{
+          dueToday: kpis.dueToday,
+          overdue: kpis.overdue,
+          completed: kpis.weeklyCompleted
+        }}
+        onEmergencyToggle={handleEmergencyToggle}
+        emergencyMode={emergencyMode}
+      />
 
-      {/* KPIs (using MetricCard with accents) */}
-      <div className='mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5'>
-        <MetricCard
-          title='Open Tickets'
-          value={kpis.openTickets}
-          icon={<IconClipboardList className='h-4 w-4' />}
-          accent='repairs'
-          actionable
-          onClick={() => {
-            /* future: filter to open */
-          }}
-        />
-        <MetricCard
-          title='In-Progress Batteries'
-          value={kpis.inProgressBatteries}
-          icon={<IconBattery className='h-4 w-4' />}
-          accent='batteries'
-        />
-        <MetricCard
-          title='Due Today'
-          value={kpis.dueToday}
-          icon={<IconClipboardList className='h-4 w-4' />}
-          accent='repairs'
-        />
-        <MetricCard
-          title='Overdue'
-          value={kpis.overdue}
-          icon={<IconAlertTriangle className='h-4 w-4' />}
-          accent='repairs'
-        />
-        <MetricCard
-          title='Weekly Completed'
-          value={kpis.weeklyCompleted}
-          icon={<IconTrendingUp className='h-4 w-4' />}
-          accent='revenue'
-        />
-      </div>
+      {/* Essential KPIs */}
+      <EssentialKPIs
+        data={{
+          overdue: kpis.overdue,
+          dueToday: kpis.dueToday,
+          openTickets: kpis.openTickets,
+          weeklyCompleted: kpis.weeklyCompleted
+        }}
+        onMetricClick={handleMetricClick}
+        loading={loading}
+      />
 
-      {/* Attention Required */}
+      {/* Alert Center */}
+      <AlertCenter
+        data={{
+          overdue: kpis.overdue,
+          dueToday: kpis.dueToday,
+          unassigned: unassignedCount
+        }}
+        onFilterClick={handleAlertClick}
+        loading={loading}
+      />
+
+      {/* Tickets Queue */}
       <Section
-        title='Attention Required'
-        description='Key issues needing action'
+        title='Ticket Queue'
+        description={emergencyMode 
+          ? 'Emergency mode: Showing only critical tickets' 
+          : 'Manage tickets efficiently with filters and bulk actions'
+        }
       >
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          <StatusCard
-            title='Overdue Tickets'
-            description='Tickets past due and still open'
-            status='danger'
-            animated
-            icon={<IconAlertTriangle className='h-5 w-5' />}
-            action={{
-              label: `${kpis.overdue} overdue`,
-              onClick: () => {
-                setQueuePreset({ overdue: true });
-                setView('queue');
-              }
-            }}
-          />
-          <StatusCard
-            title='Due Today'
-            description='Tickets due today'
-            status='warning'
-            animated
-            icon={<IconClipboardList className='h-5 w-5' />}
-            action={{
-              label: `${kpis.dueToday} due`,
-              onClick: () => {
-                setQueuePreset({ dueToday: true });
-                setView('queue');
-              }
-            }}
-          />
-          <StatusCard
-            title='Unassigned'
-            description='Tickets not yet assigned'
-            status='info'
-            animated
-            icon={<IconUsers className='h-5 w-5' />}
-            action={{
-              label: `${unassignedCount} unassigned`,
-              onClick: () => {
-                setQueuePreset({ unassigned: true });
-                setView('queue');
-              }
-            }}
-          />
-          <StatusCard
-            title='SLA Risk (24h)'
-            description='Due within 24h'
-            status='warning'
-            animated
-            icon={<IconTrendingUp className='h-5 w-5 rotate-90' />}
-            action={{
-              label: `${slaRiskCount} at risk`,
-              onClick: () => {
-                setQueuePreset({ dueToday: true });
-                setView('queue');
-              }
-            }}
-          />
-        </div>
+        <ManagerQueue preset={queuePreset} />
       </Section>
 
-      {/* Tickets: View switcher */}
-      <div className='mb-2 flex items-center justify-between'>
-        <div>
-          <div className='font-semibold'>Tickets</div>
-          <div className='text-muted-foreground text-sm'>
-            Work your queue quickly or switch to Kanban for pipeline view.
-          </div>
-        </div>
-        <Tabs
-          value={view}
-          onValueChange={(v) => setView(v as 'queue' | 'kanban')}
-        >
-          <TabsList>
-            <TabsTrigger value='queue'>Simple Queue</TabsTrigger>
-            <TabsTrigger value='kanban'>Kanban</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      {view === 'queue' ? (
-        <ManagerQueue preset={queuePreset} />
-      ) : (
+      {/* Team workload - Only show if not in emergency mode */}
+      {!emergencyMode && (
         <Section
-          title='Ticket Pipeline'
-          description='Drag between columns to update status; assign technicians and set due dates'
+          title='Team Workload'
+          description='Open tickets per technician (capacity 8)'
         >
-          <ManagerKanban />
+          <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+            {teamWorkload.map((w) =>
+              w.assignee ? (
+                <ProgressCard
+                  key={w.assignee}
+                  title={w.assignee}
+                  progress={Math.min(w.count, 8)}
+                  total={8}
+                />
+              ) : (
+                <StatusCard
+                  key='unassigned'
+                  title='Unassigned'
+                  description={`${w.count} tickets waiting assignment`}
+                  status='info'
+                />
+              )
+            )}
+            {teamWorkload.length === 0 && (
+              <div className='text-muted-foreground text-sm'>
+                No open assignments
+              </div>
+            )}
+          </div>
         </Section>
       )}
 
-      {/* Team workload */}
-      <Section
-        title='Team Workload'
-        description='Open tickets per technician (capacity 8)'
-      >
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          {teamWorkload.map((w) =>
-            w.assignee ? (
-              <ProgressCard
-                key={w.assignee}
-                title={w.assignee}
-                progress={Math.min(w.count, 8)}
-                total={8}
-              />
-            ) : (
-              <StatusCard
-                key='unassigned'
-                title='Unassigned'
-                description={`${w.count} tickets waiting assignment`}
-                status='info'
-              />
-            )
-          )}
-          {teamWorkload.length === 0 && (
-            <div className='text-muted-foreground text-sm'>
-              No open assignments
+      {/* Sales - Only show if not in emergency mode */}
+      {!emergencyMode && (
+        <>
+
+          {/* Sales snapshot */}
+          <Section
+            title='Sales Snapshot'
+            description='Quotes pending and invoices due'
+          >
+            <div className='grid gap-4 md:grid-cols-2'>
+              <div className='rounded-lg border p-4'>
+                <div className='mb-2 font-semibold'>Recent Quotes</div>
+                <ul className='space-y-2'>
+                  {sales.quotesPending.map((q: any) => (
+                    <li key={q.id} className='flex justify-between text-sm'>
+                      <span>
+                        {q.number} — {q.status}
+                      </span>
+                      <Link
+                        className='text-primary'
+                        href={`/dashboard/quotes/${q.id}`}
+                      >
+                        Open
+                      </Link>
+                    </li>
+                  ))}
+                  {sales.quotesPending.length === 0 && (
+                    <div className='text-muted-foreground text-sm'>
+                      No recent quotes
+                    </div>
+                  )}
+                </ul>
+              </div>
+              <div className='rounded-lg border p-4'>
+                <div className='mb-2 font-semibold'>Invoices With Balance</div>
+                <ul className='space-y-2'>
+                  {sales.invoicesDue.map((inv: any) => (
+                    <li key={inv.id} className='flex justify-between text-sm'>
+                      <span>
+                        {inv.number} — ₹{inv.balance_due || 0}
+                      </span>
+                      <Link
+                        className='text-primary'
+                        href={`/dashboard/invoices/${inv.id}`}
+                      >
+                        Open
+                      </Link>
+                    </li>
+                  ))}
+                  {sales.invoicesDue.length === 0 && (
+                    <div className='text-muted-foreground text-sm'>
+                      No outstanding invoices
+                    </div>
+                  )}
+                </ul>
+              </div>
             </div>
-          )}
-        </div>
-      </Section>
-
-      {/* Inventory movements */}
-      <Section
-        title='Inventory Movements'
-        description='Recent requests and approvals'
-      >
-        <div className='rounded-lg border'>
-          <table className='w-full text-sm'>
-            <thead className='bg-muted'>
-              <tr>
-                <th className='p-2 text-left'>Type</th>
-                <th className='p-2 text-left'>Qty</th>
-                <th className='p-2 text-left'>Status</th>
-                <th className='p-2 text-left'>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movements.map((m) => (
-                <tr key={m.id} className='border-t'>
-                  <td className='p-2 capitalize'>{m.movement_type}</td>
-                  <td className='p-2'>{m.quantity}</td>
-                  <td className='p-2 capitalize'>{m.status}</td>
-                  <td className='p-2'>
-                    {new Date(m.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-              {movements.length === 0 && (
-                <tr>
-                  <td className='text-muted-foreground p-2' colSpan={4}>
-                    No recent movements
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      {/* Sales snapshot */}
-      <Section
-        title='Sales Snapshot'
-        description='Quotes pending and invoices due'
-      >
-        <div className='grid gap-4 md:grid-cols-2'>
-          <div className='rounded-lg border p-4'>
-            <div className='mb-2 font-semibold'>Recent Quotes</div>
-            <ul className='space-y-2'>
-              {sales.quotesPending.map((q: any) => (
-                <li key={q.id} className='flex justify-between text-sm'>
-                  <span>
-                    {q.number} — {q.status}
-                  </span>
-                  <Link
-                    className='text-primary'
-                    href={`/dashboard/quotes/${q.id}`}
-                  >
-                    Open
-                  </Link>
-                </li>
-              ))}
-              {sales.quotesPending.length === 0 && (
-                <div className='text-muted-foreground text-sm'>
-                  No recent quotes
-                </div>
-              )}
-            </ul>
-          </div>
-          <div className='rounded-lg border p-4'>
-            <div className='mb-2 font-semibold'>Invoices With Balance</div>
-            <ul className='space-y-2'>
-              {sales.invoicesDue.map((inv: any) => (
-                <li key={inv.id} className='flex justify-between text-sm'>
-                  <span>
-                    {inv.number} — ₹{inv.balance_due || 0}
-                  </span>
-                  <Link
-                    className='text-primary'
-                    href={`/dashboard/invoices/${inv.id}`}
-                  >
-                    Open
-                  </Link>
-                </li>
-              ))}
-              {sales.invoicesDue.length === 0 && (
-                <div className='text-muted-foreground text-sm'>
-                  No outstanding invoices
-                </div>
-              )}
-            </ul>
-          </div>
-        </div>
-      </Section>
+          </Section>
+        </>
+      )}
     </PageContainer>
   );
 }

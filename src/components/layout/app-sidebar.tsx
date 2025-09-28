@@ -39,18 +39,102 @@ import {
   IconCreditCard,
   IconLogout,
   IconBattery,
-  IconUserCircle
+  IconUserCircle,
+  IconTrendingUp,
+  IconAlertCircle
 } from '@tabler/icons-react';
+import { 
+  SidebarQuickActions, 
+  SidebarCategoryGroup, 
+  SidebarRoleBadge 
+} from './sidebar-menu-components';
+import { measureRender } from '@/lib/performance/monitor';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 export const company = {
   name: 'E-Wheels',
   logo: IconBattery,
-  plan: 'Professional'
+  plan: 'Professional',
+  color: 'var(--primary)'
+};
+
+// Enhanced categorization with semantic colors and priorities
+const CATEGORY_CONFIG = {
+  core: {
+    label: 'Core Operations',
+    items: ['Dashboard', 'Search'],
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-50 dark:bg-blue-950/20',
+    accentColor: 'border-blue-200 dark:border-blue-800',
+    priority: 1
+  },
+  workflow: {
+    label: 'Workflow & Operations',
+    items: ['Vehicles', 'Batteries', 'Tickets'],
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-50 dark:bg-green-950/20',
+    accentColor: 'border-green-200 dark:border-green-800',
+    priority: 2
+  },
+  business: {
+    label: 'Business Operations',
+    items: ['Customers', 'Quotes', 'Invoices', 'Inventory'],
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-50 dark:bg-purple-950/20',
+    accentColor: 'border-purple-200 dark:border-purple-800',
+    priority: 3
+  },
+  insights: {
+    label: 'Analytics & Reports',
+    items: ['Reports'],
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-50 dark:bg-orange-950/20',
+    accentColor: 'border-orange-200 dark:border-orange-800',
+    priority: 4
+  },
+  admin: {
+    label: 'Administration',
+    items: ['User Management', 'Settings'],
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-50 dark:bg-red-950/20',
+    accentColor: 'border-red-200 dark:border-red-800',
+    priority: 5
+  },
+  personal: {
+    label: 'Personal',
+    items: ['Profile'],
+    color: 'text-gray-600 dark:text-gray-400',
+    bgColor: 'bg-gray-50 dark:bg-gray-950/20',
+    accentColor: 'border-gray-200 dark:border-gray-800',
+    priority: 6
+  }
+};
+
+// Status indicators for different navigation items
+const getItemStatus = (title: string, pathname: string) => {
+  const statusConfig = {
+    'Tickets': { count: 12, urgent: 3, color: 'bg-red-500' },
+    'Batteries': { count: 8, urgent: 1, color: 'bg-amber-500' },
+    'Inventory': { count: 5, urgent: 2, color: 'bg-blue-500' },
+    'Quotes': { count: 7, urgent: 0, color: 'bg-green-500' }
+  };
+  
+  return statusConfig[title as keyof typeof statusConfig] || null;
+};
+
+// Get category for a navigation item
+const getCategoryForItem = (title: string) => {
+  for (const [key, config] of Object.entries(CATEGORY_CONFIG)) {
+    if (config.items.includes(title)) {
+      return { key, ...config };
+    }
+  }
+  return { key: 'other', ...CATEGORY_CONFIG.personal };
 };
 
 export default function AppSidebar() {
@@ -58,6 +142,12 @@ export default function AppSidebar() {
   const { isOpen } = useMediaQuery();
   const { user, userInfo, isLoaded, hasAnyPermission } = useAuth();
   const router = useRouter();
+  
+  // Performance monitoring
+  const finishRender = measureRender('AppSidebar');
+  React.useEffect(() => {
+    finishRender();
+  });
   
   // Filter navigation items based on user permissions (role-aware)
   const filteredNavItems = React.useMemo(() => {
@@ -78,6 +168,24 @@ export default function AppSidebar() {
       }) || []
     }));
   }, [user, isLoaded, hasAnyPermission]);
+  
+  // Memoize category calculations to avoid expensive re-computations
+  const categorizedNavItems = React.useMemo(() => {
+    if (filteredNavItems.length === 0) return [];
+    
+    const categorized = filteredNavItems.reduce((acc, item) => {
+      const category = getCategoryForItem(item.title);
+      if (!acc[category.key]) {
+        acc[category.key] = { config: category, items: [] };
+      }
+      acc[category.key].items.push(item);
+      return acc;
+    }, {} as Record<string, { config: any; items: any[] }>);
+    
+    // Sort by priority and return as array for stable rendering
+    return Object.entries(categorized)
+      .sort(([, a], [, b]) => a.config.priority - b.config.priority);
+  }, [filteredNavItems]);
 
   React.useEffect(() => {
     // Side effects based on sidebar state changes
@@ -96,84 +204,60 @@ export default function AppSidebar() {
   return (
     <Sidebar collapsible='icon'>
       <SidebarHeader>
-        <div className='flex items-center gap-2 px-4 py-2'>
-          <company.logo className='h-6 w-6' />
+        {/* Enhanced Company Header */}
+        <div className='flex items-center gap-3 px-4 py-3 border-b border-sidebar-border/50'>
+          <div className='relative'>
+            <company.logo className='h-7 w-7 text-primary' />
+            <div className='absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-sidebar-background animate-pulse' />
+          </div>
           <div className='flex flex-col'>
-            <span className='font-semibold text-sm'>{company.name}</span>
-            <span className='text-xs text-muted-foreground'>{company.plan}</span>
+            <span className='font-bold text-sm text-sidebar-foreground'>{company.name}</span>
           </div>
         </div>
+        
+        {/* Enhanced User Role & Status */}
         {userInfo?.role && (
-          <div className='px-4 pb-2'>
-            <Badge variant='secondary' className='text-xs'>
-              {userInfo.roleDisplayName}
-            </Badge>
+          <div className='px-4 py-2 border-b border-sidebar-border/30'>
+            <div className='flex items-center justify-between'>
+              <SidebarRoleBadge userInfo={userInfo} />
+              <div className='flex items-center gap-1'>
+                <IconTrendingUp className='h-3 w-3 text-green-500' />
+                <span className='text-xs text-green-600 dark:text-green-400 font-medium'>Active</span>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className='grid grid-cols-3 gap-2 mt-3 text-xs'>
+              <div className='text-center p-1 rounded bg-blue-50 dark:bg-blue-950/20'>
+                <div className='font-semibold text-blue-600 dark:text-blue-400'>12</div>
+                <div className='text-muted-foreground'>Tasks</div>
+              </div>
+              <div className='text-center p-1 rounded bg-green-50 dark:bg-green-950/20'>
+                <div className='font-semibold text-green-600 dark:text-green-400'>8</div>
+                <div className='text-muted-foreground'>Done</div>
+              </div>
+              <div className='text-center p-1 rounded bg-amber-50 dark:bg-amber-950/20'>
+                <div className='font-semibold text-amber-600 dark:text-amber-400'>3</div>
+                <div className='text-muted-foreground'>Urgent</div>
+              </div>
+            </div>
           </div>
         )}
       </SidebarHeader>
       <SidebarContent className='overflow-x-hidden'>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarMenu>
-            {filteredNavItems.map((item) => {
-              const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-              return item?.items && item?.items?.length > 0 ? (
-                <Collapsible
-                  key={item.title}
-                  asChild
-                  defaultOpen={item.isActive}
-                  className='group/collapsible'
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        tooltip={item.title}
-                        isActive={pathname === item.url}
-                      >
-                        {item.icon && <Icon />}
-                        <span>{item.title}</span>
-                        <IconChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.items?.map((subItem) => {
-                          const SubIcon = subItem.icon ? Icons[subItem.icon] : Icons.dot;
-                          return (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === subItem.url}
-                              >
-                                <Link href={subItem.url}>
-                                  <SubIcon className='h-4 w-4' />
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              ) : (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    isActive={pathname === item.url}
-                  >
-                    <Link href={item.url}>
-                      <Icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+        {/* Quick Actions Section - Memoized */}
+        <SidebarQuickActions />
+        
+        {/* Optimized Categorized Navigation with Memoized Components */}
+        {categorizedNavItems.map(([categoryKey, { config, items }]) => (
+          <SidebarCategoryGroup
+            key={categoryKey}
+            categoryKey={categoryKey}
+            config={config}
+            items={items}
+            pathname={pathname}
+          />
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
