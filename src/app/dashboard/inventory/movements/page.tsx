@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
@@ -9,7 +9,13 @@ import { Permission } from '@/lib/auth/roles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLocationContext } from '@/lib/location/context';
-import { listInventoryMovements, requestIssue, requestReceive, requestTransfer, approveMovement } from '@/lib/api/inventory.movements.supabase';
+import {
+  listInventoryMovements,
+  requestIssue,
+  requestReceive,
+  requestTransfer,
+  approveMovement
+} from '@/lib/api/inventory.movements.supabase';
 
 export default function InventoryMovementsPage() {
   return (
@@ -32,7 +38,10 @@ function Content() {
   const [overrideLoc, setOverrideLoc] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const selectableLocations = useMemo(() => locations.filter((l) => l.id), [locations]);
+  const selectableLocations = useMemo(
+    () => locations.filter((l) => l.id),
+    [locations]
+  );
 
   const refresh = async () => {
     setLoading(true);
@@ -47,7 +56,9 @@ function Content() {
     }
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    refresh();
+  }, []);
 
   const ensureLoc = (): string | undefined => {
     if (activeLocationId) return activeLocationId;
@@ -60,9 +71,15 @@ function Content() {
     setError(null);
     try {
       const loc = ensureLoc();
-      if (!loc) throw new Error('Select a location (Admin can choose override)');
-      await requestIssue({ item_sku: sku || undefined, quantity: qty, locationId: loc });
-      setSku(''); setQty(1);
+      if (!loc)
+        throw new Error('Select a location (Admin can choose override)');
+      await requestIssue({
+        item_sku: sku || undefined,
+        quantity: qty,
+        locationId: loc
+      });
+      setSku('');
+      setQty(1);
       await refresh();
     } catch (e: any) {
       setError(e?.message || 'Failed to request issue');
@@ -76,9 +93,15 @@ function Content() {
     setError(null);
     try {
       const loc = ensureLoc();
-      if (!loc) throw new Error('Select a location (Admin can choose override)');
-      await requestReceive({ item_sku: sku || undefined, quantity: qty, locationId: loc });
-      setSku(''); setQty(1);
+      if (!loc)
+        throw new Error('Select a location (Admin can choose override)');
+      await requestReceive({
+        item_sku: sku || undefined,
+        quantity: qty,
+        locationId: loc
+      });
+      setSku('');
+      setQty(1);
       await refresh();
     } catch (e: any) {
       setError(e?.message || 'Failed to request receive');
@@ -92,11 +115,19 @@ function Content() {
     setError(null);
     try {
       const from = ensureLoc();
-      if (!from) throw new Error('Select a location (Admin can choose override)');
+      if (!from)
+        throw new Error('Select a location (Admin can choose override)');
       if (!toLoc) throw new Error('Select a target location');
       if (toLoc === from) throw new Error('Target location must differ');
-      await requestTransfer({ item_sku: sku || undefined, quantity: qty, to_location_id: toLoc, from_location_id: from });
-      setSku(''); setQty(1); setToLoc('');
+      await requestTransfer({
+        item_sku: sku || undefined,
+        quantity: qty,
+        to_location_id: toLoc,
+        from_location_id: from
+      });
+      setSku('');
+      setQty(1);
+      setToLoc('');
       await refresh();
     } catch (e: any) {
       setError(e?.message || 'Failed to request transfer');
@@ -120,84 +151,140 @@ function Content() {
 
   return (
     <PageContainer>
-      <div className="mb-4"><Breadcrumbs /></div>
-      <div className="space-y-6">
+      <div className='mb-4'>
+        <Breadcrumbs />
+      </div>
+      <div className='space-y-6'>
         <SectionHeader
-          title="Inventory Movements"
-          description="Request issue/receive/transfer and approve as admin."
+          title='Inventory Movements'
+          description='Request issue/receive/transfer and approve as admin.'
         />
 
         {isAdmin && !activeLocationId && (
-          <div className="rounded border p-3 text-sm">
-            <div className="mb-2 font-medium">Admin: Select a location for new requests</div>
-            <select className="border rounded h-9 px-2 bg-background" value={overrideLoc} onChange={(e) => setOverrideLoc(e.target.value)}>
-              <option value="">Select location</option>
+          <div className='rounded border p-3 text-sm'>
+            <div className='mb-2 font-medium'>
+              Admin: Select a location for new requests
+            </div>
+            <select
+              className='bg-background h-9 rounded border px-2'
+              value={overrideLoc}
+              onChange={(e) => setOverrideLoc(e.target.value)}
+            >
+              <option value=''>Select location</option>
               {selectableLocations.map((l) => (
-                <option key={l.id} value={l.id!}>{l.name}</option>
+                <option key={l.id} value={l.id!}>
+                  {l.name}
+                </option>
               ))}
             </select>
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded border p-4 space-y-2">
-            <div className="font-semibold">Issue</div>
-            <Input placeholder="Item SKU (optional)" value={sku} onChange={(e) => setSku(e.target.value)} />
-            <Input type="number" min={1} value={qty} onChange={(e) => setQty(parseInt(e.target.value || '1', 10))} />
-            <Button disabled={submitting} onClick={onIssue}>Request Issue</Button>
+        <div className='grid gap-4 md:grid-cols-3'>
+          <div className='space-y-2 rounded border p-4'>
+            <div className='font-semibold'>Issue</div>
+            <Input
+              placeholder='Item SKU (optional)'
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+            />
+            <Input
+              type='number'
+              min={1}
+              value={qty}
+              onChange={(e) => setQty(parseInt(e.target.value || '1', 10))}
+            />
+            <Button disabled={submitting} onClick={onIssue}>
+              Request Issue
+            </Button>
           </div>
-          <div className="rounded border p-4 space-y-2">
-            <div className="font-semibold">Receive</div>
-            <Input placeholder="Item SKU (optional)" value={sku} onChange={(e) => setSku(e.target.value)} />
-            <Input type="number" min={1} value={qty} onChange={(e) => setQty(parseInt(e.target.value || '1', 10))} />
-            <Button disabled={submitting} onClick={onReceive}>Request Receive</Button>
+          <div className='space-y-2 rounded border p-4'>
+            <div className='font-semibold'>Receive</div>
+            <Input
+              placeholder='Item SKU (optional)'
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+            />
+            <Input
+              type='number'
+              min={1}
+              value={qty}
+              onChange={(e) => setQty(parseInt(e.target.value || '1', 10))}
+            />
+            <Button disabled={submitting} onClick={onReceive}>
+              Request Receive
+            </Button>
           </div>
-          <div className="rounded border p-4 space-y-2">
-            <div className="font-semibold">Transfer</div>
-            <Input placeholder="Item SKU (optional)" value={sku} onChange={(e) => setSku(e.target.value)} />
-            <Input type="number" min={1} value={qty} onChange={(e) => setQty(parseInt(e.target.value || '1', 10))} />
-            <select className="border rounded h-9 px-2 bg-background" value={toLoc} onChange={(e) => setToLoc(e.target.value)}>
-              <option value="">Select destination</option>
+          <div className='space-y-2 rounded border p-4'>
+            <div className='font-semibold'>Transfer</div>
+            <Input
+              placeholder='Item SKU (optional)'
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+            />
+            <Input
+              type='number'
+              min={1}
+              value={qty}
+              onChange={(e) => setQty(parseInt(e.target.value || '1', 10))}
+            />
+            <select
+              className='bg-background h-9 rounded border px-2'
+              value={toLoc}
+              onChange={(e) => setToLoc(e.target.value)}
+            >
+              <option value=''>Select destination</option>
               {selectableLocations.map((l) => (
-                <option key={l.id} value={l.id!}>{l.name}</option>
+                <option key={l.id} value={l.id!}>
+                  {l.name}
+                </option>
               ))}
             </select>
-            <Button disabled={submitting} onClick={onTransfer}>Request Transfer</Button>
+            <Button disabled={submitting} onClick={onTransfer}>
+              Request Transfer
+            </Button>
           </div>
         </div>
 
-        <div className="rounded border p-4">
-          <div className="font-semibold mb-2">Recent Movements</div>
+        <div className='rounded border p-4'>
+          <div className='mb-2 font-semibold'>Recent Movements</div>
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading...</div>
+            <div className='text-muted-foreground text-sm'>Loading...</div>
           ) : error ? (
-            <div className="text-sm text-red-600">{error}</div>
+            <div className='text-sm text-red-600'>{error}</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted">
+            <div className='overflow-x-auto'>
+              <table className='w-full text-sm'>
+                <thead className='bg-muted'>
                   <tr>
-                    <th className="text-left p-2">Type</th>
-                    <th className="text-left p-2">From</th>
-                    <th className="text-left p-2">To</th>
-                    <th className="text-left p-2">Qty</th>
-                    <th className="text-left p-2">SKU</th>
-                    <th className="text-left p-2">Status</th>
-                    <th className="text-left p-2">Actions</th>
+                    <th className='p-2 text-left'>Type</th>
+                    <th className='p-2 text-left'>From</th>
+                    <th className='p-2 text-left'>To</th>
+                    <th className='p-2 text-left'>Qty</th>
+                    <th className='p-2 text-left'>SKU</th>
+                    <th className='p-2 text-left'>Status</th>
+                    <th className='p-2 text-left'>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {movements.map((m) => (
-                    <tr key={m.id} className="border-t">
-                      <td className="p-2 capitalize">{m.movement_type}</td>
-                      <td className="p-2">{m.from_location?.name || '-'}</td>
-                      <td className="p-2">{m.to_location?.name || '-'}</td>
-                      <td className="p-2">{m.quantity}</td>
-                      <td className="p-2">{m.item_sku || '-'}</td>
-                      <td className="p-2 capitalize">{m.status}</td>
-                      <td className="p-2">
+                    <tr key={m.id} className='border-t'>
+                      <td className='p-2 capitalize'>{m.movement_type}</td>
+                      <td className='p-2'>{m.from_location?.name || '-'}</td>
+                      <td className='p-2'>{m.to_location?.name || '-'}</td>
+                      <td className='p-2'>{m.quantity}</td>
+                      <td className='p-2'>{m.item_sku || '-'}</td>
+                      <td className='p-2 capitalize'>{m.status}</td>
+                      <td className='p-2'>
                         {m.status === 'pending' && (
-                          <Button size="sm" variant="secondary" disabled={submitting} onClick={() => onApprove(m.id)}>Approve (Admin)</Button>
+                          <Button
+                            size='sm'
+                            variant='secondary'
+                            disabled={submitting}
+                            onClick={() => onApprove(m.id)}
+                          >
+                            Approve (Admin)
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -211,4 +298,3 @@ function Content() {
     </PageContainer>
   );
 }
-

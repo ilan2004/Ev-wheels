@@ -6,13 +6,13 @@ import { SectionHeader } from '@/components/layout/section-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@/components/ui/toggle-group';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { vehiclesApi, type VehicleCase } from '@/lib/api/vehicles';
 import { VehicleKanbanBoard } from '@/components/vehicles/vehicle-kanban-board';
-import { VehicleFilters, type VehicleFilters as VehicleFiltersType } from '@/components/vehicles/vehicle-filters';
+import {
+  VehicleFilters,
+  type VehicleFilters as VehicleFiltersType
+} from '@/components/vehicles/vehicle-filters';
 import { QuickFilterChips } from '@/components/vehicles/quick-filter-chips';
 import { Search, Plus, LayoutGrid, Table } from 'lucide-react';
 import Link from 'next/link';
@@ -44,15 +44,17 @@ export default function VehiclesKanbanPage() {
   const [vehicles, setVehicles] = useState<VehicleWithCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeQuickFilter, setActiveQuickFilter] = useState<string | undefined>();
+  const [activeQuickFilter, setActiveQuickFilter] = useState<
+    string | undefined
+  >();
 
   const debouncedSearch = useDebounce(search, 300);
 
   const load = useCallback(async () => {
     setLoading(true);
     const filterParams = toApiParams();
-    
-    const res = await vehiclesApi.listVehicles({ 
+
+    const res = await vehiclesApi.listVehicles({
       search: debouncedSearch,
       limit: 200, // Load more for kanban view
       offset: 0,
@@ -68,30 +70,30 @@ export default function VehiclesKanbanPage() {
     load();
   }, [load]);
 
-  const handleQuickFilterSelect = (quickFilters: Partial<VehicleFiltersType>) => {
+  const handleQuickFilterSelect = (
+    quickFilters: Partial<VehicleFiltersType>
+  ) => {
     updateFilters(quickFilters);
   };
 
   const handleStatusChange = (vehicleId: string, newStatus: VehicleStatus) => {
     // Optimistic update for kanban
     setVehicles((prev) =>
-      prev.map((v) =>
-        v.id === vehicleId ? { ...v, status: newStatus } : v
-      )
+      prev.map((v) => (v.id === vehicleId ? { ...v, status: newStatus } : v))
     );
   };
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <SectionHeader 
-            title="Vehicle Workflow" 
-            description="Drag and drop to update vehicle status" 
+      <div className='flex flex-col gap-6'>
+        <div className='flex items-center justify-between'>
+          <SectionHeader
+            title='Vehicle Workflow'
+            description='Drag and drop to update vehicle status'
           />
           <Button asChild>
-            <Link href="/dashboard/tickets/new">
-              <Plus className="mr-2 h-4 w-4" />
+            <Link href='/dashboard/tickets/new'>
+              <Plus className='mr-2 h-4 w-4' />
               New Service Ticket
             </Link>
           </Button>
@@ -99,44 +101,44 @@ export default function VehiclesKanbanPage() {
 
         {/* Search and Controls */}
         <Card>
-          <CardContent className="flex flex-col gap-4 pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <CardContent className='flex flex-col gap-4 pt-6'>
+            <div className='flex flex-col gap-4 sm:flex-row'>
+              <div className='relative flex-1'>
+                <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
                 <Input
-                  placeholder="Search by reg no, make, model, or customer..."
+                  placeholder='Search by reg no, make, model, or customer...'
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
+                  className='pl-9'
                 />
               </div>
-              <div className="flex gap-2">
-                <VehicleFilters 
+              <div className='flex gap-2'>
+                <VehicleFilters
                   filters={filters}
                   onFiltersChange={updateFilters}
                   loading={loading}
                 />
-                
+
                 {/* View Switcher */}
-                <ToggleGroup 
-                  type="single" 
-                  value="kanban"
+                <ToggleGroup
+                  type='single'
+                  value='kanban'
                   onValueChange={(value) => {
                     if (value === 'list') {
                       router.push('/dashboard/vehicles');
                     }
                   }}
                 >
-                  <ToggleGroupItem value="list" aria-label="List view">
-                    <Table className="h-4 w-4" />
+                  <ToggleGroupItem value='list' aria-label='List view'>
+                    <Table className='h-4 w-4' />
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="kanban" aria-label="Kanban view">
-                    <LayoutGrid className="h-4 w-4" />
+                  <ToggleGroupItem value='kanban' aria-label='Kanban view'>
+                    <LayoutGrid className='h-4 w-4' />
                   </ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </div>
-            
+
             {/* Quick Filters */}
             <QuickFilterChips
               onFilterSelect={handleQuickFilterSelect}

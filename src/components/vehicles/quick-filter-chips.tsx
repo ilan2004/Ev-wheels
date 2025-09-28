@@ -10,7 +10,7 @@ import {
   User,
   CheckCircle,
   XCircle,
-  PauseCircle,
+  PauseCircle
 } from 'lucide-react';
 import type { VehicleFilters } from './vehicle-filters';
 import type { VehicleStatus } from '@/lib/types/service-tickets';
@@ -38,8 +38,8 @@ const quickFilters: QuickFilter[] = [
     color: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
     getFilters: (userId) => ({
       technicianId: userId || null,
-      status: ['received', 'diagnosed', 'in_progress'] as VehicleStatus[],
-    }),
+      status: ['received', 'diagnosed', 'in_progress'] as VehicleStatus[]
+    })
   },
   {
     id: 'urgent',
@@ -49,10 +49,15 @@ const quickFilters: QuickFilter[] = [
     getFilters: () => ({
       dateRange: {
         from: null,
-        to: subDays(new Date(), 7),
+        to: subDays(new Date(), 7)
       },
-      status: ['received', 'diagnosed', 'in_progress', 'on_hold'] as VehicleStatus[],
-    }),
+      status: [
+        'received',
+        'diagnosed',
+        'in_progress',
+        'on_hold'
+      ] as VehicleStatus[]
+    })
   },
   {
     id: 'ready-for-delivery',
@@ -60,8 +65,8 @@ const quickFilters: QuickFilter[] = [
     icon: Package,
     color: 'bg-green-100 text-green-800 hover:bg-green-200',
     getFilters: () => ({
-      status: ['completed'] as VehicleStatus[],
-    }),
+      status: ['completed'] as VehicleStatus[]
+    })
   },
   {
     id: 'awaiting-parts',
@@ -69,8 +74,8 @@ const quickFilters: QuickFilter[] = [
     icon: PauseCircle,
     color: 'bg-orange-100 text-orange-800 hover:bg-orange-200',
     getFilters: () => ({
-      status: ['on_hold'] as VehicleStatus[],
-    }),
+      status: ['on_hold'] as VehicleStatus[]
+    })
   },
   {
     id: 'new-arrivals',
@@ -81,9 +86,9 @@ const quickFilters: QuickFilter[] = [
       status: ['received'] as VehicleStatus[],
       dateRange: {
         from: subDays(new Date(), 7),
-        to: new Date(),
-      },
-    }),
+        to: new Date()
+      }
+    })
   },
   {
     id: 'completed',
@@ -91,8 +96,8 @@ const quickFilters: QuickFilter[] = [
     icon: CheckCircle,
     color: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
     getFilters: () => ({
-      status: ['completed', 'delivered'] as VehicleStatus[],
-    }),
+      status: ['completed', 'delivered'] as VehicleStatus[]
+    })
   },
   {
     id: 'cancelled',
@@ -100,34 +105,34 @@ const quickFilters: QuickFilter[] = [
     icon: XCircle,
     color: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
     getFilters: () => ({
-      status: ['cancelled'] as VehicleStatus[],
-    }),
-  },
+      status: ['cancelled'] as VehicleStatus[]
+    })
+  }
 ];
 
-export function QuickFilterChips({ 
-  onFilterSelect, 
+export function QuickFilterChips({
+  onFilterSelect,
   activeFilterId,
-  userId 
+  userId
 }: QuickFilterChipsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className='flex flex-wrap gap-2'>
       {quickFilters.map((filter) => {
         const Icon = filter.icon;
         const isActive = activeFilterId === filter.id;
-        
+
         return (
           <Badge
             key={filter.id}
-            variant={isActive ? "default" : "outline"}
+            variant={isActive ? 'default' : 'outline'}
             className={cn(
-              "cursor-pointer transition-all duration-200 text-xs font-medium",
+              'cursor-pointer text-xs font-medium transition-all duration-200',
               isActive ? filter.color : `hover:${filter.color}`,
-              "border-transparent"
+              'border-transparent'
             )}
             onClick={() => onFilterSelect(filter.getFilters(userId))}
           >
-            <Icon className="mr-1 h-3 w-3" />
+            <Icon className='mr-1 h-3 w-3' />
             {filter.label}
           </Badge>
         );

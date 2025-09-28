@@ -12,9 +12,7 @@ export default function Providers({
 }) {
   return (
     <ActiveThemeProvider initialTheme={activeThemeValue}>
-      <LocationProvider>
-        {children}
-      </LocationProvider>
+      <LocationProvider>{children}</LocationProvider>
     </ActiveThemeProvider>
   );
 }

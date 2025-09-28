@@ -38,7 +38,7 @@ const statusColors: Record<string, string> = {
   completed: 'bg-green-100 text-green-800 border-green-200',
   delivered: 'bg-gray-100 text-gray-800 border-gray-200',
   on_hold: 'bg-red-100 text-red-800 border-red-200',
-  cancelled: 'bg-gray-100 text-gray-600 border-gray-200',
+  cancelled: 'bg-gray-100 text-gray-600 border-gray-200'
 };
 
 const statusLabels: Record<string, string> = {
@@ -48,30 +48,32 @@ const statusLabels: Record<string, string> = {
   completed: 'Completed',
   delivered: 'Delivered',
   on_hold: 'On Hold',
-  cancelled: 'Cancelled',
+  cancelled: 'Cancelled'
 };
 
 function getDaysInService(receivedDate: string): number {
-  return Math.floor((Date.now() - new Date(receivedDate).getTime()) / (1000 * 60 * 60 * 24));
+  return Math.floor(
+    (Date.now() - new Date(receivedDate).getTime()) / (1000 * 60 * 60 * 24)
+  );
 }
 
 function GridSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="overflow-hidden">
-          <Skeleton className="h-48 w-full" />
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-6 w-20 rounded-full" />
+        <Card key={i} className='overflow-hidden'>
+          <Skeleton className='h-48 w-full' />
+          <CardContent className='p-4'>
+            <div className='space-y-3'>
+              <div className='flex items-center justify-between'>
+                <Skeleton className='h-5 w-32' />
+                <Skeleton className='h-6 w-20 rounded-full' />
               </div>
-              <Skeleton className="h-4 w-24" />
-              <div className="space-y-2 pt-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
+              <Skeleton className='h-4 w-24' />
+              <div className='space-y-2 pt-2'>
+                <Skeleton className='h-4 w-full' />
+                <Skeleton className='h-4 w-full' />
+                <Skeleton className='h-4 w-3/4' />
               </div>
             </div>
           </CardContent>
@@ -84,7 +86,7 @@ function GridSkeleton() {
 export function VehicleGridView({ vehicles, loading }: VehicleGridViewProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
         <GridSkeleton />
       </div>
     );
@@ -92,59 +94,59 @@ export function VehicleGridView({ vehicles, loading }: VehicleGridViewProps) {
 
   if (vehicles.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
+      <div className='text-muted-foreground py-12 text-center'>
         No vehicles found
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
       {vehicles.map((vehicle) => {
         const daysInService = getDaysInService(vehicle.received_date);
         const isUrgent = daysInService > 7;
-        
+
         return (
           <Link
             key={vehicle.id}
             href={`/dashboard/vehicles/${vehicle.id}`}
-            className="block"
+            className='block'
           >
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <Card className='overflow-hidden transition-shadow duration-200 hover:shadow-lg'>
               {/* Vehicle Image */}
-              <div className="relative h-48 bg-muted">
+              <div className='bg-muted relative h-48'>
                 {vehicle.thumbnail_url ? (
                   <img
                     src={vehicle.thumbnail_url}
                     alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
+                    className='h-full w-full object-cover'
+                    loading='lazy'
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center">
-                    <Car className="h-12 w-12 text-muted-foreground" />
+                  <div className='flex h-full w-full items-center justify-center'>
+                    <Car className='text-muted-foreground h-12 w-12' />
                   </div>
                 )}
                 {isUrgent && (
-                  <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
+                  <div className='absolute top-2 right-2 rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white'>
                     Urgent
                   </div>
                 )}
               </div>
 
-              <CardContent className="p-4">
+              <CardContent className='p-4'>
                 {/* Vehicle Info and Status */}
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate">
+                <div className='mb-2 flex items-start justify-between gap-2'>
+                  <div className='min-w-0 flex-1'>
+                    <h3 className='truncate text-base font-semibold'>
                       {vehicle.vehicle_make} {vehicle.vehicle_model}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className='text-muted-foreground text-sm'>
                       {vehicle.vehicle_reg_no || 'No Reg No'}
                     </p>
                   </div>
-                  <Badge 
-                    variant="secondary"
+                  <Badge
+                    variant='secondary'
                     className={cn(
                       'font-normal whitespace-nowrap',
                       statusColors[vehicle.status]
@@ -156,41 +158,43 @@ export function VehicleGridView({ vehicles, loading }: VehicleGridViewProps) {
 
                 {/* Customer */}
                 {vehicle.customer && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                    <User className="h-3 w-3" />
-                    <span className="truncate">{vehicle.customer.name}</span>
+                  <div className='text-muted-foreground mb-3 flex items-center gap-2 text-sm'>
+                    <User className='h-3 w-3' />
+                    <span className='truncate'>{vehicle.customer.name}</span>
                   </div>
                 )}
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className='grid grid-cols-2 gap-2 text-sm'>
                   {/* Days in Service */}
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-3 w-3 text-muted-foreground" />
-                    <span className={cn(
-                      isUrgent && 'text-red-600 font-semibold'
-                    )}>
+                  <div className='flex items-center gap-1.5'>
+                    <Calendar className='text-muted-foreground h-3 w-3' />
+                    <span
+                      className={cn(isUrgent && 'font-semibold text-red-600')}
+                    >
                       {daysInService} days
                     </span>
                   </div>
 
                   {/* Last Activity */}
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <span className="truncate">
+                  <div className='flex items-center gap-1.5'>
+                    <Clock className='text-muted-foreground h-3 w-3' />
+                    <span className='truncate'>
                       {formatDistanceToNow(
-                        new Date(vehicle.last_activity_at || vehicle.updated_at),
+                        new Date(
+                          vehicle.last_activity_at || vehicle.updated_at
+                        ),
                         { addSuffix: false }
                       )}
                     </span>
                   </div>
 
                   {/* Technician */}
-                  <div className="col-span-2 flex items-center gap-1.5">
-                    <Wrench className="h-3 w-3 text-muted-foreground" />
-                    <span className="truncate">
-                      {vehicle.technician 
-                        ? vehicle.technician.name 
+                  <div className='col-span-2 flex items-center gap-1.5'>
+                    <Wrench className='text-muted-foreground h-3 w-3' />
+                    <span className='truncate'>
+                      {vehicle.technician
+                        ? vehicle.technician.name
                         : 'Unassigned'}
                     </span>
                   </div>
@@ -198,7 +202,7 @@ export function VehicleGridView({ vehicles, loading }: VehicleGridViewProps) {
 
                 {/* Notes Preview */}
                 {vehicle.technician_notes && (
-                  <p className="mt-3 text-xs text-muted-foreground line-clamp-2">
+                  <p className='text-muted-foreground mt-3 line-clamp-2 text-xs'>
                     {vehicle.technician_notes}
                   </p>
                 )}

@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - parseInt(period));
-    
+
     const compareEndDate = new Date(startDate);
     const compareStartDate = new Date(startDate);
     compareStartDate.setDate(compareEndDate.getDate() - parseInt(compareWith));
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     // Get current period metrics
     const currentMetrics = await fetchMetrics(startDate, endDate);
     const compareMetrics = await fetchMetrics(compareStartDate, compareEndDate);
-    
+
     // Get analytics data
     const analytics = await fetchAnalyticsData(startDate, endDate);
 
@@ -84,34 +84,73 @@ export async function GET(request: NextRequest) {
     const metrics: DashboardMetrics = {
       totalVehicles: {
         current: currentMetrics.totalVehicles,
-        trend: getTrend(currentMetrics.totalVehicles, compareMetrics.totalVehicles),
-        change: getPercentageChange(currentMetrics.totalVehicles, compareMetrics.totalVehicles)
+        trend: getTrend(
+          currentMetrics.totalVehicles,
+          compareMetrics.totalVehicles
+        ),
+        change: getPercentageChange(
+          currentMetrics.totalVehicles,
+          compareMetrics.totalVehicles
+        )
       },
       averageTurnaroundTime: {
         current: currentMetrics.avgTurnaround,
-        trend: getTrend(compareMetrics.avgTurnaround, currentMetrics.avgTurnaround), // Lower is better
-        change: getPercentageChange(currentMetrics.avgTurnaround, compareMetrics.avgTurnaround)
+        trend: getTrend(
+          compareMetrics.avgTurnaround,
+          currentMetrics.avgTurnaround
+        ), // Lower is better
+        change: getPercentageChange(
+          currentMetrics.avgTurnaround,
+          compareMetrics.avgTurnaround
+        )
       },
       todaysArrivals: {
         current: currentMetrics.todaysArrivals,
-        trend: getTrend(currentMetrics.todaysArrivals, compareMetrics.todaysArrivals),
-        change: getPercentageChange(currentMetrics.todaysArrivals, compareMetrics.todaysArrivals)
+        trend: getTrend(
+          currentMetrics.todaysArrivals,
+          compareMetrics.todaysArrivals
+        ),
+        change: getPercentageChange(
+          currentMetrics.todaysArrivals,
+          compareMetrics.todaysArrivals
+        )
       },
       readyForPickup: {
         current: currentMetrics.readyForPickup,
-        trend: getTrend(currentMetrics.readyForPickup, compareMetrics.readyForPickup),
-        change: getPercentageChange(currentMetrics.readyForPickup, compareMetrics.readyForPickup)
+        trend: getTrend(
+          currentMetrics.readyForPickup,
+          compareMetrics.readyForPickup
+        ),
+        change: getPercentageChange(
+          currentMetrics.readyForPickup,
+          compareMetrics.readyForPickup
+        )
       },
       overdueCases: {
         current: currentMetrics.overdueCases,
-        trend: getTrend(compareMetrics.overdueCases, currentMetrics.overdueCases), // Lower is better
-        change: getPercentageChange(currentMetrics.overdueCases, compareMetrics.overdueCases),
-        severity: getOverdueSeverity(currentMetrics.overdueCases, currentMetrics.totalVehicles)
+        trend: getTrend(
+          compareMetrics.overdueCases,
+          currentMetrics.overdueCases
+        ), // Lower is better
+        change: getPercentageChange(
+          currentMetrics.overdueCases,
+          compareMetrics.overdueCases
+        ),
+        severity: getOverdueSeverity(
+          currentMetrics.overdueCases,
+          currentMetrics.totalVehicles
+        )
       },
       technicianUtilization: {
         current: currentMetrics.technicianUtilization,
-        trend: getTrend(currentMetrics.technicianUtilization, compareMetrics.technicianUtilization),
-        change: getPercentageChange(currentMetrics.technicianUtilization, compareMetrics.technicianUtilization)
+        trend: getTrend(
+          currentMetrics.technicianUtilization,
+          compareMetrics.technicianUtilization
+        ),
+        change: getPercentageChange(
+          currentMetrics.technicianUtilization,
+          compareMetrics.technicianUtilization
+        )
       }
     };
 
@@ -125,9 +164,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching dashboard metrics:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch dashboard metrics' 
+      {
+        success: false,
+        error: 'Failed to fetch dashboard metrics'
       },
       { status: 500 }
     );
@@ -138,7 +177,7 @@ export async function GET(request: NextRequest) {
 async function fetchMetrics(startDate: Date, endDate: Date) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   // Total vehicles in service (excluding delivered/cancelled)
   const { count: totalVehicles } = await supabase
     .from('vehicle_cases')
@@ -156,21 +195,27 @@ async function fetchMetrics(startDate: Date, endDate: Date) {
     .gte('received_date', startDate.toISOString())
     .lte('received_date', endDate.toISOString());
 
-  const avgTurnaround = completedCases && completedCases.length > 0
-    ? completedCases.reduce((sum, case_) => {
-        const received = new Date(case_.received_date);
-        const delivered = new Date(case_.delivered_date);
-        const diffDays = Math.ceil((delivered.getTime() - received.getTime()) / (1000 * 60 * 60 * 24));
-        return sum + diffDays;
-      }, 0) / completedCases.length
-    : 0;
+  const avgTurnaround =
+    completedCases && completedCases.length > 0
+      ? completedCases.reduce((sum, case_) => {
+          const received = new Date(case_.received_date);
+          const delivered = new Date(case_.delivered_date);
+          const diffDays = Math.ceil(
+            (delivered.getTime() - received.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          return sum + diffDays;
+        }, 0) / completedCases.length
+      : 0;
 
   // Today's arrivals
   const { count: todaysArrivals } = await supabase
     .from('vehicle_cases')
     .select('*', { count: 'exact', head: true })
     .gte('received_date', today.toISOString())
-    .lt('received_date', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
+    .lt(
+      'received_date',
+      new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
+    );
 
   // Ready for pickup
   const { count: readyForPickup } = await supabase
@@ -181,7 +226,7 @@ async function fetchMetrics(startDate: Date, endDate: Date) {
   // Overdue cases (more than 7 days old and not completed)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
+
   const { count: overdueCases } = await supabase
     .from('vehicle_cases')
     .select('*', { count: 'exact', head: true })
@@ -195,8 +240,13 @@ async function fetchMetrics(startDate: Date, endDate: Date) {
     .not('status', 'in', '("delivered", "cancelled")')
     .not('assigned_technician', 'is', null);
 
-  const activeTechnicians = new Set(technicianCases?.map(c => c.assigned_technician) || []).size;
-  const avgCasesPerTechnician = activeTechnicians > 0 ? (technicianCases?.length || 0) / activeTechnicians : 0;
+  const activeTechnicians = new Set(
+    technicianCases?.map((c) => c.assigned_technician) || []
+  ).size;
+  const avgCasesPerTechnician =
+    activeTechnicians > 0
+      ? (technicianCases?.length || 0) / activeTechnicians
+      : 0;
   const technicianUtilization = Math.min(avgCasesPerTechnician * 20, 100); // Assuming 5 cases = 100% utilization
 
   return {
@@ -210,7 +260,10 @@ async function fetchMetrics(startDate: Date, endDate: Date) {
 }
 
 // Helper function to fetch analytics data
-async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<AnalyticsData> {
+async function fetchAnalyticsData(
+  startDate: Date,
+  endDate: Date
+): Promise<AnalyticsData> {
   // Status distribution
   const { data: statusData } = await supabase
     .from('vehicle_cases')
@@ -219,31 +272,33 @@ async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<Analy
     .lte('received_date', endDate.toISOString());
 
   const statusCounts: { [key: string]: number } = {};
-  statusData?.forEach(item => {
+  statusData?.forEach((item) => {
     statusCounts[item.status] = (statusCounts[item.status] || 0) + 1;
   });
 
   const statusColors: { [key: string]: string } = {
-    'received': '#3b82f6',
-    'diagnosed': '#f59e0b', 
-    'in_progress': '#8b5cf6',
-    'completed': '#10b981',
-    'ready_for_pickup': '#06b6d4',
-    'delivered': '#22c55e',
-    'on_hold': '#ef4444',
-    'cancelled': '#6b7280'
+    received: '#3b82f6',
+    diagnosed: '#f59e0b',
+    in_progress: '#8b5cf6',
+    completed: '#10b981',
+    ready_for_pickup: '#06b6d4',
+    delivered: '#22c55e',
+    on_hold: '#ef4444',
+    cancelled: '#6b7280'
   };
 
-  const statusDistribution = Object.entries(statusCounts).map(([status, count]) => ({
-    status: status.replace('_', ' ').toUpperCase(),
-    count,
-    color: statusColors[status] || '#6b7280'
-  }));
+  const statusDistribution = Object.entries(statusCounts).map(
+    ([status, count]) => ({
+      status: status.replace('_', ' ').toUpperCase(),
+      count,
+      color: statusColors[status] || '#6b7280'
+    })
+  );
 
   // Intake trends (last 30 days)
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
+
   const { data: intakeData } = await supabase
     .from('vehicle_cases')
     .select('received_date')
@@ -251,7 +306,7 @@ async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<Analy
     .order('received_date');
 
   const dailyCounts: { [key: string]: number } = {};
-  intakeData?.forEach(item => {
+  intakeData?.forEach((item) => {
     const date = new Date(item.received_date).toISOString().split('T')[0];
     dailyCounts[date] = (dailyCounts[date] || 0) + 1;
   });
@@ -269,8 +324,10 @@ async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<Analy
     .gte('received_date', startDate.toISOString())
     .lte('received_date', endDate.toISOString());
 
-  const technicianStats: { [key: string]: { active: number; completed: number; } } = {};
-  workloadData?.forEach(item => {
+  const technicianStats: {
+    [key: string]: { active: number; completed: number };
+  } = {};
+  workloadData?.forEach((item) => {
     const tech = item.assigned_technician;
     if (!technicianStats[tech]) {
       technicianStats[tech] = { active: 0, completed: 0 };
@@ -282,11 +339,13 @@ async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<Analy
     }
   });
 
-  const technicianWorkload = Object.entries(technicianStats).map(([technician, stats]) => ({
-    technician: technician || 'Unassigned',
-    active: stats.active,
-    completed: stats.completed
-  }));
+  const technicianWorkload = Object.entries(technicianStats).map(
+    ([technician, stats]) => ({
+      technician: technician || 'Unassigned',
+      active: stats.active,
+      completed: stats.completed
+    })
+  );
 
   // Service time analysis
   const { data: serviceTimeData } = await supabase
@@ -296,21 +355,25 @@ async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<Analy
     .lte('received_date', endDate.toISOString());
 
   const statusTimes: { [key: string]: number[] } = {};
-  serviceTimeData?.forEach(item => {
+  serviceTimeData?.forEach((item) => {
     const received = new Date(item.received_date);
     const updated = new Date(item.updated_at);
-    const diffHours = Math.ceil((updated.getTime() - received.getTime()) / (1000 * 60 * 60));
-    
+    const diffHours = Math.ceil(
+      (updated.getTime() - received.getTime()) / (1000 * 60 * 60)
+    );
+
     if (!statusTimes[item.status]) {
       statusTimes[item.status] = [];
     }
     statusTimes[item.status].push(diffHours);
   });
 
-  const serviceTimeAnalysis = Object.entries(statusTimes).map(([status, times]) => ({
-    status: status.replace('_', ' ').toUpperCase(),
-    averageHours: times.reduce((sum, time) => sum + time, 0) / times.length
-  }));
+  const serviceTimeAnalysis = Object.entries(statusTimes).map(
+    ([status, times]) => ({
+      status: status.replace('_', ' ').toUpperCase(),
+      averageHours: times.reduce((sum, time) => sum + time, 0) / times.length
+    })
+  );
 
   return {
     statusDistribution,
@@ -321,7 +384,10 @@ async function fetchAnalyticsData(startDate: Date, endDate: Date): Promise<Analy
 }
 
 // Helper functions
-function getTrend(current: number, previous: number): 'up' | 'down' | 'neutral' {
+function getTrend(
+  current: number,
+  previous: number
+): 'up' | 'down' | 'neutral' {
   if (Math.abs(current - previous) < 0.01) return 'neutral';
   return current > previous ? 'up' : 'down';
 }
@@ -331,7 +397,10 @@ function getPercentageChange(current: number, previous: number): number {
   return Math.round(((current - previous) / previous) * 100);
 }
 
-function getOverdueSeverity(overdue: number, total: number): 'low' | 'medium' | 'high' | 'critical' {
+function getOverdueSeverity(
+  overdue: number,
+  total: number
+): 'low' | 'medium' | 'high' | 'critical' {
   const percentage = total > 0 ? (overdue / total) * 100 : 0;
   if (percentage >= 30) return 'critical';
   if (percentage >= 20) return 'high';

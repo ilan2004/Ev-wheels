@@ -24,16 +24,16 @@ export function RoleGuard({
   permissions,
   requireAll = false,
   fallback = null,
-  showError = false,
+  showError = false
 }: RoleGuardProps) {
   const { role, isLoaded, hasRole } = useAuth();
 
   // Show loading state while user data is being loaded
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-6 w-6 animate-spin" />
-        <span className="ml-2">Loading...</span>
+      <div className='flex items-center justify-center p-4'>
+        <Loader2 className='h-6 w-6 animate-spin' />
+        <span className='ml-2'>Loading...</span>
       </div>
     );
   }
@@ -42,10 +42,11 @@ export function RoleGuard({
   if (!hasRole) {
     if (showError) {
       return (
-        <Alert variant="destructive">
-          <ShieldAlert className="h-4 w-4" />
+        <Alert variant='destructive'>
+          <ShieldAlert className='h-4 w-4' />
           <AlertDescription>
-            You don&apos;t have a role assigned. Please contact your administrator.
+            You don&apos;t have a role assigned. Please contact your
+            administrator.
           </AlertDescription>
         </Alert>
       );
@@ -59,8 +60,8 @@ export function RoleGuard({
     if (!hasRequiredRole) {
       if (showError) {
         return (
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
+          <Alert variant='destructive'>
+            <ShieldAlert className='h-4 w-4' />
             <AlertDescription>
               You don&apos;t have permission to access this content.
             </AlertDescription>
@@ -74,7 +75,16 @@ export function RoleGuard({
   // Check permission-based access
   if (permissions && permissions.length > 0) {
     // This will be handled by child components using permission checks
-    return <PermissionGuard permissions={permissions} requireAll={requireAll} fallback={fallback} showError={showError}>{children}</PermissionGuard>;
+    return (
+      <PermissionGuard
+        permissions={permissions}
+        requireAll={requireAll}
+        fallback={fallback}
+        showError={showError}
+      >
+        {children}
+      </PermissionGuard>
+    );
   }
 
   return <>{children}</>;
@@ -96,21 +106,24 @@ function PermissionGuard({
   permissions,
   requireAll = false,
   fallback = null,
-  showError = false,
+  showError = false
 }: PermissionGuardProps) {
   const { hasAnyPermission, hasPermission } = useAuth();
   const hasPermissions = hasAnyPermission(permissions);
-  
+
   // For requireAll, check each permission using the non-hook function
   if (requireAll) {
-    const allPermissions = permissions.every((permission) => hasPermission(permission));
+    const allPermissions = permissions.every((permission) =>
+      hasPermission(permission)
+    );
     if (!allPermissions) {
       if (showError) {
         return (
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
+          <Alert variant='destructive'>
+            <ShieldAlert className='h-4 w-4' />
             <AlertDescription>
-              You don&apos;t have all the required permissions to access this content.
+              You don&apos;t have all the required permissions to access this
+              content.
             </AlertDescription>
           </Alert>
         );
@@ -121,8 +134,8 @@ function PermissionGuard({
     if (!hasPermissions) {
       if (showError) {
         return (
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
+          <Alert variant='destructive'>
+            <ShieldAlert className='h-4 w-4' />
             <AlertDescription>
               You don&apos;t have permission to access this content.
             </AlertDescription>
@@ -139,19 +152,19 @@ function PermissionGuard({
 /**
  * Component for admin-only content
  */
-export function AdminOnly({ 
-  children, 
-  fallback = null, 
-  showError = false 
-}: { 
-  children: React.ReactNode; 
-  fallback?: React.ReactNode; 
-  showError?: boolean; 
+export function AdminOnly({
+  children,
+  fallback = null,
+  showError = false
+}: {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  showError?: boolean;
 }) {
   return (
-    <RoleGuard 
-      roles={[UserRole.ADMIN]} 
-      fallback={fallback} 
+    <RoleGuard
+      roles={[UserRole.ADMIN]}
+      fallback={fallback}
       showError={showError}
     >
       {children}
@@ -162,19 +175,19 @@ export function AdminOnly({
 /**
  * Component for technician-accessible content
  */
-export function TechnicianAccess({ 
-  children, 
-  fallback = null, 
-  showError = false 
-}: { 
-  children: React.ReactNode; 
-  fallback?: React.ReactNode; 
-  showError?: boolean; 
+export function TechnicianAccess({
+  children,
+  fallback = null,
+  showError = false
+}: {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  showError?: boolean;
 }) {
   return (
-    <RoleGuard 
-      roles={[UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN]} 
-      fallback={fallback} 
+    <RoleGuard
+      roles={[UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN]}
+      fallback={fallback}
       showError={showError}
     >
       {children}
@@ -185,19 +198,19 @@ export function TechnicianAccess({
 /**
  * Component for manager-only content (admins included)
  */
-export function ManagerOnly({ 
-  children, 
-  fallback = null, 
-  showError = false 
-}: { 
-  children: React.ReactNode; 
-  fallback?: React.ReactNode; 
-  showError?: boolean; 
+export function ManagerOnly({
+  children,
+  fallback = null,
+  showError = false
+}: {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  showError?: boolean;
 }) {
   return (
-    <RoleGuard 
-      roles={[UserRole.ADMIN, UserRole.MANAGER]} 
-      fallback={fallback} 
+    <RoleGuard
+      roles={[UserRole.ADMIN, UserRole.MANAGER]}
+      fallback={fallback}
       showError={showError}
     >
       {children}
@@ -211,7 +224,7 @@ export function ManagerOnly({
 export function RoleBasedContent({
   adminContent,
   technicianContent,
-  fallback = null,
+  fallback = null
 }: {
   adminContent?: React.ReactNode;
   technicianContent?: React.ReactNode;
@@ -221,8 +234,8 @@ export function RoleBasedContent({
 
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-6 w-6 animate-spin" />
+      <div className='flex items-center justify-center p-4'>
+        <Loader2 className='h-6 w-6 animate-spin' />
       </div>
     );
   }

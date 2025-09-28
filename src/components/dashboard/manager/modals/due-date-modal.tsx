@@ -1,10 +1,22 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 
-export function DueDateModal({ open, ticketId, initialDue, onClose, onSaved }: { open: boolean; ticketId?: string; initialDue?: string; onClose: () => void; onSaved: () => void }) {
+export function DueDateModal({
+  open,
+  ticketId,
+  initialDue,
+  onClose,
+  onSaved
+}: {
+  open: boolean;
+  ticketId?: string;
+  initialDue?: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const [loading, setLoading] = React.useState(false);
   const [due, setDue] = React.useState<string | ''>(initialDue || '');
 
@@ -33,18 +45,26 @@ export function DueDateModal({ open, ticketId, initialDue, onClose, onSaved }: {
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-card rounded-lg border p-4 w-full max-w-sm">
-        <div className="font-semibold mb-2">Set Due Date</div>
-        <div className="space-y-2">
-          <input type="date" className="w-full border rounded h-9 px-2 bg-background" value={due ? new Date(due).toISOString().slice(0,10) : ''} onChange={(e) => setDue(e.target.value)} />
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40'>
+      <div className='bg-card w-full max-w-sm rounded-lg border p-4'>
+        <div className='mb-2 font-semibold'>Set Due Date</div>
+        <div className='space-y-2'>
+          <input
+            type='date'
+            className='bg-background h-9 w-full rounded border px-2'
+            value={due ? new Date(due).toISOString().slice(0, 10) : ''}
+            onChange={(e) => setDue(e.target.value)}
+          />
         </div>
-        <div className="flex justify-end gap-2 mt-3">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={save} disabled={loading}>{loading ? 'Saving...' : 'Save'}</Button>
+        <div className='mt-3 flex justify-end gap-2'>
+          <Button variant='outline' onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={loading}>
+            {loading ? 'Saving...' : 'Save'}
+          </Button>
         </div>
       </div>
     </div>
   );
 }
-

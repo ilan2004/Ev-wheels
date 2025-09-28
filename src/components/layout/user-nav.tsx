@@ -18,18 +18,24 @@ export function UserNav() {
   const { user } = useAuth();
   const router = useRouter();
   if (!user) return null;
-  const email = ((user as any).email ?? (user as any)?.email_addresses?.[0]?.email) || '';
+  const email =
+    ((user as any).email ?? (user as any)?.email_addresses?.[0]?.email) || '';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
-          <div className='h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs'>
+          <div className='bg-muted flex h-8 w-8 items-center justify-center rounded-full text-xs'>
             {(email || 'U').slice(0, 2).toUpperCase()}
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='w-56' align='end' sideOffset={10} forceMount>
+      <DropdownMenuContent
+        className='w-56'
+        align='end'
+        sideOffset={10}
+        forceMount
+      >
         <DropdownMenuLabel className='font-normal'>
           <div className='flex flex-col space-y-1'>
             <p className='text-sm leading-none font-medium'>{email}</p>
@@ -37,7 +43,9 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>Profile</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+            Profile
+          </DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>New Team</DropdownMenuItem>

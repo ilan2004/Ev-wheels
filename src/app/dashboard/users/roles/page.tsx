@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { AdminOnly } from '@/components/auth/role-guard';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 
 const ROLES = ['admin', 'manager', 'technician'] as const;
 
-type Role = typeof ROLES[number];
+type Role = (typeof ROLES)[number];
 
 type ProfileRow = { user_id: string; username: string; email: string };
 
@@ -30,10 +30,14 @@ function Content() {
   useEffect(() => {
     (async () => {
       try {
-        const [{ data: profs, error: pErr }, { data: rRows, error: rErr }] = await Promise.all([
-          supabase.from('profiles').select('user_id, username, email').order('username', { ascending: true }),
-          supabase.from('app_roles').select('user_id, role'),
-        ]);
+        const [{ data: profs, error: pErr }, { data: rRows, error: rErr }] =
+          await Promise.all([
+            supabase
+              .from('profiles')
+              .select('user_id, username, email')
+              .order('username', { ascending: true }),
+            supabase.from('app_roles').select('user_id, role')
+          ]);
         if (pErr) throw pErr;
         if (rErr) throw rErr;
         setProfiles((profs || []) as ProfileRow[]);
@@ -51,7 +55,7 @@ function Content() {
   const rows = useMemo(() => {
     return profiles.map((p) => ({
       ...p,
-      role: roles[p.user_id] || 'technician',
+      role: roles[p.user_id] || 'technician'
     }));
   }, [profiles, roles]);
 
@@ -72,37 +76,53 @@ function Content() {
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Manage User Roles</h1>
-      {error && <div className="text-sm text-red-600">{error}</div>}
-      <div className="border rounded">
-        <table className="w-full text-sm">
-          <thead className="bg-muted">
+    <div className='space-y-4 p-6'>
+      <h1 className='text-2xl font-semibold'>Manage User Roles</h1>
+      {error && <div className='text-sm text-red-600'>{error}</div>}
+      <div className='rounded border'>
+        <table className='w-full text-sm'>
+          <thead className='bg-muted'>
             <tr>
-              <th className="text-left p-2">Username</th>
-              <th className="text-left p-2">Email</th>
-              <th className="text-left p-2">Role</th>
-              <th className="text-left p-2">Actions</th>
+              <th className='p-2 text-left'>Username</th>
+              <th className='p-2 text-left'>Email</th>
+              <th className='p-2 text-left'>Role</th>
+              <th className='p-2 text-left'>Actions</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.user_id} className="border-t">
-                <td className="p-2">{r.username}</td>
-                <td className="p-2">{r.email}</td>
-                <td className="p-2">
+              <tr key={r.user_id} className='border-t'>
+                <td className='p-2'>{r.username}</td>
+                <td className='p-2'>{r.email}</td>
+                <td className='p-2'>
                   <select
-                    className="border rounded h-8 px-2 bg-background"
+                    className='bg-background h-8 rounded border px-2'
                     value={r.role}
-                    onChange={(e) => setRoles((rs) => ({ ...rs, [r.user_id]: e.target.value as Role }))}
+                    onChange={(e) =>
+                      setRoles((rs) => ({
+                        ...rs,
+                        [r.user_id]: e.target.value as Role
+                      }))
+                    }
                   >
                     {ROLES.map((role) => (
-                      <option key={role} value={role}>{role}</option>
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
                     ))}
                   </select>
                 </td>
-                <td className="p-2">
-                  <Button size="sm" disabled={saving[r.user_id]} onClick={() => setUserRole(r.user_id, (roles[r.user_id] || 'technician') as Role)}>
+                <td className='p-2'>
+                  <Button
+                    size='sm'
+                    disabled={saving[r.user_id]}
+                    onClick={() =>
+                      setUserRole(
+                        r.user_id,
+                        (roles[r.user_id] || 'technician') as Role
+                      )
+                    }
+                  >
                     {saving[r.user_id] ? 'Saving...' : 'Save'}
                   </Button>
                 </td>
@@ -114,4 +134,3 @@ function Content() {
     </div>
   );
 }
-

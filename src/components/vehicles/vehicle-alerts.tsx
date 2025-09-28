@@ -1,10 +1,7 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  StatusCard, 
-  EnhancedCard 
-} from '@/components/ui/enhanced-card';
+import { StatusCard, EnhancedCard } from '@/components/ui/enhanced-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +19,12 @@ import { motion } from 'framer-motion';
 
 export interface Alert {
   id: string;
-  type: 'overdue' | 'parts_pending' | 'customer_response' | 'unassigned' | 'sla_risk';
+  type:
+    | 'overdue'
+    | 'parts_pending'
+    | 'customer_response'
+    | 'unassigned'
+    | 'sla_risk';
   severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
   description: string;
@@ -34,16 +36,25 @@ export interface Alert {
 }
 
 interface VehicleAlertsProps {
-  onAlertAction?: (alertId: string, action: 'view' | 'dismiss' | 'resolve') => void;
+  onAlertAction?: (
+    alertId: string,
+    action: 'view' | 'dismiss' | 'resolve'
+  ) => void;
   onFilterSelect?: (filters: any) => void;
   className?: string;
 }
 
-export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: VehicleAlertsProps) {
+export function VehicleAlerts({
+  onAlertAction,
+  onFilterSelect,
+  className
+}: VehicleAlertsProps) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(
+    new Set()
+  );
 
   // Mock fetch alerts function (replace with actual API call)
   const fetchAlerts = async (refresh = false) => {
@@ -52,7 +63,7 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
       else setLoading(true);
 
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Mock alerts data
       const mockAlerts: Alert[] = [
@@ -114,7 +125,9 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
       ];
 
       // Filter out dismissed alerts
-      const visibleAlerts = mockAlerts.filter(alert => !dismissedAlerts.has(alert.id));
+      const visibleAlerts = mockAlerts.filter(
+        (alert) => !dismissedAlerts.has(alert.id)
+      );
       setAlerts(visibleAlerts);
     } catch (error) {
       console.error('Error fetching alerts:', error);
@@ -129,9 +142,12 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
   }, [dismissedAlerts]);
 
   // Handle alert actions
-  const handleAlertAction = (alertId: string, action: 'view' | 'dismiss' | 'resolve') => {
+  const handleAlertAction = (
+    alertId: string,
+    action: 'view' | 'dismiss' | 'resolve'
+  ) => {
     if (action === 'dismiss') {
-      setDismissedAlerts(prev => {
+      setDismissedAlerts((prev) => {
         const next = new Set(prev);
         next.add(alertId);
         return next;
@@ -144,52 +160,58 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
   const getAlertConfig = (type: Alert['type']) => {
     const configs = {
       overdue: {
-        icon: <IconAlertTriangle className="h-4 w-4" />,
+        icon: <IconAlertTriangle className='h-4 w-4' />,
         status: 'danger' as const,
-        bgClass: 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
+        bgClass:
+          'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
         actionLabel: 'View Overdue',
         filterAction: () => {
           const sevenDaysAgo = new Date();
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-          onFilterSelect?.({ 
+          onFilterSelect?.({
             dateTo: sevenDaysAgo.toISOString().split('T')[0],
             status: ['received', 'diagnosed', 'in_progress']
           });
         }
       },
       sla_risk: {
-        icon: <IconClock className="h-4 w-4" />,
+        icon: <IconClock className='h-4 w-4' />,
         status: 'warning' as const,
-        bgClass: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
+        bgClass:
+          'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
         actionLabel: 'Check SLA Risk',
         filterAction: () => {
           const tomorrow = new Date();
           tomorrow.setDate(tomorrow.getDate() + 1);
-          onFilterSelect?.({ 
+          onFilterSelect?.({
             dateTo: tomorrow.toISOString().split('T')[0]
           });
         }
       },
       unassigned: {
-        icon: <IconUser className="h-4 w-4" />,
+        icon: <IconUser className='h-4 w-4' />,
         status: 'info' as const,
-        bgClass: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+        bgClass:
+          'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
         actionLabel: 'Assign Technicians',
         filterAction: () => onFilterSelect?.({ technicianId: 'unassigned' })
       },
       parts_pending: {
-        icon: <IconTruckDelivery className="h-4 w-4" />,
+        icon: <IconTruckDelivery className='h-4 w-4' />,
         status: 'warning' as const,
-        bgClass: 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800',
+        bgClass:
+          'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800',
         actionLabel: 'Check Parts Status',
         filterAction: () => onFilterSelect?.({ status: ['on_hold'] })
       },
       customer_response: {
-        icon: <IconBell className="h-4 w-4" />,
+        icon: <IconBell className='h-4 w-4' />,
         status: 'neutral' as const,
-        bgClass: 'bg-gray-50 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800',
+        bgClass:
+          'bg-gray-50 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800',
         actionLabel: 'Follow Up',
-        filterAction: () => onFilterSelect?.({ status: ['customer_approval_needed'] })
+        filterAction: () =>
+          onFilterSelect?.({ status: ['customer_approval_needed'] })
       }
     };
     return configs[type];
@@ -198,20 +220,24 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
   // Get severity badge variant
   const getSeverityVariant = (severity: Alert['severity']) => {
     switch (severity) {
-      case 'critical': return 'destructive';
-      case 'high': return 'secondary';
-      case 'medium': return 'outline';
-      default: return 'secondary';
+      case 'critical':
+        return 'destructive';
+      case 'high':
+        return 'secondary';
+      case 'medium':
+        return 'outline';
+      default:
+        return 'secondary';
     }
   };
 
   if (loading) {
     return (
       <div className={className}>
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-20 bg-muted rounded-lg" />
+            <div key={i} className='animate-pulse'>
+              <div className='bg-muted h-20 rounded-lg' />
             </div>
           ))}
         </div>
@@ -219,51 +245,56 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
     );
   }
 
-  const visibleAlerts = alerts.filter(alert => !dismissedAlerts.has(alert.id));
+  const visibleAlerts = alerts.filter(
+    (alert) => !dismissedAlerts.has(alert.id)
+  );
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between mb-6">
+      <div className='mb-6 flex items-center justify-between'>
         <div>
-          <h2 className="text-xl font-semibold">System Alerts</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className='text-xl font-semibold'>System Alerts</h2>
+          <p className='text-muted-foreground text-sm'>
             {visibleAlerts.length} active alerts requiring attention
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => fetchAlerts(true)}
             disabled={refreshing}
           >
-            <IconRefresh className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            <IconRefresh
+              className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
-            <IconSettings className="h-4 w-4 mr-2" />
+          <Button variant='outline' size='sm'>
+            <IconSettings className='mr-2 h-4 w-4' />
             Settings
           </Button>
         </div>
       </div>
 
       {visibleAlerts.length === 0 ? (
-        <EnhancedCard variant="success" animated>
-          <div className="p-6 text-center">
-            <IconCheck className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-green-800 dark:text-green-400 mb-2">
+        <EnhancedCard variant='success' animated>
+          <div className='p-6 text-center'>
+            <IconCheck className='mx-auto mb-4 h-12 w-12 text-green-600' />
+            <h3 className='mb-2 text-lg font-semibold text-green-800 dark:text-green-400'>
               All Clear!
             </h3>
-            <p className="text-green-700 dark:text-green-300">
-              No active alerts at this time. Great job keeping everything on track!
+            <p className='text-green-700 dark:text-green-300'>
+              No active alerts at this time. Great job keeping everything on
+              track!
             </p>
           </div>
         </EnhancedCard>
       ) : (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {visibleAlerts.map((alert, index) => {
             const config = getAlertConfig(alert.type);
-            
+
             return (
               <motion.div
                 key={alert.id}
@@ -287,17 +318,21 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
                   onDismiss={() => handleAlertAction(alert.id, 'dismiss')}
                   animated
                 />
-                <div className="flex items-center justify-between mt-2 px-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getSeverityVariant(alert.severity)} className="text-xs">
+                <div className='mt-2 flex items-center justify-between px-4'>
+                  <div className='flex items-center gap-2'>
+                    <Badge
+                      variant={getSeverityVariant(alert.severity)}
+                      className='text-xs'
+                    >
                       {alert.severity.toUpperCase()}
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant='outline' className='text-xs'>
                       {alert.count} vehicles
                     </Badge>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {alert.createdAt.getHours()}:{alert.createdAt.getMinutes().toString().padStart(2, '0')}
+                  <span className='text-muted-foreground text-xs'>
+                    {alert.createdAt.getHours()}:
+                    {alert.createdAt.getMinutes().toString().padStart(2, '0')}
                   </span>
                 </div>
               </motion.div>
@@ -308,38 +343,38 @@ export function VehicleAlerts({ onAlertAction, onFilterSelect, className }: Vehi
 
       {/* Alert Summary */}
       {visibleAlerts.length > 0 && (
-        <EnhancedCard variant="elevated" animated className="mt-6">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Alert Summary</h3>
-              <Badge variant="outline">
-                {visibleAlerts.length} total
-              </Badge>
+        <EnhancedCard variant='elevated' animated className='mt-6'>
+          <div className='p-4'>
+            <div className='mb-4 flex items-center justify-between'>
+              <h3 className='font-semibold'>Alert Summary</h3>
+              <Badge variant='outline'>{visibleAlerts.length} total</Badge>
             </div>
-            
-            <div className="grid grid-cols-4 gap-4 text-center">
+
+            <div className='grid grid-cols-4 gap-4 text-center'>
               {['critical', 'high', 'medium', 'low'].map((severity) => {
-                const count = visibleAlerts.filter(a => a.severity === severity).length;
+                const count = visibleAlerts.filter(
+                  (a) => a.severity === severity
+                ).length;
                 const color = {
                   critical: 'text-red-600',
                   high: 'text-orange-600',
                   medium: 'text-yellow-600',
                   low: 'text-blue-600'
                 }[severity];
-                
+
                 return (
-                  <div key={severity} className="space-y-1">
+                  <div key={severity} className='space-y-1'>
                     <div className={`text-2xl font-bold ${color}`}>{count}</div>
-                    <div className="text-xs text-muted-foreground capitalize">
+                    <div className='text-muted-foreground text-xs capitalize'>
                       {severity}
                     </div>
                   </div>
                 );
               })}
             </div>
-            
-            <div className="flex justify-center mt-4">
-              <Button variant="outline" size="sm">
+
+            <div className='mt-4 flex justify-center'>
+              <Button variant='outline' size='sm'>
                 View All Alerts
               </Button>
             </div>

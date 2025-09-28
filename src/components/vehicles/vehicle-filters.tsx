@@ -6,14 +6,14 @@ import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import {
   Sheet,
@@ -21,20 +21,14 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
+  SheetTrigger
 } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { 
-  CalendarIcon, 
-  Filter, 
-  X,
-  RotateCcw,
-  Check,
-} from 'lucide-react';
+import { CalendarIcon, Filter, X, RotateCcw, Check } from 'lucide-react';
 import type { VehicleStatus } from '@/lib/types/service-tickets';
 import { supabase } from '@/lib/supabase/client';
 
@@ -66,30 +60,71 @@ interface Customer {
   contact?: string;
 }
 
-const statusOptions: { value: VehicleStatus; label: string; color: string }[] = [
-  { value: 'received', label: 'Received', color: 'bg-blue-100 text-blue-800' },
-  { value: 'diagnosed', label: 'Diagnosed', color: 'bg-purple-100 text-purple-800' },
-  { value: 'in_progress', label: 'In Progress', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'completed', label: 'Completed', color: 'bg-green-100 text-green-800' },
-  { value: 'delivered', label: 'Delivered', color: 'bg-gray-100 text-gray-800' },
-  { value: 'on_hold', label: 'On Hold', color: 'bg-red-100 text-red-800' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-gray-100 text-gray-600' },
-];
+const statusOptions: { value: VehicleStatus; label: string; color: string }[] =
+  [
+    {
+      value: 'received',
+      label: 'Received',
+      color: 'bg-blue-100 text-blue-800'
+    },
+    {
+      value: 'diagnosed',
+      label: 'Diagnosed',
+      color: 'bg-purple-100 text-purple-800'
+    },
+    {
+      value: 'in_progress',
+      label: 'In Progress',
+      color: 'bg-yellow-100 text-yellow-800'
+    },
+    {
+      value: 'completed',
+      label: 'Completed',
+      color: 'bg-green-100 text-green-800'
+    },
+    {
+      value: 'delivered',
+      label: 'Delivered',
+      color: 'bg-gray-100 text-gray-800'
+    },
+    { value: 'on_hold', label: 'On Hold', color: 'bg-red-100 text-red-800' },
+    {
+      value: 'cancelled',
+      label: 'Cancelled',
+      color: 'bg-gray-100 text-gray-600'
+    }
+  ];
 
 const datePresets = [
-  { label: 'Today', getValue: () => ({ from: startOfDay(new Date()), to: endOfDay(new Date()) }) },
-  { label: 'Last 7 days', getValue: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
-  { label: 'Last 30 days', getValue: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
-  { label: 'This month', getValue: () => {
-    const now = new Date();
-    return { 
-      from: new Date(now.getFullYear(), now.getMonth(), 1), 
-      to: new Date(now.getFullYear(), now.getMonth() + 1, 0) 
-    };
-  }},
+  {
+    label: 'Today',
+    getValue: () => ({ from: startOfDay(new Date()), to: endOfDay(new Date()) })
+  },
+  {
+    label: 'Last 7 days',
+    getValue: () => ({ from: subDays(new Date(), 7), to: new Date() })
+  },
+  {
+    label: 'Last 30 days',
+    getValue: () => ({ from: subDays(new Date(), 30), to: new Date() })
+  },
+  {
+    label: 'This month',
+    getValue: () => {
+      const now = new Date();
+      return {
+        from: new Date(now.getFullYear(), now.getMonth(), 1),
+        to: new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      };
+    }
+  }
 ];
 
-export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFiltersProps) {
+export function VehicleFilters({
+  filters,
+  onFiltersChange,
+  loading
+}: VehicleFiltersProps) {
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -106,18 +141,23 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
           .eq('role', 'technician');
 
         if (techData) {
-          const userIds = techData.map(t => t.user_id);
+          const userIds = techData.map((t) => t.user_id);
           const { data: userData } = await supabase
             .from('auth.users')
             .select('id, email, raw_user_meta_data')
             .in('id', userIds);
 
           if (userData) {
-            setTechnicians(userData.map(u => ({
-              id: u.id,
-              email: u.email || '',
-              full_name: `${u.raw_user_meta_data?.firstName || ''} ${u.raw_user_meta_data?.lastName || ''}`.trim() || u.email || ''
-            })));
+            setTechnicians(
+              userData.map((u) => ({
+                id: u.id,
+                email: u.email || '',
+                full_name:
+                  `${u.raw_user_meta_data?.firstName || ''} ${u.raw_user_meta_data?.lastName || ''}`.trim() ||
+                  u.email ||
+                  ''
+              }))
+            );
           }
         }
 
@@ -143,27 +183,30 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
 
   const handleStatusToggle = (status: VehicleStatus) => {
     const newStatuses = filters.status.includes(status)
-      ? filters.status.filter(s => s !== status)
+      ? filters.status.filter((s) => s !== status)
       : [...filters.status, status];
-    
+
     onFiltersChange({ ...filters, status: newStatuses });
   };
 
-  const handleDateRangeChange = (range: { from: Date | null; to: Date | null }) => {
+  const handleDateRangeChange = (range: {
+    from: Date | null;
+    to: Date | null;
+  }) => {
     onFiltersChange({ ...filters, dateRange: range });
   };
 
   const handleTechnicianChange = (technicianId: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      technicianId: technicianId === 'all' ? null : technicianId 
+    onFiltersChange({
+      ...filters,
+      technicianId: technicianId === 'all' ? null : technicianId
     });
   };
 
   const handleCustomerChange = (customerId: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      customerId: customerId === 'all' ? null : customerId 
+    onFiltersChange({
+      ...filters,
+      customerId: customerId === 'all' ? null : customerId
     });
   };
 
@@ -172,11 +215,11 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
       status: [],
       dateRange: { from: null, to: null },
       technicianId: null,
-      customerId: null,
+      customerId: null
     });
   };
 
-  const activeFiltersCount = 
+  const activeFiltersCount =
     filters.status.length +
     (filters.dateRange.from ? 1 : 0) +
     (filters.technicianId ? 1 : 0) +
@@ -185,20 +228,20 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="relative">
-          <Filter className="mr-2 h-4 w-4" />
+        <Button variant='outline' className='relative'>
+          <Filter className='mr-2 h-4 w-4' />
           Filters
           {activeFiltersCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="ml-2 h-5 w-5 rounded-full p-0 text-xs"
+            <Badge
+              variant='destructive'
+              className='ml-2 h-5 w-5 rounded-full p-0 text-xs'
             >
               {activeFiltersCount}
             </Badge>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent className='w-full overflow-y-auto sm:max-w-md'>
         <SheetHeader>
           <SheetTitle>Filter Vehicles</SheetTitle>
           <SheetDescription>
@@ -206,23 +249,25 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className='mt-6 space-y-6'>
           {/* Status Filter */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Status</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className='flex flex-wrap gap-2'>
               {statusOptions.map(({ value, label, color }) => (
                 <Badge
                   key={value}
-                  variant={filters.status.includes(value) ? "default" : "outline"}
+                  variant={
+                    filters.status.includes(value) ? 'default' : 'outline'
+                  }
                   className={cn(
-                    "cursor-pointer transition-colors",
-                    filters.status.includes(value) ? color : "hover:bg-muted"
+                    'cursor-pointer transition-colors',
+                    filters.status.includes(value) ? color : 'hover:bg-muted'
                   )}
                   onClick={() => handleStatusToggle(value)}
                 >
                   {filters.status.includes(value) && (
-                    <Check className="mr-1 h-3 w-3" />
+                    <Check className='mr-1 h-3 w-3' />
                   )}
                   {label}
                 </Badge>
@@ -233,61 +278,61 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
           <Separator />
 
           {/* Date Range Filter */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Date Range</Label>
-            <div className="space-y-2">
+            <div className='space-y-2'>
               {/* Date Presets */}
-              <div className="flex flex-wrap gap-2">
+              <div className='flex flex-wrap gap-2'>
                 {datePresets.map(({ label, getValue }) => (
                   <Button
                     key={label}
-                    variant="outline"
-                    size="sm"
+                    variant='outline'
+                    size='sm'
                     onClick={() => handleDateRangeChange(getValue())}
                   >
                     {label}
                   </Button>
                 ))}
               </div>
-              
+
               {/* Custom Date Range */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant='outline'
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !filters.dateRange.from && "text-muted-foreground"
+                      'w-full justify-start text-left font-normal',
+                      !filters.dateRange.from && 'text-muted-foreground'
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className='mr-2 h-4 w-4' />
                     {filters.dateRange.from ? (
                       filters.dateRange.to ? (
                         <>
-                          {format(filters.dateRange.from, "LLL dd, y")} -{" "}
-                          {format(filters.dateRange.to, "LLL dd, y")}
+                          {format(filters.dateRange.from, 'LLL dd, y')} -{' '}
+                          {format(filters.dateRange.to, 'LLL dd, y')}
                         </>
                       ) : (
-                        format(filters.dateRange.from, "LLL dd, y")
+                        format(filters.dateRange.from, 'LLL dd, y')
                       )
                     ) : (
                       <span>Pick a date range</span>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className='w-auto p-0' align='start'>
                   <Calendar
                     initialFocus
-                    mode="range"
+                    mode='range'
                     defaultMonth={filters.dateRange.from || undefined}
                     selected={{
                       from: filters.dateRange.from || undefined,
-                      to: filters.dateRange.to || undefined,
+                      to: filters.dateRange.to || undefined
                     }}
                     onSelect={(range) => {
                       handleDateRangeChange({
                         from: range?.from || null,
-                        to: range?.to || null,
+                        to: range?.to || null
                       });
                     }}
                     numberOfMonths={2}
@@ -300,7 +345,7 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
           <Separator />
 
           {/* Technician Filter */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Technician</Label>
             <Select
               value={filters.technicianId || 'all'}
@@ -308,11 +353,11 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
               disabled={loadingData}
             >
               <SelectTrigger>
-                <SelectValue placeholder="All technicians" />
+                <SelectValue placeholder='All technicians' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All technicians</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+                <SelectItem value='all'>All technicians</SelectItem>
+                <SelectItem value='unassigned'>Unassigned</SelectItem>
                 {technicians.map((tech) => (
                   <SelectItem key={tech.id} value={tech.id}>
                     {tech.full_name}
@@ -325,7 +370,7 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
           <Separator />
 
           {/* Customer Filter */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Customer</Label>
             <Select
               value={filters.customerId || 'all'}
@@ -333,15 +378,15 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
               disabled={loadingData}
             >
               <SelectTrigger>
-                <SelectValue placeholder="All customers" />
+                <SelectValue placeholder='All customers' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All customers</SelectItem>
+                <SelectItem value='all'>All customers</SelectItem>
                 {customers.map((customer) => (
                   <SelectItem key={customer.id} value={customer.id}>
                     {customer.name}
                     {customer.contact && (
-                      <span className="text-muted-foreground ml-2">
+                      <span className='text-muted-foreground ml-2'>
                         ({customer.contact})
                       </span>
                     )}
@@ -354,20 +399,17 @@ export function VehicleFilters({ filters, onFiltersChange, loading }: VehicleFil
           <Separator />
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button
-              variant="outline"
-              className="flex-1"
+              variant='outline'
+              className='flex-1'
               onClick={clearFilters}
               disabled={activeFiltersCount === 0}
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
+              <RotateCcw className='mr-2 h-4 w-4' />
               Clear All
             </Button>
-            <Button
-              className="flex-1"
-              onClick={() => setOpen(false)}
-            >
+            <Button className='flex-1' onClick={() => setOpen(false)}>
               Apply Filters
             </Button>
           </div>

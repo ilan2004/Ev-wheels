@@ -3,16 +3,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { 
-  CreateQuoteFormData, 
-  createQuoteSchema, 
+import {
+  CreateQuoteFormData,
+  createQuoteSchema,
   getDefaultQuoteFormData,
   LineItemInputFormData,
   defaultLineItem
 } from '@/lib/billing/schemas';
-import { 
-  updateLineItemTotals, 
-  calculateBillingTotals, 
+import {
+  updateLineItemTotals,
+  calculateBillingTotals,
   formatCurrency,
   DEFAULT_BILLING_CONFIG
 } from '@/lib/billing/calculations';
@@ -28,7 +28,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form';
 import {
   Table,
@@ -36,11 +36,11 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from '@/components/ui/table';
-import { 
-  IconPlus, 
-  IconTrash, 
+import {
+  IconPlus,
+  IconTrash,
   IconCalculator,
   IconUser,
   IconFileText,
@@ -50,12 +50,17 @@ import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 import { CustomerPicker } from '@/components/customers/customer-picker';
 
 interface QuoteFormProps {
@@ -82,83 +87,100 @@ interface LineItemRowProps {
   canRemove: boolean;
 }
 
-function LineItemRow({ item, index, onUpdate, onRemove, canRemove }: LineItemRowProps) {
-  const handleChange = (field: keyof LineItemInputFormData, value: string | number) => {
+function LineItemRow({
+  item,
+  index,
+  onUpdate,
+  onRemove,
+  canRemove
+}: LineItemRowProps) {
+  const handleChange = (
+    field: keyof LineItemInputFormData,
+    value: string | number
+  ) => {
     const updatedItem = { ...item, [field]: value };
     onUpdate(index, updatedItem);
   };
 
   return (
     <TableRow>
-      <TableCell className="w-full min-w-[200px]">
+      <TableCell className='w-full min-w-[200px]'>
         <Input
-          placeholder="Description"
+          placeholder='Description'
           value={item.description}
           onChange={(e) => handleChange('description', e.target.value)}
-          className="border-0 p-1 text-sm"
+          className='border-0 p-1 text-sm'
         />
       </TableCell>
-      <TableCell className="w-20">
+      <TableCell className='w-20'>
         <Input
-          type="number"
-          placeholder="Qty"
+          type='number'
+          placeholder='Qty'
           value={item.quantity || ''}
-          onChange={(e) => handleChange('quantity', parseFloat(e.target.value) || 0)}
-          className="border-0 p-1 text-sm text-right"
-          min="0"
-          step="0.01"
+          onChange={(e) =>
+            handleChange('quantity', parseFloat(e.target.value) || 0)
+          }
+          className='border-0 p-1 text-right text-sm'
+          min='0'
+          step='0.01'
         />
       </TableCell>
-      <TableCell className="w-24">
+      <TableCell className='w-24'>
         <Input
-          type="number"
-          placeholder="Price"
+          type='number'
+          placeholder='Price'
           value={item.unitPrice || ''}
-          onChange={(e) => handleChange('unitPrice', parseFloat(e.target.value) || 0)}
-          className="border-0 p-1 text-sm text-right"
-          min="0"
-          step="0.01"
+          onChange={(e) =>
+            handleChange('unitPrice', parseFloat(e.target.value) || 0)
+          }
+          className='border-0 p-1 text-right text-sm'
+          min='0'
+          step='0.01'
         />
       </TableCell>
-      <TableCell className="w-20">
+      <TableCell className='w-20'>
         <Input
-          type="number"
-          placeholder="%"
+          type='number'
+          placeholder='%'
           value={item.discount || ''}
-          onChange={(e) => handleChange('discount', parseFloat(e.target.value) || 0)}
-          className="border-0 p-1 text-sm text-right"
-          min="0"
-          max="100"
-          step="0.01"
+          onChange={(e) =>
+            handleChange('discount', parseFloat(e.target.value) || 0)
+          }
+          className='border-0 p-1 text-right text-sm'
+          min='0'
+          max='100'
+          step='0.01'
         />
       </TableCell>
-      <TableCell className="w-20">
+      <TableCell className='w-20'>
         <Input
-          type="number"
-          placeholder="%"
+          type='number'
+          placeholder='%'
           value={item.taxRate || ''}
-          onChange={(e) => handleChange('taxRate', parseFloat(e.target.value) || 0)}
-          className="border-0 p-1 text-sm text-right"
-          min="0"
-          max="100"
-          step="0.01"
+          onChange={(e) =>
+            handleChange('taxRate', parseFloat(e.target.value) || 0)
+          }
+          className='border-0 p-1 text-right text-sm'
+          min='0'
+          max='100'
+          step='0.01'
         />
       </TableCell>
-      <TableCell className="w-24 text-right">
-        <span className="text-sm font-medium">
+      <TableCell className='w-24 text-right'>
+        <span className='text-sm font-medium'>
           {formatCurrency(item.total)}
         </span>
       </TableCell>
-      <TableCell className="w-10">
+      <TableCell className='w-10'>
         {canRemove && (
           <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+            type='button'
+            variant='ghost'
+            size='sm'
             onClick={() => onRemove(index)}
-            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+            className='text-destructive hover:text-destructive h-6 w-6 p-0'
           >
-            <IconTrash className="h-3 w-3" />
+            <IconTrash className='h-3 w-3' />
           </Button>
         )}
       </TableCell>
@@ -166,16 +188,18 @@ function LineItemRow({ item, index, onUpdate, onRemove, canRemove }: LineItemRow
   );
 }
 
-export function QuoteForm({ 
-  initialData, 
-  onSubmit, 
-  onCancel, 
+export function QuoteForm({
+  initialData,
+  onSubmit,
+  onCancel,
   loading = false,
   mode = 'create'
 }: QuoteFormProps) {
-const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
-const [linkedCustomerName, setLinkedCustomerName] = useState<string | null>(null);
-const [items, setItems] = useState<ProcessedLineItem[]>([]);
+  const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
+  const [linkedCustomerName, setLinkedCustomerName] = useState<string | null>(
+    null
+  );
+  const [items, setItems] = useState<ProcessedLineItem[]>([]);
   const [totals, setTotals] = useState({
     subtotal: 0,
     discountTotal: 0,
@@ -185,21 +209,25 @@ const [items, setItems] = useState<ProcessedLineItem[]>([]);
 
   const form = useForm<CreateQuoteFormData>({
     resolver: zodResolver(createQuoteSchema),
-    defaultValues: initialData || getDefaultQuoteFormData(),
+    defaultValues: initialData || getDefaultQuoteFormData()
   });
 
   const { control, handleSubmit, watch, setValue } = form;
-const linkedCustomerId = watch('linkedCustomerId');
+  const linkedCustomerId = watch('linkedCustomerId');
   const watchedShipping = watch('shippingAmount') || 0;
   const watchedAdjustment = watch('adjustmentAmount') || 0;
 
   // Initialize items
   useEffect(() => {
     if (initialData?.items) {
-      const processedItems = initialData.items.map(item => updateLineItemTotals({
-        ...item,
-        id: item.id || `item-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-      }));
+      const processedItems = initialData.items.map((item) =>
+        updateLineItemTotals({
+          ...item,
+          id:
+            item.id ||
+            `item-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+        })
+      );
       setItems(processedItems);
     } else {
       const newItem = updateLineItemTotals({
@@ -212,7 +240,11 @@ const linkedCustomerId = watch('linkedCustomerId');
 
   // Recalculate totals when items, shipping, or adjustment changes
   useEffect(() => {
-    const calculatedTotals = calculateBillingTotals(items, watchedShipping, watchedAdjustment);
+    const calculatedTotals = calculateBillingTotals(
+      items,
+      watchedShipping,
+      watchedAdjustment
+    );
     setTotals({
       subtotal: calculatedTotals.subtotal,
       discountTotal: calculatedTotals.discountTotal,
@@ -221,18 +253,21 @@ const linkedCustomerId = watch('linkedCustomerId');
     });
   }, [items, watchedShipping, watchedAdjustment]);
 
-  const updateItem = useCallback((index: number, updatedItem: LineItemInputFormData) => {
-    const processedItem = updateLineItemTotals({
-      ...updatedItem,
-      id: items[index].id
-    });
-    
-    setItems(prev => {
-      const newItems = [...prev];
-      newItems[index] = processedItem;
-      return newItems;
-    });
-  }, [items]);
+  const updateItem = useCallback(
+    (index: number, updatedItem: LineItemInputFormData) => {
+      const processedItem = updateLineItemTotals({
+        ...updatedItem,
+        id: items[index].id
+      });
+
+      setItems((prev) => {
+        const newItems = [...prev];
+        newItems[index] = processedItem;
+        return newItems;
+      });
+    },
+    [items]
+  );
 
   const addItem = useCallback(() => {
     const newItem = updateLineItemTotals({
@@ -240,16 +275,16 @@ const linkedCustomerId = watch('linkedCustomerId');
       taxRate: DEFAULT_BILLING_CONFIG.taxRate,
       id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
     });
-    setItems(prev => [...prev, newItem]);
+    setItems((prev) => [...prev, newItem]);
   }, []);
 
   const removeItem = useCallback((index: number) => {
-    setItems(prev => prev.filter((_, i) => i !== index));
+    setItems((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleFormSubmit = (data: CreateQuoteFormData) => {
     // Convert processed items back to form data format
-    const formItems: LineItemInputFormData[] = items.map(item => ({
+    const formItems: LineItemInputFormData[] = items.map((item) => ({
       id: item.id,
       description: item.description,
       quantity: item.quantity,
@@ -265,57 +300,73 @@ const linkedCustomerId = watch('linkedCustomerId');
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <Form {...form}>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
           {/* Customer Information */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <IconUser className="h-5 w-5" />
+              <div className='flex items-center justify-between'>
+                <CardTitle className='flex items-center gap-2'>
+                  <IconUser className='h-5 w-5' />
                   Customer Information
                 </CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={() => setCustomerPickerOpen(true)}>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => setCustomerPickerOpen(true)}
+                >
                   Select from Customers
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               {linkedCustomerId && (
-                <div className="flex items-center justify-between rounded border p-2 text-sm">
+                <div className='flex items-center justify-between rounded border p-2 text-sm'>
                   <div>
-                    Linked to: <span className="font-medium">{linkedCustomerName || 'Selected customer'}</span>
+                    Linked to:{' '}
+                    <span className='font-medium'>
+                      {linkedCustomerName || 'Selected customer'}
+                    </span>
                   </div>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => { setValue('linkedCustomerId', undefined as any); setLinkedCustomerName(null); }}>
+                  <Button
+                    type='button'
+                    size='sm'
+                    variant='ghost'
+                    onClick={() => {
+                      setValue('linkedCustomerId', undefined as any);
+                      setLinkedCustomerName(null);
+                    }}
+                  >
                     Clear link
                   </Button>
                 </div>
               )}
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className='grid gap-4 md:grid-cols-2'>
                 <FormField
                   control={control}
-                  name="customer.name"
+                  name='customer.name'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Customer Name *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter customer name" {...field} />
+                        <Input placeholder='Enter customer name' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className='grid gap-4 md:grid-cols-2'>
                 <FormField
                   control={control}
-                  name="customer.phone"
+                  name='customer.phone'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
-                        <Input placeholder="Phone number" {...field} />
+                        <Input placeholder='Phone number' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -323,12 +374,12 @@ const linkedCustomerId = watch('linkedCustomerId');
                 />
                 <FormField
                   control={control}
-                  name="customer.gstNumber"
+                  name='customer.gstNumber'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>GST Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="GST/Tax ID" {...field} />
+                        <Input placeholder='GST/Tax ID' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -337,12 +388,12 @@ const linkedCustomerId = watch('linkedCustomerId');
               </div>
               <FormField
                 control={control}
-                name="customer.address"
+                name='customer.address'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Customer address" {...field} />
+                      <Textarea placeholder='Customer address' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -351,8 +402,11 @@ const linkedCustomerId = watch('linkedCustomerId');
             </CardContent>
           </Card>
 
-          <Dialog open={customerPickerOpen} onOpenChange={setCustomerPickerOpen}>
-            <DialogContent className="sm:max-w-md">
+          <Dialog
+            open={customerPickerOpen}
+            onOpenChange={setCustomerPickerOpen}
+          >
+            <DialogContent className='sm:max-w-md'>
               <DialogHeader>
                 <DialogTitle>Select Customer</DialogTitle>
               </DialogHeader>
@@ -377,29 +431,38 @@ const linkedCustomerId = watch('linkedCustomerId');
           {/* Line Items */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <IconFileText className="h-5 w-5" />
+              <div className='flex items-center justify-between'>
+                <CardTitle className='flex items-center gap-2'>
+                  <IconFileText className='h-5 w-5' />
                   Line Items
                 </CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                  <IconPlus className="mr-2 h-4 w-4" />
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={addItem}
+                >
+                  <IconPlus className='mr-2 h-4 w-4' />
                   Add Item
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
+              <div className='overflow-x-auto'>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[200px]">Description</TableHead>
-                      <TableHead className="w-20 text-right">Qty</TableHead>
-                      <TableHead className="w-24 text-right">Unit Price</TableHead>
-                      <TableHead className="w-20 text-right">Disc %</TableHead>
-                      <TableHead className="w-20 text-right">Tax %</TableHead>
-                      <TableHead className="w-24 text-right">Total</TableHead>
-                      <TableHead className="w-10"></TableHead>
+                      <TableHead className='min-w-[200px]'>
+                        Description
+                      </TableHead>
+                      <TableHead className='w-20 text-right'>Qty</TableHead>
+                      <TableHead className='w-24 text-right'>
+                        Unit Price
+                      </TableHead>
+                      <TableHead className='w-20 text-right'>Disc %</TableHead>
+                      <TableHead className='w-20 text-right'>Tax %</TableHead>
+                      <TableHead className='w-24 text-right'>Total</TableHead>
+                      <TableHead className='w-10'></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -418,40 +481,44 @@ const linkedCustomerId = watch('linkedCustomerId');
               </div>
 
               {/* Totals Summary */}
-              <div className="mt-6 flex justify-end">
-                <div className="w-full max-w-sm space-y-2">
-                  <div className="flex justify-between text-sm">
+              <div className='mt-6 flex justify-end'>
+                <div className='w-full max-w-sm space-y-2'>
+                  <div className='flex justify-between text-sm'>
                     <span>Subtotal:</span>
                     <span>{formatCurrency(totals.subtotal)}</span>
                   </div>
                   {totals.discountTotal > 0 && (
-                    <div className="flex justify-between text-sm text-muted-foreground">
+                    <div className='text-muted-foreground flex justify-between text-sm'>
                       <span>Discount:</span>
                       <span>-{formatCurrency(totals.discountTotal)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
+                  <div className='flex justify-between text-sm'>
                     <span>Tax:</span>
                     <span>{formatCurrency(totals.taxTotal)}</span>
                   </div>
-                  
+
                   {/* Shipping and Adjustments */}
-                  <div className="grid gap-2 md:grid-cols-2">
+                  <div className='grid gap-2 md:grid-cols-2'>
                     <FormField
                       control={control}
-                      name="shippingAmount"
+                      name='shippingAmount'
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex items-center justify-between">
-                            <FormLabel className="text-sm">Shipping:</FormLabel>
+                          <div className='flex items-center justify-between'>
+                            <FormLabel className='text-sm'>Shipping:</FormLabel>
                             <FormControl>
                               <Input
-                                type="number"
-                                className="h-8 w-20 text-right text-sm"
-                                step="0.01"
-                                min="0"
+                                type='number'
+                                className='h-8 w-20 text-right text-sm'
+                                step='0.01'
+                                min='0'
                                 {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
                               />
                             </FormControl>
                           </div>
@@ -461,18 +528,24 @@ const linkedCustomerId = watch('linkedCustomerId');
                     />
                     <FormField
                       control={control}
-                      name="adjustmentAmount"
+                      name='adjustmentAmount'
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex items-center justify-between">
-                            <FormLabel className="text-sm">Adjustment:</FormLabel>
+                          <div className='flex items-center justify-between'>
+                            <FormLabel className='text-sm'>
+                              Adjustment:
+                            </FormLabel>
                             <FormControl>
                               <Input
-                                type="number"
-                                className="h-8 w-20 text-right text-sm"
-                                step="0.01"
+                                type='number'
+                                className='h-8 w-20 text-right text-sm'
+                                step='0.01'
                                 {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
                               />
                             </FormControl>
                           </div>
@@ -481,9 +554,9 @@ const linkedCustomerId = watch('linkedCustomerId');
                       )}
                     />
                   </div>
-                  
+
                   <Separator />
-                  <div className="flex justify-between font-semibold">
+                  <div className='flex justify-between font-semibold'>
                     <span>Grand Total:</span>
                     <span>{formatCurrency(totals.grandTotal)}</span>
                   </div>
@@ -495,16 +568,16 @@ const linkedCustomerId = watch('linkedCustomerId');
           {/* Quote Details */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconCalendar className="h-5 w-5" />
+              <CardTitle className='flex items-center gap-2'>
+                <IconCalendar className='h-5 w-5' />
                 Quote Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+            <CardContent className='space-y-4'>
+              <div className='grid gap-4 md:grid-cols-2'>
                 <FormField
                   control={control}
-                  name="validUntil"
+                  name='validUntil'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Valid Until</FormLabel>
@@ -512,29 +585,27 @@ const linkedCustomerId = watch('linkedCustomerId');
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant="outline"
+                              variant='outline'
                               className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
                               )}
                             >
                               {field.value ? (
-                                format(field.value, "PPP")
+                                format(field.value, 'PPP')
                               ) : (
                                 <span>Pick a date</span>
                               )}
-                              <IconCalendar className="ml-auto h-4 w-4 opacity-50" />
+                              <IconCalendar className='ml-auto h-4 w-4 opacity-50' />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className='w-auto p-0' align='start'>
                           <Calendar
-                            mode="single"
+                            mode='single'
                             selected={field.value}
                             onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date()
-                            }
+                            disabled={(date) => date < new Date()}
                             initialFocus
                           />
                         </PopoverContent>
@@ -543,43 +614,43 @@ const linkedCustomerId = watch('linkedCustomerId');
                     </FormItem>
                   )}
                 />
-                <div className="flex items-end">
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <IconCalculator className="h-3 w-3" />
+                <div className='flex items-end'>
+                  <Badge variant='outline' className='flex items-center gap-1'>
+                    <IconCalculator className='h-3 w-3' />
                     Total: {formatCurrency(totals.grandTotal)}
                   </Badge>
                 </div>
               </div>
-              
+
               <FormField
                 control={control}
-                name="notes"
+                name='notes'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Internal notes or special instructions"
-                        className="min-h-[80px]"
-                        {...field} 
+                      <Textarea
+                        placeholder='Internal notes or special instructions'
+                        className='min-h-[80px]'
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={control}
-                name="terms"
+                name='terms'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Terms & Conditions</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Payment terms and conditions"
-                        className="min-h-[100px]"
-                        {...field} 
+                      <Textarea
+                        placeholder='Payment terms and conditions'
+                        className='min-h-[100px]'
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -590,28 +661,30 @@ const linkedCustomerId = watch('linkedCustomerId');
           </Card>
 
           {/* Form Actions */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <div className='flex flex-col gap-2 sm:flex-row sm:justify-end'>
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               onClick={onCancel}
               disabled={loading}
-              className="w-full sm:w-auto"
+              className='w-full sm:w-auto'
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type='submit'
               disabled={loading || items.length === 0}
-              className="w-full sm:w-auto"
+              className='w-full sm:w-auto'
             >
               {loading ? (
                 <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-current" />
+                  <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-current' />
                   {mode === 'create' ? 'Creating...' : 'Updating...'}
                 </>
+              ) : mode === 'create' ? (
+                'Create Quote'
               ) : (
-                mode === 'create' ? 'Create Quote' : 'Update Quote'
+                'Update Quote'
               )}
             </Button>
           </div>

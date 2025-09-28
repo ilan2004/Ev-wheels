@@ -20,7 +20,10 @@ interface DashboardContentProps {
   role: UserRole;
 }
 
-export default function DashboardContent({ user, role }: DashboardContentProps) {
+export default function DashboardContent({
+  user,
+  role
+}: DashboardContentProps) {
   switch (role) {
     case UserRole.ADMIN:
       return <AdminDashboard user={user} />;
@@ -30,10 +33,12 @@ export default function DashboardContent({ user, role }: DashboardContentProps) 
       return <TechnicianDashboard user={user} />;
     default:
       return (
-        <div className="p-6">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Role Not Recognized</h1>
-            <p className="text-gray-600 mt-2">
+        <div className='p-6'>
+          <div className='text-center'>
+            <h1 className='text-2xl font-bold text-gray-900'>
+              Role Not Recognized
+            </h1>
+            <p className='mt-2 text-gray-600'>
               Please contact your administrator for role assignment.
             </p>
           </div>

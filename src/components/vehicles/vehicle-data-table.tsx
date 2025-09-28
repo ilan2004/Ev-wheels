@@ -8,7 +8,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,14 +18,14 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,7 +45,7 @@ import {
   Camera,
   MessageSquare,
   Phone,
-  Printer,
+  Printer
 } from 'lucide-react';
 import type { VehicleCase } from '@/lib/types/service-tickets';
 
@@ -88,7 +88,7 @@ const statusColors: Record<string, string> = {
   completed: 'bg-green-100 text-green-800',
   delivered: 'bg-gray-100 text-gray-800',
   on_hold: 'bg-red-100 text-red-800',
-  cancelled: 'bg-gray-100 text-gray-600',
+  cancelled: 'bg-gray-100 text-gray-600'
 };
 
 const statusLabels: Record<string, string> = {
@@ -98,11 +98,13 @@ const statusLabels: Record<string, string> = {
   completed: 'Completed',
   delivered: 'Delivered',
   on_hold: 'On Hold',
-  cancelled: 'Cancelled',
+  cancelled: 'Cancelled'
 };
 
 function getDaysInService(receivedDate: string): number {
-  return Math.floor((Date.now() - new Date(receivedDate).getTime()) / (1000 * 60 * 60 * 24));
+  return Math.floor(
+    (Date.now() - new Date(receivedDate).getTime()) / (1000 * 60 * 60 * 24)
+  );
 }
 
 function TableSkeleton() {
@@ -111,25 +113,35 @@ function TableSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <TableRow key={i}>
           <TableCell>
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded" />
-              <div className="space-y-1">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
+            <div className='flex items-center gap-3'>
+              <Skeleton className='h-10 w-10 rounded' />
+              <div className='space-y-1'>
+                <Skeleton className='h-4 w-32' />
+                <Skeleton className='h-3 w-24' />
               </div>
             </div>
           </TableCell>
-          <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-          <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
           <TableCell>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <Skeleton className="h-4 w-24" />
+            <Skeleton className='h-4 w-28' />
+          </TableCell>
+          <TableCell>
+            <Skeleton className='h-6 w-20 rounded-full' />
+          </TableCell>
+          <TableCell>
+            <div className='flex items-center gap-2'>
+              <Skeleton className='h-8 w-8 rounded-full' />
+              <Skeleton className='h-4 w-24' />
             </div>
           </TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+          <TableCell>
+            <Skeleton className='h-4 w-16' />
+          </TableCell>
+          <TableCell>
+            <Skeleton className='h-4 w-24' />
+          </TableCell>
+          <TableCell>
+            <Skeleton className='h-8 w-8' />
+          </TableCell>
         </TableRow>
       ))}
     </>
@@ -146,7 +158,7 @@ export function VehicleDataTable({
   onPageSizeChange,
   onSort,
   sortColumn,
-  sortDirection,
+  sortDirection
 }: VehicleDataTableProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -159,70 +171,72 @@ export function VehicleDataTable({
   };
 
   const SortIcon = ({ column }: { column: string }) => {
-    if (sortColumn !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
-    return sortDirection === 'asc' 
-      ? <ArrowUp className="ml-2 h-4 w-4" />
-      : <ArrowDown className="ml-2 h-4 w-4" />;
+    if (sortColumn !== column) return <ArrowUpDown className='ml-2 h-4 w-4' />;
+    return sortDirection === 'asc' ? (
+      <ArrowUp className='ml-2 h-4 w-4' />
+    ) : (
+      <ArrowDown className='ml-2 h-4 w-4' />
+    );
   };
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
+    <div className='space-y-4'>
+      <div className='rounded-md border'>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[300px]">
+              <TableHead className='w-[300px]'>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => handleSort('vehicle_info')}
-                  className="-ml-3"
+                  className='-ml-3'
                 >
                   Vehicle
-                  <SortIcon column="vehicle_info" />
+                  <SortIcon column='vehicle_info' />
                 </Button>
               </TableHead>
               <TableHead>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => handleSort('customer')}
-                  className="-ml-3"
+                  className='-ml-3'
                 >
                   Customer
-                  <SortIcon column="customer" />
+                  <SortIcon column='customer' />
                 </Button>
               </TableHead>
               <TableHead>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => handleSort('status')}
-                  className="-ml-3"
+                  className='-ml-3'
                 >
                   Status
-                  <SortIcon column="status" />
+                  <SortIcon column='status' />
                 </Button>
               </TableHead>
               <TableHead>Technician</TableHead>
               <TableHead>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => handleSort('days_in_service')}
-                  className="-ml-3"
+                  className='-ml-3'
                 >
                   Days
-                  <SortIcon column="days_in_service" />
+                  <SortIcon column='days_in_service' />
                 </Button>
               </TableHead>
               <TableHead>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => handleSort('updated_at')}
-                  className="-ml-3"
+                  className='-ml-3'
                 >
                   Last Activity
-                  <SortIcon column="updated_at" />
+                  <SortIcon column='updated_at' />
                 </Button>
               </TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className='w-[50px]'></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,39 +244,43 @@ export function VehicleDataTable({
               <TableSkeleton />
             ) : vehicles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className='text-muted-foreground text-center'
+                >
                   No vehicles found
                 </TableCell>
               </TableRow>
             ) : (
               vehicles.map((vehicle) => {
                 const daysInService = getDaysInService(vehicle.received_date);
-                const urgencyClass = daysInService > 7 ? 'text-red-600 font-semibold' : '';
-                
+                const urgencyClass =
+                  daysInService > 7 ? 'text-red-600 font-semibold' : '';
+
                 return (
                   <TableRow key={vehicle.id}>
                     <TableCell>
-                      <Link 
+                      <Link
                         href={`/dashboard/vehicles/${vehicle.id}`}
-                        className="flex items-center gap-3 hover:underline"
+                        className='flex items-center gap-3 hover:underline'
                       >
                         {vehicle.thumbnail_url ? (
                           <img
                             src={vehicle.thumbnail_url}
                             alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
-                            className="h-10 w-10 rounded object-cover"
-                            loading="lazy"
+                            className='h-10 w-10 rounded object-cover'
+                            loading='lazy'
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                            <Camera className="h-5 w-5 text-muted-foreground" />
+                          <div className='bg-muted flex h-10 w-10 items-center justify-center rounded'>
+                            <Camera className='text-muted-foreground h-5 w-5' />
                           </div>
                         )}
                         <div>
-                          <div className="font-medium">
+                          <div className='font-medium'>
                             {vehicle.vehicle_make} {vehicle.vehicle_model}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className='text-muted-foreground text-sm'>
                             {vehicle.vehicle_reg_no || 'No Reg No'}
                           </div>
                         </div>
@@ -272,17 +290,17 @@ export function VehicleDataTable({
                       {vehicle.customer ? (
                         <Link
                           href={`/dashboard/customers/${vehicle.customer.id}`}
-                          className="hover:underline"
+                          className='hover:underline'
                         >
                           {vehicle.customer.name}
                         </Link>
                       ) : (
-                        <span className="text-muted-foreground">-</span>
+                        <span className='text-muted-foreground'>-</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant="secondary"
+                      <Badge
+                        variant='secondary'
                         className={cn(
                           'font-normal',
                           statusColors[vehicle.status]
@@ -293,17 +311,25 @@ export function VehicleDataTable({
                     </TableCell>
                     <TableCell>
                       {vehicle.technician ? (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={`/api/avatar/${vehicle.technician.email}`} />
+                        <div className='flex items-center gap-2'>
+                          <Avatar className='h-8 w-8'>
+                            <AvatarImage
+                              src={`/api/avatar/${vehicle.technician.email}`}
+                            />
                             <AvatarFallback>
-                              {vehicle.technician.name.substring(0, 2).toUpperCase()}
+                              {vehicle.technician.name
+                                .substring(0, 2)
+                                .toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{vehicle.technician.name}</span>
+                          <span className='text-sm'>
+                            {vehicle.technician.name}
+                          </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-muted-foreground">Unassigned</span>
+                        <span className='text-muted-foreground text-sm'>
+                          Unassigned
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -312,50 +338,57 @@ export function VehicleDataTable({
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(vehicle.last_activity_at || vehicle.updated_at), {
-                          addSuffix: true,
-                        })}
+                      <span className='text-muted-foreground text-sm'>
+                        {formatDistanceToNow(
+                          new Date(
+                            vehicle.last_activity_at || vehicle.updated_at
+                          ),
+                          {
+                            addSuffix: true
+                          }
+                        )}
                       </span>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button variant='ghost' className='h-8 w-8 p-0'>
+                            <span className='sr-only'>Open menu</span>
+                            <MoreHorizontal className='h-4 w-4' />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align='end'>
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem asChild>
                             <Link href={`/dashboard/vehicles/${vehicle.id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className='mr-2 h-4 w-4' />
                               View Details
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/tickets/${vehicle.service_ticket_id}`}>
-                              <FileText className="mr-2 h-4 w-4" />
+                            <Link
+                              href={`/dashboard/tickets/${vehicle.service_ticket_id}`}
+                            >
+                              <FileText className='mr-2 h-4 w-4' />
                               View Ticket
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem>
-                            <Camera className="mr-2 h-4 w-4" />
+                            <Camera className='mr-2 h-4 w-4' />
                             Add Photo
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <MessageSquare className="mr-2 h-4 w-4" />
+                            <MessageSquare className='mr-2 h-4 w-4' />
                             Add Note
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem>
-                            <Phone className="mr-2 h-4 w-4" />
+                            <Phone className='mr-2 h-4 w-4' />
                             Contact Customer
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Printer className="mr-2 h-4 w-4" />
+                            <Printer className='mr-2 h-4 w-4' />
                             Print Job Card
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -370,70 +403,72 @@ export function VehicleDataTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} vehicles
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <p className='text-muted-foreground text-sm'>
+            Showing {(currentPage - 1) * pageSize + 1} to{' '}
+            {Math.min(currentPage * pageSize, totalCount)} of {totalCount}{' '}
+            vehicles
           </p>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}
           >
-            <SelectTrigger className="h-8 w-[70px]">
+            <SelectTrigger className='h-8 w-[70px]'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
+              <SelectItem value='10'>10</SelectItem>
+              <SelectItem value='20'>20</SelectItem>
+              <SelectItem value='50'>50</SelectItem>
+              <SelectItem value='100'>100</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className='flex items-center gap-1'>
           <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
+            variant='outline'
+            size='icon'
+            className='h-8 w-8'
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft className='h-4 w-4' />
           </Button>
           <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
+            variant='outline'
+            size='icon'
+            className='h-8 w-8'
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className='h-4 w-4' />
           </Button>
-          
-          <div className="flex items-center gap-1">
-            <span className="text-sm">
+
+          <div className='flex items-center gap-1'>
+            <span className='text-sm'>
               Page {currentPage} of {totalPages}
             </span>
           </div>
 
           <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
+            variant='outline'
+            size='icon'
+            className='h-8 w-8'
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className='h-4 w-4' />
           </Button>
           <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
+            variant='outline'
+            size='icon'
+            className='h-8 w-8'
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
           >
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className='h-4 w-4' />
           </Button>
         </div>
       </div>

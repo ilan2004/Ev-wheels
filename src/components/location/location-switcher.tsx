@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { useLocationContext } from '@/lib/location/context';
 
 export default function LocationSwitcher() {
-  const { locations, activeLocationId, setActive, loading } = useLocationContext();
+  const { locations, activeLocationId, setActive, loading } =
+    useLocationContext();
 
   if (loading) {
     return (
-      <div className="text-xs text-muted-foreground">Loading locations...</div>
+      <div className='text-muted-foreground text-xs'>Loading locations...</div>
     );
   }
 
@@ -18,10 +19,10 @@ export default function LocationSwitcher() {
 
   return (
     <select
-      className="border rounded h-9 px-2 bg-background text-sm"
+      className='bg-background h-9 rounded border px-2 text-sm'
       value={activeLocationId ?? ''}
       onChange={(e) => setActive(e.target.value)}
-      aria-label="Select location"
+      aria-label='Select location'
     >
       {locations.map((loc) => (
         <option key={loc.id} value={loc.id}>
@@ -31,4 +32,3 @@ export default function LocationSwitcher() {
     </select>
   );
 }
-
