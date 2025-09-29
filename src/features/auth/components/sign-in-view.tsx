@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { fetchLocations, setActiveLocation, type LocationRow } from '@/lib/location/session';
+import {
+  fetchLocations,
+  setActiveLocation,
+  type LocationRow
+} from '@/lib/location/session';
 
 export default function SignInViewPage({ stars }: { stars: number }) {
   const router = useRouter();
@@ -27,12 +31,15 @@ export default function SignInViewPage({ stars }: { stars: number }) {
         const locs = await fetchLocations();
         if (!mounted) return;
         setLocations(locs);
-        if (locs.length && !selectedLocationId) setSelectedLocationId(locs[0].id);
+        if (locs.length && !selectedLocationId)
+          setSelectedLocationId(locs[0].id);
       } catch {
         // fallback handled inside fetchLocations
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [selectedLocationId]);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -44,7 +51,10 @@ export default function SignInViewPage({ stars }: { stars: number }) {
       let emailToUse = username;
       if (!username.includes('@')) {
         try {
-          const { data: rpcEmail, error: rpcErr } = await supabase.rpc('get_email_by_username', { p_username: username });
+          const { data: rpcEmail, error: rpcErr } = await supabase.rpc(
+            'get_email_by_username',
+            { p_username: username }
+          );
           if (rpcEmail) emailToUse = rpcEmail as string;
           if (rpcErr) {
             // Attempt direct table lookup if RPC unavailable
@@ -53,9 +63,13 @@ export default function SignInViewPage({ stars }: { stars: number }) {
               .select('email')
               .eq('username', username)
               .maybeSingle();
-            if (prof && (prof as any).email) emailToUse = (prof as any).email as string;
+            if (prof && (prof as any).email)
+              emailToUse = (prof as any).email as string;
             if (profErr) {
-              console.warn('username->email fallback lookup failed:', (profErr as any)?.message);
+              console.warn(
+                'username->email fallback lookup failed:',
+                (profErr as any)?.message
+              );
             }
           }
         } catch (lookupErr) {
@@ -73,12 +87,17 @@ export default function SignInViewPage({ stars }: { stars: number }) {
       }
 
       // Sign in first (secure), then validate membership if scoping is enabled
-      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: emailToUse, password });
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password
+      });
       if (signInErr) throw signInErr;
 
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes?.user?.id;
-      const role = (userRes?.user?.user_metadata as any)?.role as string | undefined;
+      const role = (userRes?.user?.user_metadata as any)?.role as
+        | string
+        | undefined;
       const isAdmin = role === 'admin';
 
       if (scopedEnabled) {
@@ -105,13 +124,16 @@ export default function SignInViewPage({ stars }: { stars: number }) {
         }
       }
 
-      const sel = locations.find(l => l.id === selectedLocationId);
+      const sel = locations.find((l) => l.id === selectedLocationId);
       if (scopedEnabled) {
         // Allow admin "All locations" selection via empty id
         if (isAdmin && selectedLocationId === '') {
           setActiveLocation({ id: null, name: 'All locations' });
         } else {
-          setActiveLocation({ id: selectedLocationId, name: sel?.name || 'Unknown' });
+          setActiveLocation({
+            id: selectedLocationId,
+            name: sel?.name || 'Unknown'
+          });
         }
       }
 
@@ -137,21 +159,37 @@ export default function SignInViewPage({ stars }: { stars: number }) {
       <div className='bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r'>
         <div className='absolute inset-0 bg-zinc-900' />
         <div className='relative z-20 flex items-center text-lg font-medium'>
-          <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='mr-2 h-6 w-6'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            className='mr-2 h-6 w-6'
+          >
             <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' />
           </svg>
           Logo
         </div>
         <div className='relative z-20 mt-auto'>
           <blockquote className='space-y-2'>
-            <p className='text-lg'>&ldquo;This starter template has saved me countless hours of work and helped me deliver projects faster.&rdquo;</p>
-            <footer className='text-sm'>Random Dude</footer>
+            <p className='text-lg'>
+              &ldquo;This starter template has saved me countless hours of work
+              and helped me deliver projects faster.&rdquo;
+            </p>
+            <footer className='text-sm'>Ev wheels Management software</footer>
           </blockquote>
         </div>
       </div>
       <div className='flex h-full items-center justify-center p-4 lg:p-8'>
         <div className='flex w-full max-w-md flex-col items-center justify-center space-y-6'>
-          <Link className={cn('group inline-flex hover:text-yellow-200')} target='_blank' href={'https://github.com/ilan2004/Ev-wheels'}>
+          <Link
+            className={cn('group inline-flex hover:text-yellow-200')}
+            target='_blank'
+            href={'https://github.com/ilan2004/Ev-wheels'}
+          >
             <div className='flex items-center'>
               <GitHubLogoIcon className='size-4' />
               <span className='ml-1 inline'>View E-Wheels on GitHub</span>{' '}
@@ -159,22 +197,36 @@ export default function SignInViewPage({ stars }: { stars: number }) {
           </Link>
 
           <form onSubmit={onSubmit} className='w-full space-y-3'>
-            <Input type='text' placeholder='Username' value={username} onChange={(e) => setUsername(e.target.value)} required />
-            <Input type='password' placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <Input
+              type='text'
+              placeholder='Username'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            <Input
+              type='password'
+              placeholder='Password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
             <div className='space-y-1'>
-              <label className='text-sm text-muted-foreground'>Location</label>
+              <label className='text-muted-foreground text-sm'>Location</label>
               <select
-                className='w-full border rounded h-9 px-2 bg-background'
+                className='bg-background h-9 w-full rounded border px-2'
                 value={selectedLocationId}
                 onChange={(e) => setSelectedLocationId(e.target.value)}
                 required
               >
-                {locations.map(loc => (
-                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
                 ))}
               </select>
             </div>
-            {error && <div className='text-red-600 text-sm'>{error}</div>}
+            {error && <div className='text-sm text-red-600'>{error}</div>}
             <Button className='w-full' type='submit' disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
@@ -182,11 +234,17 @@ export default function SignInViewPage({ stars }: { stars: number }) {
 
           <p className='text-muted-foreground px-8 text-center text-sm'>
             By clicking continue, you agree to our{' '}
-            <Link href='/terms' className='hover:text-primary underline underline-offset-4'>
+            <Link
+              href='/terms'
+              className='hover:text-primary underline underline-offset-4'
+            >
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href='/privacy' className='hover:text-primary underline underline-offset-4'>
+            <Link
+              href='/privacy'
+              className='hover:text-primary underline underline-offset-4'
+            >
               Privacy Policy
             </Link>
             .
