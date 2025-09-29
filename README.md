@@ -1,4 +1,4 @@
-# E-Wheels Battery Status Ingestion
+# EV Wheels, Custom Software
 
 This repository includes a script to ingest rows from the exported PDF:
 

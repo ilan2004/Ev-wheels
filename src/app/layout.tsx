@@ -16,8 +16,11 @@ const META_THEME_COLORS = {
 };
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: {
+    default: 'EV Wheels, Custom Software',
+    template: '%s | EV Wheels, Custom Software'
+  },
+  description: 'EV Wheels, Custom Software'
 };
 
 export const viewport: Viewport = {

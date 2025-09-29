@@ -1,11 +1,12 @@
 {
-  "name": "e-wheels-battery-management",
+  "name": "ev-wheels-custom-software",
   "version": "1.0.0",
   "private": true,
   "author": {
     "name": "E-Wheels Development Team",
     "url": "https://github.com/ilan2004/Ev-wheels"
   },
+  "description": "EV Wheels, Custom Software",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
