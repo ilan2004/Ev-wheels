@@ -377,7 +377,7 @@ export default function TicketDetailPage() {
                               {...field}
                             >
                               <option value='vehicle'>Vehicle</option>
-                              <option value='battery'>Battery (Phase 3)</option>
+                              <option value='battery'>Battery</option>
                               <option value='both'>Both</option>
                             </select>
                           </FormControl>

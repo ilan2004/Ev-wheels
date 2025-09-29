@@ -3,10 +3,13 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 
 vi.mock('@/lib/api/customers', () => {
-  const list = vi.fn(async ({ search }: { search?: string }) => ({ success: true, data: [
-    { id: '1', name: 'John Doe', contact: '98765', email: '', address: '', gst_number: '', created_at: '', updated_at: '' },
-    { id: '2', name: 'Jane Smith', contact: '12345', email: '', address: '', gst_number: '', created_at: '', updated_at: '' },
-  ].filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()))) }));
+  const list = vi.fn(async ({ search }: { search?: string }) => ({
+    success: true,
+    data: [
+      { id: '1', name: 'John Doe', contact: '98765', email: '', address: '', gst_number: '', created_at: '', updated_at: '' },
+      { id: '2', name: 'Jane Smith', contact: '12345', email: '', address: '', gst_number: '', created_at: '', updated_at: '' },
+    ].filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()))
+  }));
   const create = vi.fn(async (input: any) => ({ success: true, data: { id: 'new', ...input, created_at: '', updated_at: '' } }));
   return {
     customersApi: { list, create },

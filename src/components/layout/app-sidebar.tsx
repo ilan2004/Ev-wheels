@@ -31,6 +31,7 @@ import {
 import { UserAvatarProfile } from '@/components/user-avatar-profile';
 import { navItems } from '@/constants/data';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/use-auth';
 import {
   IconBell,
@@ -142,6 +143,7 @@ export default function AppSidebar() {
   const { isOpen } = useMediaQuery();
   const { user, userInfo, isLoaded, hasAnyPermission } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
   
   // Performance monitoring
   const finishRender = measureRender('AppSidebar');
@@ -193,7 +195,7 @@ export default function AppSidebar() {
 
   if (!isLoaded) {
     return (
-      <Sidebar collapsible='icon'>
+      <Sidebar collapsible={isMobile ? 'offcanvas' : 'none'}>
         <SidebarContent className='flex items-center justify-center p-4'>
           <div>Loading...</div>
         </SidebarContent>
@@ -202,7 +204,7 @@ export default function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible='icon'>
+    <Sidebar collapsible={isMobile ? 'offcanvas' : 'none'}>
       <SidebarHeader>
         {/* Enhanced Company Header */}
         <div className='flex items-center gap-3 px-4 py-3 border-b border-sidebar-border/50'>
@@ -244,7 +246,7 @@ export default function AppSidebar() {
           </div>
         )}
       </SidebarHeader>
-      <SidebarContent className='overflow-x-hidden'>
+      <SidebarContent>
         {/* Quick Actions Section - Memoized */}
         <SidebarQuickActions />
         

@@ -72,7 +72,7 @@ CREATE TABLE service_tickets (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   closed_at TIMESTAMP WITH TIME ZONE,
   created_by UUID NOT NULL, -- Reference to user
-  updated_by UUID NOT NULL, -- Reference to user
+  updated_by UUID, -- Reference to user (nullable to support service-role operations)
   
   -- Triage Information
   triaged_at TIMESTAMP WITH TIME ZONE,
@@ -333,7 +333,7 @@ BEGIN
         action_type,
         previous_vals,
         new_vals,
-        COALESCE(NEW.updated_by, OLD.updated_by),
+        COALESCE(NEW.updated_by, NEW.created_by, OLD.updated_by, OLD.created_by),
         CASE 
             WHEN action_type = 'created' THEN 'Service ticket created'
             WHEN action_type = 'triaged' THEN 'Ticket triaged and routed to appropriate department'

@@ -254,7 +254,7 @@ export class SupabaseServiceTicketsRepository {
       // Phase 3: Create a Battery case in battery_records and link it back
       if (routeTo === 'battery' || routeTo === 'both') {
         // Create a minimal battery record linked to this ticket's customer
-        const minimalBattery = {
+        const minimalBatteryBase = {
           serial_number: `BATT-${ticket.ticket_number}`,
           brand: 'Unknown',
           model: null,
@@ -269,9 +269,12 @@ export class SupabaseServiceTicketsRepository {
           updated_by: uid ?? ticket.updated_by
         } as any;
 
+        // Attach location_id to satisfy RLS on battery_records
+        const minimalBattery = withLocationId('battery_records', minimalBatteryBase);
+
         const { data: bInserted, error: bErr } = await supabase
           .from('battery_records')
-          .insert(minimalBattery)
+          .insert(minimalBattery as any)
           .select('id')
           .single();
 

@@ -213,6 +213,59 @@
   .dark .table-container {
     scrollbar-color: oklch(0.708 0 0 / 30%) oklch(0.269 0 0);
   }
+
+  /* Sidebar scrollbar styles */
+  [data-sidebar="content"]::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-track {
+    background: var(--sidebar);
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background: var(--sidebar-border);
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+    background: var(--sidebar-accent);
+  }
+
+  /* Firefox sidebar scrollbar */
+  [data-sidebar="content"] {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sidebar-border) var(--sidebar);
+  }
+
+  /* Custom scroll area styles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-track-sidebar::-webkit-scrollbar-track {
+    background: var(--sidebar);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thumb-sidebar-border::-webkit-scrollbar-thumb {
+    background: var(--sidebar-border);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+  
+  .hover\:scrollbar-thumb-sidebar-accent:hover::-webkit-scrollbar-thumb {
+    background: var(--sidebar-accent);
+  }
+  
+  .scrollbar-thumb-sidebar-border::-webkit-scrollbar-thumb:hover {
+    background: var(--sidebar-accent);
+  }
 }
 
 /* Hover accent glow for KPI cards */

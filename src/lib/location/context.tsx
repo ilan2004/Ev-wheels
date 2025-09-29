@@ -40,6 +40,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Fetch only user-assigned locations
         try {
+          if (!uid) {
+            throw new Error('User not authenticated');
+          }
           const { data, error } = await supabase
             .from('user_locations')
             .select('location:locations(id, name, code)')
