@@ -1,5 +1,11 @@
 #!/usr/bin/env sh
 
-# Husky pre-commit hook (Windows-friendly)
-# Run lint-staged using Node's npx without invoking WSL
-npx --no -- lint-staged
+# Husky pre-commit hook (Windows-friendly, avoids WSL/bash resolution)
+# Ensure Node is available
+if ! command -v node >/dev/null 2>&1; then
+  echo "husky - Node.js not found in PATH"
+  exit 1
+fi
+
+# Run lint-staged directly via Node to avoid shell/WSL issues with npx/npm on Windows
+node ./node_modules/lint-staged/bin/lint-staged.js
