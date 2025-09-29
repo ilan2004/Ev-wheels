@@ -174,13 +174,7 @@ export default function SignInViewPage({ stars }: { stars: number }) {
           Logo
         </div>
         <div className='relative z-20 mt-auto'>
-          <blockquote className='space-y-2'>
-            <p className='text-lg'>
-              &ldquo;This starter template has saved me countless hours of work
-              and helped me deliver projects faster.&rdquo;
-            </p>
-            <footer className='text-sm'>Ev wheels Management software</footer>
-          </blockquote>
+          {/* Testimonial removed from login page */}
         </div>
       </div>
       <div className='flex h-full items-center justify-center p-4 lg:p-8'>
