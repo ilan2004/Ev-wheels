@@ -26,12 +26,13 @@ for (const rel of envCandidates) {
 const { createClient } = require('@supabase/supabase-js');
 
 function getArg(name, def) {
-  const envName = `NEW_USER_${name.toUpperCase()}`;
-  const envVal = process.env[envName];
-  if (envVal) return envVal;
+  // Prefer explicit CLI flags over environment variables to allow one-off overrides
   const flag = `--${name}=`;
   const arg = process.argv.find((a) => a.startsWith(flag));
   if (arg) return arg.slice(flag.length);
+  const envName = `NEW_USER_${name.toUpperCase()}`;
+  const envVal = process.env[envName];
+  if (envVal) return envVal;
   return def;
 }
 
