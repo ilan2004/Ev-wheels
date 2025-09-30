@@ -16,7 +16,7 @@ export const DEFAULT_QUOTE_CONFIG: NumberingConfig = {
   includeYear: true,
   digitCount: 4,
   separator: '-',
-  resetYearly: true,
+  resetYearly: true
 };
 
 export const DEFAULT_INVOICE_CONFIG: NumberingConfig = {
@@ -24,7 +24,7 @@ export const DEFAULT_INVOICE_CONFIG: NumberingConfig = {
   includeYear: true,
   digitCount: 4,
   separator: '-',
-  resetYearly: true,
+  resetYearly: true
 };
 
 /**
@@ -33,26 +33,26 @@ export const DEFAULT_INVOICE_CONFIG: NumberingConfig = {
  */
 class InMemoryNumberingStore {
   private counters: Map<string, number> = new Map();
-  
+
   getNextNumber(key: string): number {
     const current = this.counters.get(key) || 0;
     const next = current + 1;
     this.counters.set(key, next);
     return next;
   }
-  
+
   getCurrentNumber(key: string): number {
     return this.counters.get(key) || 0;
   }
-  
+
   setNumber(key: string, value: number): void {
     this.counters.set(key, value);
   }
-  
+
   reset(): void {
     this.counters.clear();
   }
-  
+
   // Get all keys for debugging
   getAllKeys(): string[] {
     return Array.from(this.counters.keys());
@@ -84,36 +84,36 @@ function padNumber(num: number, digitCount: number): string {
  * Parse existing number to extract sequence
  */
 export function parseExistingNumber(
-  numberString: string, 
+  numberString: string,
   config: NumberingConfig
 ): { year?: number; sequence: number } | null {
   const parts = numberString.split(config.separator);
-  
+
   if (config.includeYear) {
     // Expected format: PREFIX-YYYY-NNNN
     if (parts.length !== 3 || parts[0] !== config.prefix) {
       return null;
     }
-    
+
     const year = parseInt(parts[1]);
     const sequence = parseInt(parts[2]);
-    
+
     if (isNaN(year) || isNaN(sequence)) {
       return null;
     }
-    
+
     return { year, sequence };
   } else {
     // Expected format: PREFIX-NNNN
     if (parts.length !== 2 || parts[0] !== config.prefix) {
       return null;
     }
-    
+
     const sequence = parseInt(parts[1]);
     if (isNaN(sequence)) {
       return null;
     }
-    
+
     return { sequence };
   }
 }
@@ -150,11 +150,11 @@ function generateNumber(
 ): string {
   const currentYear = specifiedYear || new Date().getFullYear();
   const counterKey = generateCounterKey(config, currentYear);
-  
+
   // Initialize counter based on existing numbers
   if (existingNumbers.length > 0) {
     let maxSequence = 0;
-    
+
     for (const existing of existingNumbers) {
       const parsed = parseExistingNumber(existing, config);
       if (parsed) {
@@ -168,16 +168,16 @@ function generateNumber(
         }
       }
     }
-    
+
     // Set counter to max found sequence
     if (maxSequence > inMemoryStore.getCurrentNumber(counterKey)) {
       inMemoryStore.setNumber(counterKey, maxSequence);
     }
   }
-  
+
   // Get next number
   const nextSequence = inMemoryStore.getNextNumber(counterKey);
-  
+
   // Format the number
   return formatNumber(config, nextSequence, currentYear);
 }
@@ -185,9 +185,13 @@ function generateNumber(
 /**
  * Format number according to config
  */
-function formatNumber(config: NumberingConfig, sequence: number, year: number): string {
+function formatNumber(
+  config: NumberingConfig,
+  sequence: number,
+  year: number
+): string {
   const paddedSequence = padNumber(sequence, config.digitCount);
-  
+
   if (config.includeYear) {
     return `${config.prefix}${config.separator}${year}${config.separator}${paddedSequence}`;
   } else {
@@ -199,7 +203,7 @@ function formatNumber(config: NumberingConfig, sequence: number, year: number): 
  * Validate number format
  */
 export function validateNumberFormat(
-  numberString: string, 
+  numberString: string,
   config: NumberingConfig
 ): boolean {
   return parseExistingNumber(numberString, config) !== null;
@@ -216,7 +220,7 @@ export function resetCounters(): void {
  * Get current counter value for debugging
  */
 export function getCurrentCounter(
-  config: NumberingConfig, 
+  config: NumberingConfig,
   year?: number
 ): number {
   const counterKey = generateCounterKey(config, year);
@@ -233,10 +237,10 @@ export function previewNextNumber(
 ): string {
   const currentYear = specifiedYear || new Date().getFullYear();
   const counterKey = generateCounterKey(config, currentYear);
-  
+
   // Calculate what the next sequence would be
   let maxSequence = inMemoryStore.getCurrentNumber(counterKey);
-  
+
   if (existingNumbers.length > 0) {
     for (const existing of existingNumbers) {
       const parsed = parseExistingNumber(existing, config);
@@ -251,7 +255,7 @@ export function previewNextNumber(
       }
     }
   }
-  
+
   const nextSequence = maxSequence + 1;
   return formatNumber(config, nextSequence, currentYear);
 }
@@ -266,19 +270,26 @@ export function generateBulkNumbers(
   specifiedYear?: number
 ): string[] {
   const numbers: string[] = [];
-  
+
   for (let i = 0; i < count; i++) {
-    const number = generateNumber(config, [...existingNumbers, ...numbers], specifiedYear);
+    const number = generateNumber(
+      config,
+      [...existingNumbers, ...numbers],
+      specifiedYear
+    );
     numbers.push(number);
   }
-  
+
   return numbers;
 }
 
 /**
  * Check if a number already exists in the list
  */
-export function numberExists(numberString: string, existingNumbers: string[]): boolean {
+export function numberExists(
+  numberString: string,
+  existingNumbers: string[]
+): boolean {
   return existingNumbers.includes(numberString);
 }
 
@@ -293,16 +304,18 @@ export function generateUniqueNumber(
 ): string {
   for (let i = 0; i < maxRetries; i++) {
     const number = generateNumber(config, existingNumbers, specifiedYear);
-    
+
     if (!numberExists(number, existingNumbers)) {
       return number;
     }
-    
+
     // If collision detected, add to existing numbers to avoid it in next iteration
     existingNumbers.push(number);
   }
-  
-  throw new Error(`Unable to generate unique number after ${maxRetries} retries`);
+
+  throw new Error(
+    `Unable to generate unique number after ${maxRetries} retries`
+  );
 }
 
 /**
@@ -324,7 +337,7 @@ export function filterNumbersByYear(
   year: number,
   config: NumberingConfig
 ): string[] {
-  return numbers.filter(number => {
+  return numbers.filter((number) => {
     const extractedYear = extractYearFromNumber(number, config);
     return extractedYear === year;
   });
@@ -350,8 +363,10 @@ export function createNumberingService(repository: NumberingRepository) {
       // Implementation would use repository instead of in-memory store
       return generateQuoteNumber(DEFAULT_QUOTE_CONFIG, existingNumbers);
     },
-    
-    async generateInvoiceNumber(existingNumbers: string[] = []): Promise<string> {
+
+    async generateInvoiceNumber(
+      existingNumbers: string[] = []
+    ): Promise<string> {
       // Implementation would use repository instead of in-memory store
       return generateInvoiceNumber(DEFAULT_INVOICE_CONFIG, existingNumbers);
     }

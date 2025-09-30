@@ -40,7 +40,7 @@ import PageContainer from '@/components/layout/page-container';
 import { useRequireAuth } from '@/lib/auth/use-require-auth';
 import { useAuth } from '@/hooks/use-auth';
 
-export default function TicketDetailPage() {
+export default function JobCardDetailPage() {
   // Require an authenticated session to view and upload attachments
   useRequireAuth();
   const params = useParams<{ id: string }>();
@@ -188,7 +188,7 @@ export default function TicketDetailPage() {
       note: values.note
     });
     if (!res.success) return toast.error(res.error || 'Failed to triage');
-    toast.success('Ticket triaged');
+    toast.success('Job card triaged');
     // Reload ticket
     const updated = await serviceTicketsApi.fetchTicketWithRelations(ticketId);
     if (updated.success && updated.data) setTicket(updated.data.ticket);
@@ -198,6 +198,7 @@ export default function TicketDetailPage() {
     return (
       <PageContainer>
         <div className='flex flex-col gap-6'>
+          <SectionHeader title='Job Card Details' />
           <div className='bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 backdrop-blur'>
             <div className='flex items-center justify-between px-2 py-3'>
               <div className='flex items-center gap-3'>
@@ -217,7 +218,7 @@ export default function TicketDetailPage() {
         </div>
       </PageContainer>
     );
-  if (!ticket) return <div>Ticket not found</div>;
+  if (!ticket) return <div>Job card not found</div>;
 
   return (
     <PageContainer>
@@ -240,7 +241,7 @@ export default function TicketDetailPage() {
           }}
         />
         <SectionHeader
-          title={`Ticket ${ticket.ticket_number}`}
+          title={`Job Card ${ticket.ticket_number}`}
           description={ticket.symptom}
         />
 
@@ -304,7 +305,7 @@ export default function TicketDetailPage() {
                   </>
                 ) : (
                   <div className='text-muted-foreground'>
-                    No pending approval for this ticket.
+                    No pending approval for this job card.
                   </div>
                 )}
               </CardContent>
@@ -425,7 +426,7 @@ export default function TicketDetailPage() {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
-                                  text: `Reminder: approval pending for Ticket ${ticket.ticket_number}`
+                                  text: `Reminder: approval pending for Job Card ${ticket.ticket_number}`
                                 })
                               });
                               toast.success('Reminder sent');
@@ -911,9 +912,7 @@ function StickyTicketHeader({
   );
 }
 
-function getActionsForStatus(
-  status: ServiceTicket['status']
-): {
+function getActionsForStatus(status: ServiceTicket['status']): {
   label: string;
   to: ServiceTicket['status'];
   variant?: 'default' | 'outline' | 'secondary' | 'destructive';

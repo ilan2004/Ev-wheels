@@ -26,7 +26,7 @@ const DEFAULT_THEMES = [
   },
   {
     name: 'Green',
-    value: 'green', 
+    value: 'green',
     color: '🟢'
   },
   {
@@ -61,13 +61,13 @@ const MONO_THEMES = [
     color: '🔵'
   },
   {
-    name: 'Mono Green', 
+    name: 'Mono Green',
     value: 'mono-green-scaled',
     color: '🟢'
   },
   {
     name: 'Mono Red',
-    value: 'mono-red-scaled', 
+    value: 'mono-red-scaled',
     color: '🔴'
   },
   {
@@ -126,8 +126,8 @@ export function ThemeSelector() {
             <SelectLabel>Default</SelectLabel>
             {DEFAULT_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
-                <div className="flex items-center gap-2">
-                  <span className="text-base">{theme.color}</span>
+                <div className='flex items-center gap-2'>
+                  <span className='text-base'>{theme.color}</span>
                   <span>{theme.name}</span>
                 </div>
               </SelectItem>
@@ -138,8 +138,8 @@ export function ThemeSelector() {
             <SelectLabel>Scaled</SelectLabel>
             {SCALED_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
-                <div className="flex items-center gap-2">
-                  <span className="text-base">{theme.color}</span>
+                <div className='flex items-center gap-2'>
+                  <span className='text-base'>{theme.color}</span>
                   <span>{theme.name}</span>
                 </div>
               </SelectItem>
@@ -149,8 +149,8 @@ export function ThemeSelector() {
             <SelectLabel>Monospaced</SelectLabel>
             {MONO_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
-                <div className="flex items-center gap-2">
-                  <span className="text-base">{theme.color}</span>
+                <div className='flex items-center gap-2'>
+                  <span className='text-base'>{theme.color}</span>
                   <span>{theme.name}</span>
                 </div>
               </SelectItem>

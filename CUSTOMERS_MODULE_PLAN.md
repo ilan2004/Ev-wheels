@@ -1,23 +1,26 @@
 # Customers Module: Phase-by-Phase Plan
 
 Context from the current codebase:
+
 - BMS uses a customers table in the DB (see src/lib/database/bms-schema.sql) and references customers from battery records (customer_id) and UI forms (src/components/bms/battery-form.tsx).
-- Service Tickets list/select customers via Supabase (src/lib/api/service-tickets*.ts), and the tickets UI depends on listCustomers() to populate a select (src/app/dashboard/tickets/new/page.tsx).
+- Service Tickets list/select customers via Supabase (src/lib/api/service-tickets\*.ts), and the tickets UI depends on listCustomers() to populate a select (src/app/dashboard/tickets/new/page.tsx).
 - Billing currently embeds freeform customer info in quotes/invoices (name, phone, address, gstNumber) via Zod schemas (src/lib/billing/schemas.ts) rather than the master customers table.
 - Admin dashboard links to /dashboard/customers and /dashboard/customers/new in quick actions, implying a customers module is intended but not implemented yet (src/components/dashboard/admin-dashboard.tsx).
 
 Goal
+
 - Build a first-class Customers module that is the single source of truth for customers and makes it easy to add/select a customer from anywhere (BMS, Service Tickets, Billing), with a consistent API and UI components.
 
 Outcomes
+
 - A reusable CustomerPicker with typeahead search, quick-create modal, and robust validation.
 - Customers pages: list, create, edit, detail, with search, filters, and recent activity across tickets/batteries/billing.
 - Optional linkage from Billing’s embedded customer info to a master customer to prefill and synchronize fields like gstNumber.
 
-
 Phases and Milestones
 
 Phase 1: Foundation and Quick-Add Everywhere
+
 - Data Model
   - Current DB: customers(id, name, contact, email, address, created_at, updated_at)
   - Proposed additions:
@@ -61,6 +64,7 @@ Phase 1: Foundation and Quick-Add Everywhere
   - Customers API supports list, create, get with basic search
 
 Phase 2: Customers Pages (List, Create/Edit, Detail)
+
 - Pages
   - List: src/app/dashboard/customers/page.tsx
     - Columns: Name, Contact, Email, Created, Last Activity (computed later)
@@ -81,6 +85,7 @@ Phase 2: Customers Pages (List, Create/Edit, Detail)
   - Customer detail shows recent tickets and batteries
 
 Phase 3: Billing Integration (Linking and Sync)
+
 - Prefill and link behavior
   - Quotes/Invoices: Add “Link to master customer” control near Customer Information
     - Selecting a master customer pre-populates name, phone, address, gstNumber
@@ -94,6 +99,7 @@ Phase 3: Billing Integration (Linking and Sync)
   - If persistence is available, invoice records keep a reference to customers.id
 
 Phase 4: Quality of Life and Governance
+
 - Deduplication and merge
   - Build “Possible duplicates” page using similarity checks (name/contact/email \~ ILIKE). Offer a merge UI to consolidate references (tickets, batteries, future invoices) into a target customer
 - Imports/Exports
@@ -109,6 +115,7 @@ Phase 4: Quality of Life and Governance
   - I can import/export customers with validation
 
 Phase 5: Performance, Tests, and Polishing
+
 - Performance
   - Add indexes for common searches (already present for name/contact; consider email index)
   - Debounced search and limit results
@@ -118,10 +125,10 @@ Phase 5: Performance, Tests, and Polishing
 - Docs
   - Developer README updates for customers API and components
 
-
 Technical Design Details
 
 Data model and migrations
+
 - SQL changes (append in src/lib/database/bms-schema.sql or a new migration):
   - ALTER TABLE customers ADD COLUMN gst_number TEXT NULL;
   - ALTER TABLE customers ADD COLUMN alt_contact TEXT NULL;
@@ -130,18 +137,21 @@ Data model and migrations
   - Optional helper index for fuzzy search: trigram extension if supported later
 
 Types
+
 - src/lib/types/customers.ts
   - export interface Customer { id; name; contact?; email?; address?; gst_number?; created_at; updated_at }
   - export interface CreateCustomerInput { name: string; contact?: string; email?: string; address?: string; gst_number?: string }
   - export interface UpdateCustomerInput extends Partial<CreateCustomerInput> {}
 
 API
+
 - src/lib/api/customers.ts
   - Contract with methods: list, getById, create, update, delete, search
 - src/lib/api/customers.supabase.ts
   - Supabase implementation with ILIKE-based search and pagination
 
 UI Components
+
 - CustomerPicker (src/components/customers/customer-picker.tsx)
   - Props: value (customer_id | null), onChange, allowQuickAdd, placeholder, disabled
   - Behavior: fetch on focus with recent, debounce search, show quick add trigger
@@ -149,6 +159,7 @@ UI Components
   - Form with zod schema; on success returns created Customer
 
 Integration Points
+
 - BMS Battery Form: src/components/bms/battery-form.tsx
   - Replace Select of customers with CustomerPicker
 - Tickets New: src/app/dashboard/tickets/new/page.tsx
@@ -161,29 +172,31 @@ Integration Points
   - src/components/dashboard/admin-dashboard.tsx already links to /dashboard/customers and /dashboard/customers/new; ensure pages exist
 
 Validation and UX Notes
+
 - Zod schemas for customer creation/editing should mirror DB constraints and expected formats
 - Use consistent phone formatting rules; allow free text initially with optional normalization later
 - GST number optional but validated when provided
 
 Observability
+
 - Basic console error handling via toast errors in UI; later wire a logging/monitoring mechanism
 
-
 Acceptance Criteria Summary per Phase
+
 - Phase 1: Quick-add from Tickets and BMS; Billing can prefill; APIs exist
 - Phase 2: Customers list, create/edit, detail with linked activity
 - Phase 3: Billing prefill/link semantics, optional persistence of customer_id in invoices
 - Phase 4: Merge duplicates, import/export, audit
 - Phase 5: Performance, tests, docs
 
-
 Open Questions / Decisions
+
 - Should invoices persist to the DB now? If yes, include customer_id on invoice and quote tables and expose those in APIs.
 - Dedup strategy: keep soft constraints + merge tooling vs hard unique constraints (prefer soft + tooling initially).
 - Authorization scope for who can create/edit/delete customers; align with existing RLS setup.
 
-
 Implementation Checklist (initial backlog)
+
 - [ ] Add customers API and types
 - [ ] Build CustomerPicker and CustomerQuickAdd components
 - [ ] Integrate CustomerPicker into battery-form and tickets/new
@@ -193,4 +206,3 @@ Implementation Checklist (initial backlog)
 - [ ] Extend DB with gst_number (+ indexes) via migration
 - [ ] Tests: unit (API, components) and E2E smoke
 - [ ] Docs update for developers
-

@@ -127,6 +127,9 @@ function TableSkeleton() {
           <TableCell>
             <Skeleton className='h-6 w-20 rounded-full' />
           </TableCell>
+          <TableCell className='hidden lg:table-cell'>
+            <Skeleton className='h-6 w-20 rounded-full' />
+          </TableCell>
           <TableCell>
             <div className='flex items-center gap-2'>
               <Skeleton className='h-8 w-8 rounded-full' />
@@ -181,11 +184,15 @@ export function VehicleDataTable({
 
   return (
     <div className='space-y-4'>
-      <div className='rounded-md border'>
-        <Table>
+      <div
+        className='overflow-x-auto rounded-md border'
+        role='region'
+        aria-label='Vehicles table'
+      >
+        <Table className='min-w-[700px] md:min-w-0'>
           <TableHeader>
             <TableRow>
-              <TableHead className='w-[300px]'>
+              <TableHead className='w-[240px] sm:w-[300px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('vehicle_info')}
@@ -215,8 +222,9 @@ export function VehicleDataTable({
                   <SortIcon column='status' />
                 </Button>
               </TableHead>
-              <TableHead>Technician</TableHead>
-              <TableHead>
+              <TableHead className='hidden lg:table-cell'>Location</TableHead>
+              <TableHead className='hidden md:table-cell'>Technician</TableHead>
+              <TableHead className='hidden md:table-cell'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('days_in_service')}
@@ -226,7 +234,7 @@ export function VehicleDataTable({
                   <SortIcon column='days_in_service' />
                 </Button>
               </TableHead>
-              <TableHead>
+              <TableHead className='hidden md:table-cell'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('updated_at')}
@@ -245,7 +253,7 @@ export function VehicleDataTable({
             ) : vehicles.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className='text-muted-foreground text-center'
                 >
                   No vehicles found
@@ -309,7 +317,18 @@ export function VehicleDataTable({
                         {statusLabels[vehicle.status] || vehicle.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className='hidden lg:table-cell'>
+                      {vehicle.location?.name ? (
+                        <Badge variant='outline' className='text-xs'>
+                          {vehicle.location.name}
+                        </Badge>
+                      ) : (
+                        <span className='text-muted-foreground text-xs'>
+                          -
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className='hidden md:table-cell'>
                       {vehicle.technician ? (
                         <div className='flex items-center gap-2'>
                           <Avatar className='h-8 w-8'>
@@ -332,12 +351,12 @@ export function VehicleDataTable({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className='hidden md:table-cell'>
                       <span className={cn('text-sm', urgencyClass)}>
                         {daysInService}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className='hidden md:table-cell'>
                       <span className='text-muted-foreground text-sm'>
                         {formatDistanceToNow(
                           new Date(
@@ -367,10 +386,10 @@ export function VehicleDataTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/dashboard/tickets/${vehicle.service_ticket_id}`}
+                              href={`/dashboard/job-cards/${vehicle.service_ticket_id}`}
                             >
                               <FileText className='mr-2 h-4 w-4' />
-                              View Ticket
+                              View Job Card
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -403,7 +422,7 @@ export function VehicleDataTable({
       </div>
 
       {/* Pagination */}
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
         <div className='flex items-center gap-2'>
           <p className='text-muted-foreground text-sm'>
             Showing {(currentPage - 1) * pageSize + 1} to{' '}

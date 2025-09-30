@@ -20,9 +20,7 @@ export default function Providers({
           {children}
           {/* React Query DevTools - only in development */}
           {process.env.NODE_ENV === 'development' && (
-            <ReactQueryDevtools 
-              initialIsOpen={false} 
-            />
+            <ReactQueryDevtools initialIsOpen={false} />
           )}
         </LocationProvider>
       </ActiveThemeProvider>

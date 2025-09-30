@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,8 @@ export default function NewCustomerPage() {
     setSaving(true);
     try {
       const res = await customersApi.create(values);
-      if (!res.success || !res.data) throw new Error(res.error || 'Failed to create customer');
+      if (!res.success || !res.data)
+        throw new Error(res.error || 'Failed to create customer');
       toast.success('Customer created');
       router.push(`/dashboard/customers/${res.data.id}`);
     } catch (e) {
@@ -29,8 +30,8 @@ export default function NewCustomerPage() {
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold tracking-tight">Add Customer</h1>
+      <div className='flex flex-col gap-6'>
+        <h1 className='text-2xl font-bold tracking-tight'>Add Customer</h1>
         <Card>
           <CardHeader>
             <CardTitle>Customer Details</CardTitle>
@@ -43,4 +44,3 @@ export default function NewCustomerPage() {
     </PageContainer>
   );
 }
-

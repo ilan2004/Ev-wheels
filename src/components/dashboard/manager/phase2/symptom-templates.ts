@@ -23,7 +23,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 2,
     requiredSkills: ['charging_systems', 'diagnostics'],
-    commonCauses: ['Faulty charger port', 'BMS issue', 'Connection problem', 'Charger compatibility'],
+    commonCauses: [
+      'Faulty charger port',
+      'BMS issue',
+      'Connection problem',
+      'Charger compatibility'
+    ],
     urgencyKeywords: ['emergency', 'urgent', 'stranded', 'completely dead']
   },
   {
@@ -34,7 +39,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 3,
     estimatedDuration: 1.5,
     requiredSkills: ['charging_systems', 'battery_diagnostics'],
-    commonCauses: ['Degraded cells', 'Temperature issues', 'Charger problems', 'BMS calibration'],
+    commonCauses: [
+      'Degraded cells',
+      'Temperature issues',
+      'Charger problems',
+      'BMS calibration'
+    ],
     urgencyKeywords: ['urgent', 'daily_commute', 'work_vehicle']
   },
   {
@@ -45,7 +55,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 2.5,
     requiredSkills: ['charging_systems', 'electrical_diagnostics'],
-    commonCauses: ['Overheating', 'BMS protection', 'Loose connections', 'Cell imbalance'],
+    commonCauses: [
+      'Overheating',
+      'BMS protection',
+      'Loose connections',
+      'Cell imbalance'
+    ],
     urgencyKeywords: ['frequent', 'every_time', 'always']
   },
 
@@ -58,7 +73,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 3,
     requiredSkills: ['battery_diagnostics', 'capacity_testing'],
-    commonCauses: ['Cell degradation', 'Imbalanced cells', 'BMS calibration', 'Temperature effects'],
+    commonCauses: [
+      'Cell degradation',
+      'Imbalanced cells',
+      'BMS calibration',
+      'Temperature effects'
+    ],
     urgencyKeywords: ['sudden', 'drastic', 'half', 'emergency']
   },
   {
@@ -69,7 +89,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 1,
     estimatedDuration: 2,
     requiredSkills: ['electrical_diagnostics', 'parasitic_drain'],
-    commonCauses: ['Parasitic drain', 'Faulty cells', 'Short circuit', 'BMS malfunction'],
+    commonCauses: [
+      'Parasitic drain',
+      'Faulty cells',
+      'Short circuit',
+      'BMS malfunction'
+    ],
     urgencyKeywords: ['emergency', 'minutes', 'dangerous', 'stranded']
   },
   {
@@ -80,7 +105,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 2.5,
     requiredSkills: ['power_electronics', 'electrical_diagnostics'],
-    commonCauses: ['Cell voltage variance', 'Connection issues', 'BMS problems', 'Temperature variation'],
+    commonCauses: [
+      'Cell voltage variance',
+      'Connection issues',
+      'BMS problems',
+      'Temperature variation'
+    ],
     urgencyKeywords: ['safety', 'dangerous', 'traffic', 'accident']
   },
 
@@ -93,7 +123,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 1,
     estimatedDuration: 1,
     requiredSkills: ['thermal_management', 'safety_protocols'],
-    commonCauses: ['Thermal runaway risk', 'Cooling system failure', 'Overcharging', 'Cell damage'],
+    commonCauses: [
+      'Thermal runaway risk',
+      'Cooling system failure',
+      'Overcharging',
+      'Cell damage'
+    ],
     urgencyKeywords: ['hot', 'burning', 'smoke', 'smell', 'emergency']
   },
   {
@@ -104,7 +139,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 1,
     estimatedDuration: 0.5,
     requiredSkills: ['safety_protocols', 'battery_replacement'],
-    commonCauses: ['Gas buildup', 'Cell failure', 'Overcharging', 'Age-related degradation'],
+    commonCauses: [
+      'Gas buildup',
+      'Cell failure',
+      'Overcharging',
+      'Age-related degradation'
+    ],
     urgencyKeywords: ['bulging', 'expanded', 'safety', 'immediate']
   },
   {
@@ -115,7 +155,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 1,
     estimatedDuration: 1,
     requiredSkills: ['safety_protocols', 'hazmat_handling'],
-    commonCauses: ['Electrolyte leakage', 'Cell venting', 'Thermal issues', 'Chemical reaction'],
+    commonCauses: [
+      'Electrolyte leakage',
+      'Cell venting',
+      'Thermal issues',
+      'Chemical reaction'
+    ],
     urgencyKeywords: ['smell', 'gas', 'chemical', 'burning', 'emergency']
   },
 
@@ -128,7 +173,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 1,
     estimatedDuration: 4,
     requiredSkills: ['structural_repair', 'safety_protocols'],
-    commonCauses: ['Impact damage', 'Accident', 'Corrosion', 'Mounting failure'],
+    commonCauses: [
+      'Impact damage',
+      'Accident',
+      'Corrosion',
+      'Mounting failure'
+    ],
     urgencyKeywords: ['accident', 'crash', 'damaged', 'broken', 'safety']
   },
   {
@@ -139,7 +189,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 1.5,
     requiredSkills: ['connector_repair', 'mechanical_assembly'],
-    commonCauses: ['Wear and tear', 'Corrosion', 'Loose mounting', 'Foreign objects'],
+    commonCauses: [
+      'Wear and tear',
+      'Corrosion',
+      'Loose mounting',
+      'Foreign objects'
+    ],
     urgencyKeywords: ['loose', 'sparking', 'dangerous']
   },
 
@@ -152,7 +207,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 3,
     requiredSkills: ['electrical_diagnostics', 'multimeter_testing'],
-    commonCauses: ['Cell imbalance', 'BMS failure', 'Wiring issues', 'Sensor problems'],
+    commonCauses: [
+      'Cell imbalance',
+      'BMS failure',
+      'Wiring issues',
+      'Sensor problems'
+    ],
     urgencyKeywords: ['sparking', 'electrical', 'dangerous', 'short_circuit']
   },
   {
@@ -163,7 +223,12 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     suggestedPriority: 2,
     estimatedDuration: 2,
     requiredSkills: ['bms_diagnostics', 'software_troubleshooting'],
-    commonCauses: ['Software glitch', 'Sensor failure', 'Communication error', 'Calibration needed'],
+    commonCauses: [
+      'Software glitch',
+      'Sensor failure',
+      'Communication error',
+      'Calibration needed'
+    ],
     urgencyKeywords: ['error', 'warning', 'fault', 'system_failure']
   },
 
@@ -172,64 +237,94 @@ export const SYMPTOM_TEMPLATES: SymptomTemplate[] = [
     id: 'general-malfunction',
     category: 'electrical',
     symptom: 'General malfunction / multiple issues',
-    description: 'Battery experiencing multiple problems or general malfunction',
+    description:
+      'Battery experiencing multiple problems or general malfunction',
     suggestedPriority: 2,
     estimatedDuration: 4,
     requiredSkills: ['comprehensive_diagnostics', 'troubleshooting'],
-    commonCauses: ['Multiple component failure', 'Age-related issues', 'System integration problems'],
+    commonCauses: [
+      'Multiple component failure',
+      'Age-related issues',
+      'System integration problems'
+    ],
     urgencyKeywords: ['multiple', 'everything', 'complete_failure', 'emergency']
   }
 ];
 
 // Utility functions for working with symptom templates
 
-export const getSymptomsByCategory = (category: SymptomTemplate['category']) => {
-  return SYMPTOM_TEMPLATES.filter(template => template.category === category);
+export const getSymptomsByCategory = (
+  category: SymptomTemplate['category']
+) => {
+  return SYMPTOM_TEMPLATES.filter((template) => template.category === category);
 };
 
 export const getSymptomById = (id: string) => {
-  return SYMPTOM_TEMPLATES.find(template => template.id === id);
+  return SYMPTOM_TEMPLATES.find((template) => template.id === id);
 };
 
-export const suggestPriorityFromDescription = (description: string): 1 | 2 | 3 => {
+export const suggestPriorityFromDescription = (
+  description: string
+): 1 | 2 | 3 => {
   const lowerDesc = description.toLowerCase();
-  
+
   // High priority keywords
   const highPriorityKeywords = [
-    'emergency', 'urgent', 'immediate', 'dangerous', 'safety', 'smoke', 'fire',
-    'overheating', 'swelling', 'sparking', 'smell', 'burning', 'stranded'
+    'emergency',
+    'urgent',
+    'immediate',
+    'dangerous',
+    'safety',
+    'smoke',
+    'fire',
+    'overheating',
+    'swelling',
+    'sparking',
+    'smell',
+    'burning',
+    'stranded'
   ];
-  
+
   // Medium priority keywords
   const mediumPriorityKeywords = [
-    'frequent', 'daily', 'work', 'commute', 'important', 'soon', 'problem'
+    'frequent',
+    'daily',
+    'work',
+    'commute',
+    'important',
+    'soon',
+    'problem'
   ];
-  
-  if (highPriorityKeywords.some(keyword => lowerDesc.includes(keyword))) {
+
+  if (highPriorityKeywords.some((keyword) => lowerDesc.includes(keyword))) {
     return 1; // High priority
   }
-  
-  if (mediumPriorityKeywords.some(keyword => lowerDesc.includes(keyword))) {
+
+  if (mediumPriorityKeywords.some((keyword) => lowerDesc.includes(keyword))) {
     return 2; // Medium priority
   }
-  
+
   return 3; // Default to low priority
 };
 
-export const suggestTechniciansForSymptom = (symptomId: string, availableTechnicians: any[]) => {
+export const suggestTechniciansForSymptom = (
+  symptomId: string,
+  availableTechnicians: any[]
+) => {
   const symptom = getSymptomById(symptomId);
   if (!symptom) return [];
-  
-  return availableTechnicians.filter(tech => 
-    symptom.requiredSkills.some(skill => 
-      tech.skills?.includes(skill) || tech.specializations?.includes(skill)
+
+  return availableTechnicians.filter((tech) =>
+    symptom.requiredSkills.some(
+      (skill) =>
+        tech.skills?.includes(skill) || tech.specializations?.includes(skill)
     )
   );
 };
 
 export const CATEGORY_LABELS = {
   charging: 'Charging Issues',
-  performance: 'Performance Issues', 
+  performance: 'Performance Issues',
   safety: 'Safety Concerns',
   physical: 'Physical Damage',
   electrical: 'Electrical Problems'
@@ -237,7 +332,7 @@ export const CATEGORY_LABELS = {
 
 export const PRIORITY_LABELS = {
   1: 'High Priority',
-  2: 'Medium Priority', 
+  2: 'Medium Priority',
   3: 'Low Priority'
 } as const;
 

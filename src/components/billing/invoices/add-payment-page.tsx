@@ -71,10 +71,10 @@ export function AddPaymentPage({ invoiceId }: AddPaymentPageProps) {
   if (initialLoading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading invoice...</p>
+        <div className='flex items-center justify-center py-8'>
+          <div className='text-center'>
+            <div className='border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2'></div>
+            <p className='text-muted-foreground'>Loading invoice...</p>
           </div>
         </div>
       </PageContainer>
@@ -84,9 +84,12 @@ export function AddPaymentPage({ invoiceId }: AddPaymentPageProps) {
   if (!invoice) {
     return (
       <PageContainer>
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">Invoice not found.</p>
-          <Button className="mt-4" onClick={() => router.push('/dashboard/invoices')}>
+        <div className='py-8 text-center'>
+          <p className='text-muted-foreground'>Invoice not found.</p>
+          <Button
+            className='mt-4'
+            onClick={() => router.push('/dashboard/invoices')}
+          >
             Back to Invoices
           </Button>
         </div>
@@ -96,22 +99,22 @@ export function AddPaymentPage({ invoiceId }: AddPaymentPageProps) {
 
   return (
     <PageContainer>
-      <div className="flex flex-1 flex-col space-y-6">
+      <div className='flex flex-1 flex-col space-y-6'>
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className='flex items-center gap-4'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => router.back()}
-            className="h-8 w-8 p-0"
+            className='h-8 w-8 p-0'
           >
-            <IconArrowLeft className="h-4 w-4" />
+            <IconArrowLeft className='h-4 w-4' />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className='text-2xl font-semibold tracking-tight'>
               Add Payment - Invoice {invoice.number}
             </h1>
-            <p className="text-muted-foreground">
+            <p className='text-muted-foreground'>
               Record a payment for this invoice.
             </p>
           </div>

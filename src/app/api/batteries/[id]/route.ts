@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, BatteryType, CellType, BatteryStatus } from '@/types/bms';
+import {
+  BatteryRecord,
+  BatteryStatusHistory,
+  TechnicalDiagnostics,
+  BatteryType,
+  CellType,
+  BatteryStatus
+} from '@/types/bms';
 
 // GET /api/batteries/[id]
 export async function GET(
@@ -8,13 +15,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
+
     // In a real implementation, you would:
     // 1. Validate the ID
     // 2. Check user permissions
     // 3. Fetch from database
     // 4. Handle not found cases
-    
+
     // Mock response for now
     const battery: BatteryRecord = {
       id,
@@ -37,7 +44,8 @@ export async function GET(
       status: BatteryStatus.COMPLETED,
       bms_status: 'ok',
       repair_notes: '72v 39Ah. All cell ok, bms ok, Cell above 40 Ohms',
-      technician_notes: 'Customer reported reduced range. Initial testing shows cell imbalance.',
+      technician_notes:
+        'Customer reported reduced range. Initial testing shows cell imbalance.',
       estimated_cost: 4400,
       final_cost: 4400,
       parts_cost: 3200,
@@ -57,9 +65,9 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching battery:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch battery details' 
+      {
+        success: false,
+        error: 'Failed to fetch battery details'
       },
       { status: 500 }
     );
@@ -75,16 +83,16 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     const { status, notes } = body;
-    
+
     // In a real implementation:
     // 1. Validate input data
     // 2. Check user permissions
     // 3. Update database
     // 4. Create status history entry
     // 5. Send notifications if needed
-    
+
     console.log('Updating battery status:', { id, status, notes });
-    
+
     // Mock success response
     return NextResponse.json({
       success: true,
@@ -93,9 +101,9 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating battery status:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to update battery status' 
+      {
+        success: false,
+        error: 'Failed to update battery status'
       },
       { status: 500 }
     );

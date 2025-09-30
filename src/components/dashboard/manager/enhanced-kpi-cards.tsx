@@ -89,39 +89,45 @@ function GlassmorphicKPICard({
     <motion.div
       whileHover={{ scale: onClick ? 1.02 : 1 }}
       whileTap={{ scale: onClick ? 0.98 : 1 }}
-      className="group"
+      className='group'
     >
       <Card
         className={cn(
-          'relative backdrop-blur-sm bg-gradient-to-br',
+          'relative bg-gradient-to-br backdrop-blur-sm',
           style.gradient,
           style.border,
           style.shadow,
-          'hover:shadow-lg transition-all duration-300',
-          'border dark:bg-gray-900/50 bg-white/50',
+          'transition-all duration-300 hover:shadow-lg',
+          'border bg-white/50 dark:bg-gray-900/50',
           onClick && 'cursor-pointer'
         )}
         onClick={onClick}
       >
-        <CardContent className="p-6">
+        <CardContent className='p-6'>
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className={cn(
-              'p-2 rounded-lg transition-all duration-200',
-              style.iconBg,
-              'group-hover:scale-110'
-            )}>
+          <div className='mb-4 flex items-center justify-between'>
+            <div
+              className={cn(
+                'rounded-lg p-2 transition-all duration-200',
+                style.iconBg,
+                'group-hover:scale-110'
+              )}
+            >
               {icon}
             </div>
             {trend && (
-              <div className={cn(
-                'flex items-center gap-1 text-xs font-medium',
-                trend.direction === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              )}>
+              <div
+                className={cn(
+                  'flex items-center gap-1 text-xs font-medium',
+                  trend.direction === 'up'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                )}
+              >
                 {trend.direction === 'up' ? (
-                  <IconArrowUpRight className="h-3 w-3" />
+                  <IconArrowUpRight className='h-3 w-3' />
                 ) : (
-                  <IconArrowDownRight className="h-3 w-3" />
+                  <IconArrowDownRight className='h-3 w-3' />
                 )}
                 {Math.abs(trend.value)}%
               </div>
@@ -129,11 +135,13 @@ function GlassmorphicKPICard({
           </div>
 
           {/* Value */}
-          <div className="mb-2">
-            <div className={cn(
-              'text-3xl font-bold font-mono leading-none',
-              style.valueColor
-            )}>
+          <div className='mb-2'>
+            <div
+              className={cn(
+                'font-mono text-3xl leading-none font-bold',
+                style.valueColor
+              )}
+            >
               {loading ? '—' : value.toLocaleString()}
             </div>
           </div>
@@ -144,7 +152,7 @@ function GlassmorphicKPICard({
               {title}
             </div>
             {subtitle && (
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className='text-muted-foreground mt-1 text-xs'>
                 {subtitle}
               </div>
             )}
@@ -218,7 +226,7 @@ function NeonKPICard({
     <motion.div
       whileHover={{ scale: onClick ? 1.02 : 1 }}
       whileTap={{ scale: onClick ? 0.98 : 1 }}
-      className="group"
+      className='group'
     >
       <Card
         className={cn(
@@ -226,44 +234,53 @@ function NeonKPICard({
           style.bg,
           style.border,
           style.glow,
-          'hover:shadow-xl transition-all duration-300',
+          'transition-all duration-300 hover:shadow-xl',
           onClick && 'cursor-pointer'
         )}
         onClick={onClick}
       >
         {/* Accent Line */}
-        <div className={cn('absolute top-0 left-0 right-0 h-[2px]', style.accent)} />
-        
-        <CardContent className="p-6 relative">
+        <div
+          className={cn('absolute top-0 right-0 left-0 h-[2px]', style.accent)}
+        />
+
+        <CardContent className='relative p-6'>
           {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+          <div className='absolute inset-0 opacity-5'>
+            <div className='absolute inset-0 bg-gradient-to-br from-white/10 to-transparent' />
           </div>
 
-          <div className="relative">
+          <div className='relative'>
             {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="text-gray-400 group-hover:scale-110 transition-transform duration-200">
+            <div className='mb-4 flex items-center gap-3'>
+              <div className='text-gray-400 transition-transform duration-200 group-hover:scale-110'>
                 {icon}
               </div>
-              <div className={cn('text-xs font-mono uppercase tracking-wider', style.titleColor)}>
+              <div
+                className={cn(
+                  'font-mono text-xs tracking-wider uppercase',
+                  style.titleColor
+                )}
+              >
                 {title}
               </div>
             </div>
 
             {/* Value */}
-            <div className={cn(
-              'text-4xl font-black font-mono leading-none mb-2',
-              style.valueColor,
-              style.textGlow,
-              'group-hover:scale-105 transition-transform duration-200'
-            )}>
+            <div
+              className={cn(
+                'mb-2 font-mono text-4xl leading-none font-black',
+                style.valueColor,
+                style.textGlow,
+                'transition-transform duration-200 group-hover:scale-105'
+              )}
+            >
               {loading ? '—' : value.toLocaleString()}
             </div>
 
             {/* Subtitle */}
             {subtitle && (
-              <div className="text-xs text-gray-500 font-mono uppercase tracking-wide">
+              <div className='font-mono text-xs tracking-wide text-gray-500 uppercase'>
                 {subtitle}
               </div>
             )}
@@ -330,48 +347,54 @@ function CleanKPICard({
     >
       <Card
         className={cn(
-          'border-0 shadow-sm bg-card hover:shadow-md transition-all duration-200',
+          'bg-card border-0 shadow-sm transition-all duration-200 hover:shadow-md',
           style.bgHover,
           style.border,
           onClick && 'cursor-pointer'
         )}
         onClick={onClick}
       >
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between">
-            <div className="space-y-3">
-              <div className={cn('p-2 rounded-lg bg-background', style.iconColor)}>
+        <CardContent className='p-6'>
+          <div className='flex items-start justify-between'>
+            <div className='space-y-3'>
+              <div
+                className={cn('bg-background rounded-lg p-2', style.iconColor)}
+              >
                 {icon}
               </div>
               <div>
-                <div className={cn(
-                  'text-3xl font-bold font-mono tracking-tight leading-none',
-                  style.valueColor
-                )}>
+                <div
+                  className={cn(
+                    'font-mono text-3xl leading-none font-bold tracking-tight',
+                    style.valueColor
+                  )}
+                >
                   {loading ? '—' : value.toLocaleString()}
                 </div>
-                <div className="text-sm font-medium text-foreground mt-1">
+                <div className='text-foreground mt-1 text-sm font-medium'>
                   {title}
                 </div>
                 {subtitle && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className='text-muted-foreground text-xs'>
                     {subtitle}
                   </div>
                 )}
               </div>
             </div>
-            
+
             {trend && (
-              <div className={cn(
-                'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full',
-                trend.direction === 'up' 
-                  ? 'bg-green-100 text-green-700 dark:bg-green-950/20 dark:text-green-400'
-                  : 'bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400'
-              )}>
+              <div
+                className={cn(
+                  'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
+                  trend.direction === 'up'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-950/20 dark:text-green-400'
+                    : 'bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400'
+                )}
+              >
                 {trend.direction === 'up' ? (
-                  <IconArrowUpRight className="h-3 w-3" />
+                  <IconArrowUpRight className='h-3 w-3' />
                 ) : (
-                  <IconArrowDownRight className="h-3 w-3" />
+                  <IconArrowDownRight className='h-3 w-3' />
                 )}
                 {Math.abs(trend.value)}%
               </div>
@@ -407,25 +430,29 @@ function DetailedKPICard({
 }) {
   const variants = {
     critical: {
-      gradient: 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/30',
+      gradient:
+        'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/30',
       valueColor: 'text-red-700 dark:text-red-300',
       iconColor: 'text-red-600 dark:text-red-400',
       progressColor: 'bg-red-500'
     },
     warning: {
-      gradient: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/30',
+      gradient:
+        'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/30',
       valueColor: 'text-amber-700 dark:text-amber-300',
       iconColor: 'text-amber-600 dark:text-amber-400',
       progressColor: 'bg-amber-500'
     },
     info: {
-      gradient: 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30',
+      gradient:
+        'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30',
       valueColor: 'text-blue-700 dark:text-blue-300',
       iconColor: 'text-blue-600 dark:text-blue-400',
       progressColor: 'bg-blue-500'
     },
     success: {
-      gradient: 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30',
+      gradient:
+        'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30',
       valueColor: 'text-green-700 dark:text-green-300',
       iconColor: 'text-green-600 dark:text-green-400',
       progressColor: 'bg-green-500'
@@ -433,7 +460,9 @@ function DetailedKPICard({
   };
 
   const style = variants[variant];
-  const progressPercentage = target ? Math.min((value / target) * 100, 100) : progress || 0;
+  const progressPercentage = target
+    ? Math.min((value / target) * 100, 100)
+    : progress || 0;
 
   return (
     <motion.div
@@ -443,20 +472,25 @@ function DetailedKPICard({
       <Card
         className={cn(
           style.gradient,
-          'border shadow-sm hover:shadow-lg transition-all duration-300',
+          'border shadow-sm transition-all duration-300 hover:shadow-lg',
           onClick && 'cursor-pointer'
         )}
         onClick={onClick}
       >
-        <CardContent className="p-6">
-          <div className="space-y-4">
+        <CardContent className='p-6'>
+          <div className='space-y-4'>
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className={cn('p-3 rounded-full bg-white/50 dark:bg-black/20', style.iconColor)}>
+            <div className='flex items-center justify-between'>
+              <div
+                className={cn(
+                  'rounded-full bg-white/50 p-3 dark:bg-black/20',
+                  style.iconColor
+                )}
+              >
                 {icon}
               </div>
               {target && (
-                <div className="text-right text-xs text-muted-foreground">
+                <div className='text-muted-foreground text-right text-xs'>
                   Target: {target.toLocaleString()}
                 </div>
               )}
@@ -464,32 +498,35 @@ function DetailedKPICard({
 
             {/* Value */}
             <div>
-              <div className={cn(
-                'text-3xl font-bold font-mono leading-none',
-                style.valueColor
-              )}>
+              <div
+                className={cn(
+                  'font-mono text-3xl leading-none font-bold',
+                  style.valueColor
+                )}
+              >
                 {loading ? '—' : value.toLocaleString()}
               </div>
-              <div className="text-sm font-medium text-foreground/80 mt-1">
+              <div className='text-foreground/80 mt-1 text-sm font-medium'>
                 {title}
               </div>
               {subtitle && (
-                <div className="text-xs text-muted-foreground">
-                  {subtitle}
-                </div>
+                <div className='text-muted-foreground text-xs'>{subtitle}</div>
               )}
             </div>
 
             {/* Progress Bar */}
             {(progress !== undefined || target) && (
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
+              <div className='space-y-1'>
+                <div className='text-muted-foreground flex justify-between text-xs'>
                   <span>Progress</span>
                   <span>{Math.round(progressPercentage)}%</span>
                 </div>
-                <div className="w-full bg-black/10 dark:bg-white/10 rounded-full h-2">
-                  <div 
-                    className={cn('h-2 rounded-full transition-all duration-500', style.progressColor)}
+                <div className='h-2 w-full rounded-full bg-black/10 dark:bg-white/10'>
+                  <div
+                    className={cn(
+                      'h-2 rounded-full transition-all duration-500',
+                      style.progressColor
+                    )}
                     style={{ width: `${progressPercentage}%` }}
                   />
                 </div>
@@ -514,7 +551,7 @@ export function EnhancedKPIs({
       key: 'overdue' as const,
       title: 'Overdue',
       value: data.overdue,
-      icon: <IconAlertTriangle className="h-5 w-5" />,
+      icon: <IconAlertTriangle className='h-5 w-5' />,
       variant: 'critical' as const,
       subtitle: 'Immediate action required',
       trend: { value: 12, direction: 'down' as const }, // Mock data
@@ -524,7 +561,7 @@ export function EnhancedKPIs({
       key: 'dueToday' as const,
       title: 'Due Today',
       value: data.dueToday,
-      icon: <IconClipboardList className="h-5 w-5" />,
+      icon: <IconClipboardList className='h-5 w-5' />,
       variant: 'warning' as const,
       subtitle: 'Focus for today',
       trend: { value: 8, direction: 'up' as const },
@@ -534,7 +571,7 @@ export function EnhancedKPIs({
       key: 'openTickets' as const,
       title: 'Open Tickets',
       value: data.openTickets,
-      icon: <IconBattery className="h-5 w-5" />,
+      icon: <IconBattery className='h-5 w-5' />,
       variant: 'info' as const,
       subtitle: 'Total active workload',
       target: 50
@@ -543,7 +580,7 @@ export function EnhancedKPIs({
       key: 'weeklyCompleted' as const,
       title: 'Completed',
       value: data.weeklyCompleted,
-      icon: <IconTrendingUp className="h-5 w-5" />,
+      icon: <IconTrendingUp className='h-5 w-5' />,
       variant: 'success' as const,
       subtitle: 'This week',
       trend: { value: 25, direction: 'up' as const },
@@ -551,7 +588,7 @@ export function EnhancedKPIs({
     }
   ];
 
-  const renderCard = (metric: typeof metrics[0], index: number) => {
+  const renderCard = (metric: (typeof metrics)[0], index: number) => {
     const cardProps = {
       title: metric.title,
       value: metric.value,
@@ -572,9 +609,7 @@ export function EnhancedKPIs({
         {variant === 'glassmorphic' && (
           <GlassmorphicKPICard {...cardProps} trend={metric.trend} />
         )}
-        {variant === 'neon' && (
-          <NeonKPICard {...cardProps} />
-        )}
+        {variant === 'neon' && <NeonKPICard {...cardProps} />}
         {variant === 'compact' && (
           <CleanKPICard {...cardProps} trend={metric.trend} />
         )}
@@ -587,15 +622,15 @@ export function EnhancedKPIs({
 
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className='mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="h-5 w-5 bg-muted rounded"></div>
-                <div className="space-y-2">
-                  <div className="h-8 w-16 bg-muted rounded"></div>
-                  <div className="h-4 w-20 bg-muted rounded"></div>
+          <Card key={i} className='animate-pulse'>
+            <CardContent className='p-6'>
+              <div className='space-y-4'>
+                <div className='bg-muted h-5 w-5 rounded'></div>
+                <div className='space-y-2'>
+                  <div className='bg-muted h-8 w-16 rounded'></div>
+                  <div className='bg-muted h-4 w-20 rounded'></div>
                 </div>
               </div>
             </CardContent>
@@ -610,9 +645,9 @@ export function EnhancedKPIs({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="mb-6"
+      className='mb-6'
     >
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {metrics.map(renderCard)}
       </div>
 
@@ -621,27 +656,28 @@ export function EnhancedKPIs({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-6 text-center"
+        className='mt-6 text-center'
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 text-sm">
+        <div className='bg-muted/50 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm'>
           {data.overdue > 0 ? (
             <>
-              <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-              <span className="text-red-600 dark:text-red-400 font-medium">
-                {data.overdue} overdue ticket{data.overdue !== 1 ? 's' : ''} need immediate attention
+              <span className='flex h-2 w-2 animate-pulse rounded-full bg-red-500'></span>
+              <span className='font-medium text-red-600 dark:text-red-400'>
+                {data.overdue} overdue ticket{data.overdue !== 1 ? 's' : ''}{' '}
+                need immediate attention
               </span>
             </>
           ) : data.dueToday > 0 ? (
             <>
-              <span className="flex h-2 w-2 rounded-full bg-amber-500"></span>
-              <span className="text-amber-600 dark:text-amber-400 font-medium">
+              <span className='flex h-2 w-2 rounded-full bg-amber-500'></span>
+              <span className='font-medium text-amber-600 dark:text-amber-400'>
                 {data.dueToday} ticket{data.dueToday !== 1 ? 's' : ''} due today
               </span>
             </>
           ) : (
             <>
-              <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-              <span className="text-green-600 dark:text-green-400 font-medium">
+              <span className='flex h-2 w-2 rounded-full bg-green-500'></span>
+              <span className='font-medium text-green-600 dark:text-green-400'>
                 All caught up! No overdue tickets.
               </span>
             </>

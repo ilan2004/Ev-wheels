@@ -20,7 +20,9 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
       if (!mounted) return;
       setUser(user);
       setSignedIn(!!user);
@@ -37,27 +39,42 @@ export function useAuth() {
   const userInfo = useMemo(() => {
     if (!user) return null;
     return formatUserInfo({
-      emailAddresses: [{ emailAddress: (user.email ?? user?.email_addresses?.[0]?.email) || '' }],
+      emailAddresses: [
+        {
+          emailAddress: (user.email ?? user?.email_addresses?.[0]?.email) || ''
+        }
+      ],
       firstName: user.user_metadata?.firstName ?? null,
       lastName: user.user_metadata?.lastName ?? null,
       publicMetadata: { role: user.user_metadata?.role },
-      username: null,
+      username: null
     } as any);
   }, [user]);
 
-  const role = useMemo(() => getUserRole({ publicMetadata: { role: user?.user_metadata?.role } } as any) || UserRole.TECHNICIAN, [user]);
+  const role = useMemo(
+    () =>
+      getUserRole({
+        publicMetadata: { role: user?.user_metadata?.role }
+      } as any) || UserRole.TECHNICIAN,
+    [user]
+  );
 
   const hasPermission = useMemo(() => {
-    return (permission: Permission) => userHasPermission({ publicMetadata: { role } } as any, permission);
+    return (permission: Permission) =>
+      userHasPermission({ publicMetadata: { role } } as any, permission);
   }, [role]);
 
   const hasAnyPermission = useMemo(() => {
-    return (permissions: Permission[]) => userHasAnyPermission({ publicMetadata: { role } } as any, permissions);
+    return (permissions: Permission[]) =>
+      userHasAnyPermission({ publicMetadata: { role } } as any, permissions);
   }, [role]);
 
   const canAccessNavigation = useMemo(() => {
     return (navigationKey: keyof typeof NAVIGATION_PERMISSIONS) =>
-      userCanAccessNavigation({ publicMetadata: { role } } as any, navigationKey);
+      userCanAccessNavigation(
+        { publicMetadata: { role } } as any,
+        navigationKey
+      );
   }, [role]);
 
   const isAdmin = role === UserRole.ADMIN;
@@ -76,7 +93,7 @@ export function useAuth() {
     hasPermission,
     hasAnyPermission,
     canAccessNavigation,
-    hasRole: Boolean(role),
+    hasRole: Boolean(role)
   };
 }
 
@@ -99,7 +116,9 @@ export function useAnyPermission(permissions: Permission[]) {
 /**
  * Hook to check if user can access navigation item
  */
-export function useNavigationAccess(navigationKey: keyof typeof NAVIGATION_PERMISSIONS) {
+export function useNavigationAccess(
+  navigationKey: keyof typeof NAVIGATION_PERMISSIONS
+) {
   const { canAccessNavigation } = useAuth();
   return canAccessNavigation(navigationKey);
 }
@@ -146,6 +165,6 @@ export function useRoleGuard() {
     isAdmin,
     isTechnician,
     isManager,
-    hasRole,
+    hasRole
   };
 }

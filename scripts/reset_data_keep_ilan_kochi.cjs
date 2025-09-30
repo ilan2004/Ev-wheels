@@ -20,7 +20,8 @@ const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(process.cwd(), '.env.local') });
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const args = process.argv.slice(2);
@@ -28,7 +29,9 @@ const DRY_RUN = args.includes('--dry-run');
 const CONFIRM = args.includes('--confirm');
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment.');
+  console.error(
+    'Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment.'
+  );
   process.exit(1);
 }
 
@@ -37,7 +40,9 @@ if (!CONFIRM) {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { db: { schema: 'public' } });
+const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
+  db: { schema: 'public' }
+});
 
 async function withLog(label, fn) {
   process.stdout.write(label + ' ... ');
@@ -52,14 +57,21 @@ async function withLog(label, fn) {
 }
 
 async function selectOne(table, filter) {
-  const { data, error } = await supabase.from(table).select('*').match(filter).limit(1).maybeSingle();
+  const { data, error } = await supabase
+    .from(table)
+    .select('*')
+    .match(filter)
+    .limit(1)
+    .maybeSingle();
   if (error) throw error;
   return data || null;
 }
 
 async function deleteAll(table, where = {}) {
   if (DRY_RUN) {
-    const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
+    const { count, error } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true });
     if (error) throw error;
     console.log(`DRY-RUN: would delete ~${count} rows from ${table}`);
     return { count };
@@ -90,11 +102,14 @@ async function run() {
   console.log('Reset starting. DRY_RUN:', DRY_RUN ? 'YES' : 'NO');
 
   // Locate manager ilan and location kochi
-  const profile = await withLog('Fetch profile for username/email ilan', async () => {
-    let p = await selectOne('profiles', { username: 'ilan' });
-    if (!p) p = await selectOne('profiles', { email: 'ilan@kochi.local' });
-    return p;
-  });
+  const profile = await withLog(
+    'Fetch profile for username/email ilan',
+    async () => {
+      let p = await selectOne('profiles', { username: 'ilan' });
+      if (!p) p = await selectOne('profiles', { email: 'ilan@kochi.local' });
+      return p;
+    }
+  );
   if (!profile) {
     console.warn('WARN: No profile found for ilan. Will preserve none.');
   }
@@ -121,7 +136,7 @@ async function run() {
     'quote_items',
     'invoice_items',
     'payments',
-    'customers_audit',
+    'customers_audit'
   ];
 
   const parentTables = [
@@ -131,7 +146,7 @@ async function run() {
     'quotes',
     'battery_records',
     'customers',
-    'inventory_movements',
+    'inventory_movements'
   ];
 
   console.log('\nDeleting dependent/child tables');
@@ -149,13 +164,18 @@ async function run() {
   // user_locations: keep only (ilan, kochi)
   await withLog('- user_locations (preserving ilan@kochi only)', async () => {
     if (DRY_RUN) {
-      console.log('DRY-RUN: would delete all rows except (user_id=ilanId, location_id=kochiId)');
+      console.log(
+        'DRY-RUN: would delete all rows except (user_id=ilanId, location_id=kochiId)'
+      );
       return { ok: true };
     }
     if (!ilanId || !kochiId) {
       // If we can't determine user or location, delete all mappings
       // user_locations has no 'id' column; use a safe always-true filter on created_at
-      const { error } = await supabase.from('user_locations').delete().not('created_at', 'is', null);
+      const { error } = await supabase
+        .from('user_locations')
+        .delete()
+        .not('created_at', 'is', null);
       if (error) throw error;
       return { ok: true };
     }
@@ -175,11 +195,17 @@ async function run() {
       return { ok: true };
     }
     if (ilanId) {
-      const { error } = await supabase.from('app_roles').delete().neq('user_id', ilanId);
+      const { error } = await supabase
+        .from('app_roles')
+        .delete()
+        .neq('user_id', ilanId);
       if (error) throw error;
     } else {
       // Ensure a filter exists to satisfy PostgREST
-      const { error } = await supabase.from('app_roles').delete().not('user_id', 'is', null);
+      const { error } = await supabase
+        .from('app_roles')
+        .delete()
+        .not('user_id', 'is', null);
       if (error) throw error;
     }
     return { ok: true };
@@ -192,10 +218,16 @@ async function run() {
       return { ok: true };
     }
     if (ilanId) {
-      const { error } = await supabase.from('profiles').delete().neq('user_id', ilanId);
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .neq('user_id', ilanId);
       if (error) throw error;
     } else {
-      const { error } = await supabase.from('profiles').delete().not('user_id', 'is', null);
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .not('user_id', 'is', null);
       if (error) throw error;
     }
     return { ok: true };
@@ -208,7 +240,10 @@ async function run() {
       return { ok: true };
     }
     if (kochiId) {
-      const { error } = await supabase.from('locations').delete().neq('id', kochiId);
+      const { error } = await supabase
+        .from('locations')
+        .delete()
+        .neq('id', kochiId);
       if (error) throw error;
     } else {
       // If we can't identify kochi, do not delete locations to avoid locking ourselves out
@@ -225,4 +260,3 @@ run().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

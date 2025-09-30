@@ -9,8 +9,7 @@ export default defineConfig({
     css: true,
     globals: true,
     coverage: {
-      reporter: ['text', 'html'],
-    },
-  },
+      reporter: ['text', 'html']
+    }
+  }
 });
-

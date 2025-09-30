@@ -1,12 +1,17 @@
 import { Invoice } from '@/types/billing';
 
 // Function to generate PDF from HTML content
-export async function downloadInvoiceAsPDF(invoice: Invoice, htmlContent: string) {
+export async function downloadInvoiceAsPDF(
+  invoice: Invoice,
+  htmlContent: string
+) {
   try {
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      throw new Error('Unable to open print window. Please check your popup blocker.');
+      throw new Error(
+        'Unable to open print window. Please check your popup blocker.'
+      );
     }
 
     // Write the HTML content to the new window
@@ -211,7 +216,7 @@ export async function downloadInvoiceAsPDF(invoice: Invoice, htmlContent: string
     `);
 
     printWindow.document.close();
-    
+
     // Wait for content to load then focus
     setTimeout(() => {
       printWindow.focus();
@@ -230,19 +235,19 @@ export function printInvoice(invoice: Invoice, htmlContent: string) {
     // Create a temporary div
     const printDiv = document.createElement('div');
     printDiv.innerHTML = htmlContent;
-    
+
     // Hide current content
     const originalContent = document.body.innerHTML;
-    
+
     // Replace with print content
     document.body.innerHTML = printDiv.innerHTML;
-    
+
     // Print
     window.print();
-    
+
     // Restore original content
     document.body.innerHTML = originalContent;
-    
+
     // Reload the page to restore React state
     window.location.reload();
   } catch (error) {
@@ -275,14 +280,14 @@ export function downloadInvoiceAsHTML(invoice: Invoice, htmlContent: string) {
 
     const blob = new Blob([fullHtmlContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `invoice-${invoice.number}.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     URL.revokeObjectURL(url);
     return true;
   } catch (error) {

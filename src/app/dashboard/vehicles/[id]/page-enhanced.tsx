@@ -457,7 +457,7 @@ export default function EnhancedVehicleDetailPage() {
                   href={`/dashboard/tickets/${vehicle.service_ticket_id}`}
                   className='hover:text-primary transition-colors'
                 >
-                  Ticket #{vehicle.service_ticket_id.slice(0, 8)}
+                  Job Card #{vehicle.service_ticket_id.slice(0, 8)}
                 </Link>
                 {refreshing && (
                   <Loader2 className='ml-2 h-3 w-3 animate-spin' />

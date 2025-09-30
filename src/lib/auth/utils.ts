@@ -1,4 +1,10 @@
-import { UserRole, Permission, hasPermission, hasAnyPermission, NAVIGATION_PERMISSIONS } from './roles';
+import {
+  UserRole,
+  Permission,
+  hasPermission,
+  hasAnyPermission,
+  NAVIGATION_PERMISSIONS
+} from './roles';
 
 // Re-export UserRole and NAVIGATION_PERMISSIONS for convenience
 export { UserRole, NAVIGATION_PERMISSIONS };
@@ -26,9 +32,11 @@ export interface EVWheelsUser {
 /**
  * Get user role from Clerk user metadata
  */
-export function getUserRole(user: ClerkUserLike | null | undefined): UserRole | null {
+export function getUserRole(
+  user: ClerkUserLike | null | undefined
+): UserRole | null {
   if (!user) return null;
-  
+
   const role = user.publicMetadata?.role as UserRole;
   return role && Object.values(UserRole).includes(role) ? role : null;
 }
@@ -36,27 +44,36 @@ export function getUserRole(user: ClerkUserLike | null | undefined): UserRole | 
 /**
  * Check if user has a specific permission
  */
-export function userHasPermission(user: ClerkUserLike | null | undefined, permission: Permission): boolean {
+export function userHasPermission(
+  user: ClerkUserLike | null | undefined,
+  permission: Permission
+): boolean {
   const role = getUserRole(user);
   if (!role) return false;
-  
+
   return hasPermission(role, permission);
 }
 
 /**
  * Check if user has any of the specified permissions
  */
-export function userHasAnyPermission(user: ClerkUserLike | null | undefined, permissions: Permission[] | readonly Permission[]): boolean {
+export function userHasAnyPermission(
+  user: ClerkUserLike | null | undefined,
+  permissions: Permission[] | readonly Permission[]
+): boolean {
   const role = getUserRole(user);
   if (!role) return false;
-  
+
   return hasAnyPermission(role, [...permissions]);
 }
 
 /**
  * Check if user can access a specific navigation item
  */
-export function userCanAccessNavigation(user: ClerkUserLike | null | undefined, navigationKey: keyof typeof NAVIGATION_PERMISSIONS): boolean {
+export function userCanAccessNavigation(
+  user: ClerkUserLike | null | undefined,
+  navigationKey: keyof typeof NAVIGATION_PERMISSIONS
+): boolean {
   const permissions = NAVIGATION_PERMISSIONS[navigationKey];
   return userHasAnyPermission(user, permissions);
 }
@@ -81,8 +98,10 @@ export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
     case UserRole.ADMIN:
       return 'Administrator';
+    case UserRole.FRONT_DESK_MANAGER:
+      return 'Front Desk Manager';
     case UserRole.MANAGER:
-      return 'Manager';
+      return 'Front Desk Manager'; // Backward compatibility
     case UserRole.TECHNICIAN:
       return 'Technician';
     default:
@@ -102,7 +121,7 @@ export function formatUserInfo(user: ClerkUserLike): {
 } {
   const role = getUserRole(user);
   const employeeId = user.publicMetadata?.employeeId as string;
-  
+
   return {
     displayName: getUserDisplayName(user),
     role,
@@ -141,22 +160,18 @@ export const PROTECTED_ROUTES = [
 /**
  * Routes that are only accessible by admins
  */
-export const ADMIN_ONLY_ROUTES = [
-  '/users',
-  '/settings',
-  '/reports'
-];
+export const ADMIN_ONLY_ROUTES = ['/users', '/settings', '/reports'];
 
 /**
  * Check if route requires admin access
  */
 export function isAdminOnlyRoute(pathname: string): boolean {
-  return ADMIN_ONLY_ROUTES.some(route => pathname.startsWith(route));
+  return ADMIN_ONLY_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
  * Check if route is protected
  */
 export function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }

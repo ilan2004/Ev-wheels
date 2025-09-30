@@ -7,10 +7,12 @@ export function isLocationScopeEnabled(): boolean {
   let enabled = env !== 'false';
   try {
     // Local override for quick rollback/testing (set to 'false' to disable)
-    const local = typeof window !== 'undefined' ? localStorage.getItem('feature_location_scope_enabled') : null;
+    const local =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('feature_location_scope_enabled')
+        : null;
     if (local === 'false') enabled = false;
     if (local === 'true') enabled = true;
   } catch {}
   return enabled;
 }
-

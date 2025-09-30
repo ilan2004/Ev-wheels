@@ -8,7 +8,10 @@ import { cachedKpiService } from '@/lib/api/cache-layer';
 import { supabaseBatteryRepository } from '@/lib/api/batteries.supabase';
 import { dashboardKeys } from './use-dashboard-data';
 import { batteryKeys, type BatteryFilters } from './use-batteries';
-import { startPerformanceTrace, endPerformanceTrace } from '@/lib/performance/monitor';
+import {
+  startPerformanceTrace,
+  endPerformanceTrace
+} from '@/lib/performance/monitor';
 
 /**
  * Hook for hover-based prefetching
@@ -16,62 +19,70 @@ import { startPerformanceTrace, endPerformanceTrace } from '@/lib/performance/mo
  */
 export function useHoverPrefetch() {
   const queryClient = useQueryClient();
-  
-  const prefetchBattery = React.useCallback(async (batteryId: string) => {
-    if (!batteryId) return;
-    
-    const traceId = startPerformanceTrace('hover_prefetch_battery');
-    
-    try {
-      await queryClient.prefetchQuery({
-        queryKey: batteryKeys.detail(batteryId),
-        queryFn: async () => {
-          const result = await supabaseBatteryRepository.fetchBattery(batteryId);
-          if (!result.success) throw new Error(result.error);
-          return result.data!;
-        },
-        staleTime: 30 * 1000, // 30 seconds
-      });
-      
-      endPerformanceTrace(traceId, 'success', {
-        batteryId,
-        trigger: 'hover'
-      });
-    } catch (error) {
-      endPerformanceTrace(traceId, 'error', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  }, [queryClient]);
-  
-  const prefetchBatteries = React.useCallback(async (filters: BatteryFilters = {}) => {
-    const traceId = startPerformanceTrace('hover_prefetch_batteries');
-    
-    try {
-      await queryClient.prefetchQuery({
-        queryKey: batteryKeys.summary(filters),
-        queryFn: async () => {
-          const result = await cachedKpiService.fetchBatterySummaries(filters);
-          if (!result.success) throw new Error(result.error);
-          return result.data!;
-        },
-        staleTime: 1 * 60 * 1000, // 1 minute
-      });
-      
-      endPerformanceTrace(traceId, 'success', {
-        filters,
-        trigger: 'hover'
-      });
-    } catch (error) {
-      endPerformanceTrace(traceId, 'error', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  }, [queryClient]);
-  
+
+  const prefetchBattery = React.useCallback(
+    async (batteryId: string) => {
+      if (!batteryId) return;
+
+      const traceId = startPerformanceTrace('hover_prefetch_battery');
+
+      try {
+        await queryClient.prefetchQuery({
+          queryKey: batteryKeys.detail(batteryId),
+          queryFn: async () => {
+            const result =
+              await supabaseBatteryRepository.fetchBattery(batteryId);
+            if (!result.success) throw new Error(result.error);
+            return result.data!;
+          },
+          staleTime: 30 * 1000 // 30 seconds
+        });
+
+        endPerformanceTrace(traceId, 'success', {
+          batteryId,
+          trigger: 'hover'
+        });
+      } catch (error) {
+        endPerformanceTrace(traceId, 'error', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    },
+    [queryClient]
+  );
+
+  const prefetchBatteries = React.useCallback(
+    async (filters: BatteryFilters = {}) => {
+      const traceId = startPerformanceTrace('hover_prefetch_batteries');
+
+      try {
+        await queryClient.prefetchQuery({
+          queryKey: batteryKeys.summary(filters),
+          queryFn: async () => {
+            const result =
+              await cachedKpiService.fetchBatterySummaries(filters);
+            if (!result.success) throw new Error(result.error);
+            return result.data!;
+          },
+          staleTime: 1 * 60 * 1000 // 1 minute
+        });
+
+        endPerformanceTrace(traceId, 'success', {
+          filters,
+          trigger: 'hover'
+        });
+      } catch (error) {
+        endPerformanceTrace(traceId, 'error', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    },
+    [queryClient]
+  );
+
   const prefetchDashboard = React.useCallback(async () => {
     const traceId = startPerformanceTrace('hover_prefetch_dashboard');
-    
+
     try {
       await queryClient.prefetchQuery({
         queryKey: dashboardKeys.bundle(),
@@ -80,9 +91,9 @@ export function useHoverPrefetch() {
           if (!result.success) throw new Error(result.error);
           return result.data!;
         },
-        staleTime: 2 * 60 * 1000, // 2 minutes
+        staleTime: 2 * 60 * 1000 // 2 minutes
       });
-      
+
       endPerformanceTrace(traceId, 'success', {
         trigger: 'hover'
       });
@@ -92,7 +103,7 @@ export function useHoverPrefetch() {
       });
     }
   }, [queryClient]);
-  
+
   return {
     prefetchBattery,
     prefetchBatteries,
@@ -107,64 +118,71 @@ export function useHoverPrefetch() {
 export function useRoutePrefetch() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  
+
   // Prefetch data when user is likely to navigate to specific routes
-  const prefetchForRoute = React.useCallback(async (route: string) => {
-    const traceId = startPerformanceTrace('route_prefetch');
-    
-    try {
-      switch (route) {
-        case '/dashboard':
-          // Prefetch dashboard bundle
-          await queryClient.prefetchQuery({
-            queryKey: dashboardKeys.bundle(),
-            queryFn: async () => {
-              const result = await cachedKpiService.fetchDashboardBundle();
-              if (!result.success) throw new Error(result.error);
-              return result.data!;
-            },
-            staleTime: 2 * 60 * 1000,
-          });
-          break;
-          
-        case '/dashboard/batteries':
-          // Prefetch battery summaries
-          await queryClient.prefetchQuery({
-            queryKey: batteryKeys.summary({}),
-            queryFn: async () => {
-              const result = await cachedKpiService.fetchBatterySummaries({ limit: 20 });
-              if (!result.success) throw new Error(result.error);
-              return result.data!;
-            },
-            staleTime: 1 * 60 * 1000,
-          });
-          break;
-          
-        case '/dashboard/customers':
-          // Prefetch customer summaries
-          await queryClient.prefetchQuery({
-            queryKey: ['customers', 'summaries'],
-            queryFn: async () => {
-              const result = await cachedKpiService.fetchCustomerSummaries({ limit: 20 });
-              if (!result.success) throw new Error(result.error);
-              return result.data!;
-            },
-            staleTime: 10 * 60 * 1000,
-          });
-          break;
+  const prefetchForRoute = React.useCallback(
+    async (route: string) => {
+      const traceId = startPerformanceTrace('route_prefetch');
+
+      try {
+        switch (route) {
+          case '/dashboard':
+            // Prefetch dashboard bundle
+            await queryClient.prefetchQuery({
+              queryKey: dashboardKeys.bundle(),
+              queryFn: async () => {
+                const result = await cachedKpiService.fetchDashboardBundle();
+                if (!result.success) throw new Error(result.error);
+                return result.data!;
+              },
+              staleTime: 2 * 60 * 1000
+            });
+            break;
+
+          case '/dashboard/batteries':
+            // Prefetch battery summaries
+            await queryClient.prefetchQuery({
+              queryKey: batteryKeys.summary({}),
+              queryFn: async () => {
+                const result = await cachedKpiService.fetchBatterySummaries({
+                  limit: 20
+                });
+                if (!result.success) throw new Error(result.error);
+                return result.data!;
+              },
+              staleTime: 1 * 60 * 1000
+            });
+            break;
+
+          case '/dashboard/customers':
+            // Prefetch customer summaries
+            await queryClient.prefetchQuery({
+              queryKey: ['customers', 'summaries'],
+              queryFn: async () => {
+                const result = await cachedKpiService.fetchCustomerSummaries({
+                  limit: 20
+                });
+                if (!result.success) throw new Error(result.error);
+                return result.data!;
+              },
+              staleTime: 10 * 60 * 1000
+            });
+            break;
+        }
+
+        endPerformanceTrace(traceId, 'success', {
+          route,
+          trigger: 'route_prediction'
+        });
+      } catch (error) {
+        endPerformanceTrace(traceId, 'error', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
-      
-      endPerformanceTrace(traceId, 'success', {
-        route,
-        trigger: 'route_prediction'
-      });
-    } catch (error) {
-      endPerformanceTrace(traceId, 'error', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  }, [queryClient]);
-  
+    },
+    [queryClient]
+  );
+
   return { prefetchForRoute };
 }
 
@@ -183,34 +201,34 @@ export function useIntelligentPrefetch() {
     frequentQueries: [],
     lastActive: new Date()
   });
-  
+
   // Track user navigation patterns
   React.useEffect(() => {
     const trackNavigation = () => {
       const currentRoute = window.location.pathname;
-      setUserPatterns(prev => ({
+      setUserPatterns((prev) => ({
         ...prev,
         visitedRoutes: [currentRoute, ...prev.visitedRoutes.slice(0, 9)], // Keep last 10 routes
         lastActive: new Date()
       }));
     };
-    
+
     // Track route changes
     window.addEventListener('popstate', trackNavigation);
     trackNavigation(); // Track initial route
-    
+
     return () => window.removeEventListener('popstate', trackNavigation);
   }, []);
-  
+
   // Intelligent prefetch based on patterns
   const smartPrefetch = React.useCallback(async () => {
     const traceId = startPerformanceTrace('intelligent_prefetch');
-    
+
     try {
       const { visitedRoutes } = userPatterns;
-      
+
       // If user frequently visits dashboard, prefetch dashboard data
-      if (visitedRoutes.filter(r => r.includes('dashboard')).length > 2) {
+      if (visitedRoutes.filter((r) => r.includes('dashboard')).length > 2) {
         await queryClient.prefetchQuery({
           queryKey: dashboardKeys.bundle(),
           queryFn: async () => {
@@ -218,23 +236,25 @@ export function useIntelligentPrefetch() {
             if (!result.success) throw new Error(result.error);
             return result.data!;
           },
-          staleTime: 2 * 60 * 1000,
+          staleTime: 2 * 60 * 1000
         });
       }
-      
+
       // If user frequently visits batteries, prefetch battery data
-      if (visitedRoutes.filter(r => r.includes('batteries')).length > 1) {
+      if (visitedRoutes.filter((r) => r.includes('batteries')).length > 1) {
         await queryClient.prefetchQuery({
           queryKey: batteryKeys.summary({}),
           queryFn: async () => {
-            const result = await cachedKpiService.fetchBatterySummaries({ limit: 20 });
+            const result = await cachedKpiService.fetchBatterySummaries({
+              limit: 20
+            });
             if (!result.success) throw new Error(result.error);
             return result.data!;
           },
-          staleTime: 1 * 60 * 1000,
+          staleTime: 1 * 60 * 1000
         });
       }
-      
+
       endPerformanceTrace(traceId, 'success', {
         patterns: visitedRoutes.length,
         trigger: 'intelligent'
@@ -245,13 +265,13 @@ export function useIntelligentPrefetch() {
       });
     }
   }, [queryClient, userPatterns]);
-  
+
   // Run intelligent prefetch periodically
   React.useEffect(() => {
     const interval = setInterval(smartPrefetch, 60000); // Every minute
     return () => clearInterval(interval);
   }, [smartPrefetch]);
-  
+
   return {
     userPatterns,
     smartPrefetch
@@ -264,44 +284,47 @@ export function useIntelligentPrefetch() {
  */
 export function useIntersectionPrefetch() {
   const queryClient = useQueryClient();
-  
-  const createPrefetchObserver = React.useCallback((
-    callback: () => Promise<void>,
-    options: IntersectionObserverInit = {}
-  ) => {
-    const defaultOptions: IntersectionObserverInit = {
-      root: null,
-      rootMargin: '100px', // Prefetch when element is 100px away from viewport
-      threshold: 0.1,
-      ...options
-    };
-    
-    return new IntersectionObserver(async (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          try {
-            await callback();
-          } catch (error) {
-            console.error('Intersection prefetch error:', error);
+
+  const createPrefetchObserver = React.useCallback(
+    (callback: () => Promise<void>, options: IntersectionObserverInit = {}) => {
+      const defaultOptions: IntersectionObserverInit = {
+        root: null,
+        rootMargin: '100px', // Prefetch when element is 100px away from viewport
+        threshold: 0.1,
+        ...options
+      };
+
+      return new IntersectionObserver(async (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            try {
+              await callback();
+            } catch (error) {
+              console.error('Intersection prefetch error:', error);
+            }
           }
         }
-      }
-    }, defaultOptions);
-  }, []);
-  
-  const prefetchOnIntersect = React.useCallback((
-    element: Element | null,
-    prefetchFn: () => Promise<void>,
-    options?: IntersectionObserverInit
-  ) => {
-    if (!element) return () => {};
-    
-    const observer = createPrefetchObserver(prefetchFn, options);
-    observer.observe(element);
-    
-    return () => observer.disconnect();
-  }, [createPrefetchObserver]);
-  
+      }, defaultOptions);
+    },
+    []
+  );
+
+  const prefetchOnIntersect = React.useCallback(
+    (
+      element: Element | null,
+      prefetchFn: () => Promise<void>,
+      options?: IntersectionObserverInit
+    ) => {
+      if (!element) return () => {};
+
+      const observer = createPrefetchObserver(prefetchFn, options);
+      observer.observe(element);
+
+      return () => observer.disconnect();
+    },
+    [createPrefetchObserver]
+  );
+
   return {
     prefetchOnIntersect,
     createPrefetchObserver
@@ -315,62 +338,69 @@ export function useIntersectionPrefetch() {
 export function useIdlePrefetch() {
   const queryClient = useQueryClient();
   const [isIdle, setIsIdle] = React.useState(false);
-  
+
   React.useEffect(() => {
     let idleTimer: NodeJS.Timeout;
-    
+
     const resetIdleTimer = () => {
       setIsIdle(false);
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => setIsIdle(true), 5000); // 5 seconds of inactivity
     };
-    
+
     // Track user activity
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    events.forEach(event => {
+    const events = [
+      'mousedown',
+      'mousemove',
+      'keypress',
+      'scroll',
+      'touchstart'
+    ];
+    events.forEach((event) => {
       document.addEventListener(event, resetIdleTimer, true);
     });
-    
+
     resetIdleTimer(); // Initialize timer
-    
+
     return () => {
-      events.forEach(event => {
+      events.forEach((event) => {
         document.removeEventListener(event, resetIdleTimer, true);
       });
       clearTimeout(idleTimer);
     };
   }, []);
-  
-  const prefetchDuringIdle = React.useCallback(async (
-    prefetchFunctions: Array<() => Promise<void>>
-  ) => {
-    if (!isIdle) return;
-    
-    const traceId = startPerformanceTrace('idle_prefetch');
-    
-    try {
-      // Execute prefetch functions during idle time
-      for (const prefetchFn of prefetchFunctions) {
-        if (!isIdle) break; // Stop if user becomes active
-        await prefetchFn();
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay between prefetches
+
+  const prefetchDuringIdle = React.useCallback(
+    async (prefetchFunctions: Array<() => Promise<void>>) => {
+      if (!isIdle) return;
+
+      const traceId = startPerformanceTrace('idle_prefetch');
+
+      try {
+        // Execute prefetch functions during idle time
+        for (const prefetchFn of prefetchFunctions) {
+          if (!isIdle) break; // Stop if user becomes active
+          await prefetchFn();
+          await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay between prefetches
+        }
+
+        endPerformanceTrace(traceId, 'success', {
+          prefetchCount: prefetchFunctions.length,
+          trigger: 'idle'
+        });
+      } catch (error) {
+        endPerformanceTrace(traceId, 'error', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
-      
-      endPerformanceTrace(traceId, 'success', {
-        prefetchCount: prefetchFunctions.length,
-        trigger: 'idle'
-      });
-    } catch (error) {
-      endPerformanceTrace(traceId, 'error', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  }, [isIdle]);
-  
+    },
+    [isIdle]
+  );
+
   // Auto-prefetch common data during idle time
   React.useEffect(() => {
     if (!isIdle) return;
-    
+
     const idlePrefetches = [
       // Prefetch dashboard data
       async () => {
@@ -381,7 +411,7 @@ export function useIdlePrefetch() {
             if (!result.success) throw new Error(result.error);
             return result.data!;
           },
-          staleTime: 2 * 60 * 1000,
+          staleTime: 2 * 60 * 1000
         });
       },
       // Prefetch battery summaries
@@ -389,18 +419,20 @@ export function useIdlePrefetch() {
         await queryClient.prefetchQuery({
           queryKey: batteryKeys.summary({ limit: 20 }),
           queryFn: async () => {
-            const result = await cachedKpiService.fetchBatterySummaries({ limit: 20 });
+            const result = await cachedKpiService.fetchBatterySummaries({
+              limit: 20
+            });
             if (!result.success) throw new Error(result.error);
             return result.data!;
           },
-          staleTime: 1 * 60 * 1000,
+          staleTime: 1 * 60 * 1000
         });
       }
     ];
-    
+
     prefetchDuringIdle(idlePrefetches);
   }, [isIdle, prefetchDuringIdle, queryClient]);
-  
+
   return {
     isIdle,
     prefetchDuringIdle
@@ -410,13 +442,15 @@ export function useIdlePrefetch() {
 /**
  * Master prefetch hook that combines all prefetching strategies
  */
-export function useMasterPrefetch(options: {
-  hover?: boolean;
-  route?: boolean;
-  intelligent?: boolean;
-  intersection?: boolean;
-  idle?: boolean;
-} = {}) {
+export function useMasterPrefetch(
+  options: {
+    hover?: boolean;
+    route?: boolean;
+    intelligent?: boolean;
+    intersection?: boolean;
+    idle?: boolean;
+  } = {}
+) {
   const {
     hover = true,
     route = true,
@@ -424,13 +458,13 @@ export function useMasterPrefetch(options: {
     intersection = true,
     idle = true
   } = options;
-  
+
   const hoverPrefetch = useHoverPrefetch();
   const routePrefetch = useRoutePrefetch();
   const intelligentPrefetch = useIntelligentPrefetch();
   const intersectionPrefetch = useIntersectionPrefetch();
   const idlePrefetch = useIdlePrefetch();
-  
+
   return {
     // Individual strategies
     hover: hover ? hoverPrefetch : null,
@@ -438,11 +472,11 @@ export function useMasterPrefetch(options: {
     intelligent: intelligent ? intelligentPrefetch : null,
     intersection: intersection ? intersectionPrefetch : null,
     idle: idle ? idlePrefetch : null,
-    
+
     // Convenience methods
     prefetchForBatteryHover: hoverPrefetch.prefetchBattery,
     prefetchForRouteChange: routePrefetch.prefetchForRoute,
-    
+
     // Status
     isIdle: idle ? idlePrefetch.isIdle : false,
     userPatterns: intelligent ? intelligentPrefetch.userPatterns : null
@@ -458,19 +492,23 @@ export interface PrefetchOnHoverProps {
   delay?: number;
 }
 
-export function PrefetchOnHover({ children, prefetch, delay = 300 }: PrefetchOnHoverProps) {
+export function PrefetchOnHover({
+  children,
+  prefetch,
+  delay = 300
+}: PrefetchOnHoverProps) {
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  
+
   const handleMouseEnter = React.useCallback(() => {
     timeoutRef.current = setTimeout(prefetch, delay);
   }, [prefetch, delay]);
-  
+
   const handleMouseLeave = React.useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
   }, []);
-  
+
   return React.cloneElement(children, {
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,

@@ -320,13 +320,13 @@ export function EnhancedStatusWorkflow({
 
   const StatusTimeline = () => (
     <div className='mb-6'>
-      <Stepper 
-        activeStep={currentStageIndex} 
+      <Stepper
+        activeStep={currentStageIndex}
         steps={stepperSteps}
-        orientation="horizontal"
-        className="w-full"
+        orientation='horizontal'
+        className='w-full'
       >
-        <StepperSteps className="w-full justify-between" />
+        <StepperSteps className='w-full justify-between' />
       </Stepper>
     </div>
   );

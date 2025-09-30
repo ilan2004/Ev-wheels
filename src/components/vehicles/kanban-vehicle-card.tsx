@@ -203,9 +203,9 @@ export function KanbanVehicleCard({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/tickets/${vehicle.service_ticket_id}`}>
+                <Link href={`/dashboard/job-cards/${vehicle.service_ticket_id}`}>
                   <FileText className='mr-2 h-3 w-3' />
-                  View Ticket
+                  View Job Card
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

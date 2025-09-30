@@ -176,7 +176,6 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
         }));
         setTeamWorkload(workload);
 
-
         // Sales snapshot
         const [{ data: quotes }, { data: invoices }] = await Promise.all([
           supabase
@@ -215,7 +214,9 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
   );
 
   // Handle metric clicks to filter the queue
-  const handleMetricClick = (metric: 'overdue' | 'dueToday' | 'openTickets' | 'weeklyCompleted') => {
+  const handleMetricClick = (
+    metric: 'overdue' | 'dueToday' | 'openTickets' | 'weeklyCompleted'
+  ) => {
     switch (metric) {
       case 'overdue':
         setQueuePreset({ overdue: true });
@@ -300,12 +301,13 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
         loading={loading}
       />
 
-      {/* Tickets Queue */}
+      {/* Job Cards Queue */}
       <Section
-        title='Ticket Queue'
-        description={emergencyMode 
-          ? 'Emergency mode: Showing only critical tickets' 
-          : 'Manage tickets efficiently with filters and bulk actions'
+        title='Job Card Queue'
+        description={
+          emergencyMode
+            ? 'Emergency mode: Showing only critical job cards'
+            : 'Manage job cards efficiently with filters and bulk actions'
         }
       >
         <ManagerQueue preset={queuePreset} />
@@ -315,7 +317,7 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
       {!emergencyMode && (
         <Section
           title='Team Workload'
-          description='Open tickets per technician (capacity 8)'
+          description='Open job cards per technician (capacity 8)'
         >
           <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
             {teamWorkload.map((w) =>
@@ -347,7 +349,6 @@ export function ManagerDashboard({ user }: { user: SerializedUser }) {
       {/* Sales - Only show if not in emergency mode */}
       {!emergencyMode && (
         <>
-
           {/* Sales snapshot */}
           <Section
             title='Sales Snapshot'

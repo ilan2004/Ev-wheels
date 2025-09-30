@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from '@/components/ui/popover';
 import {
   AlertDialog,
@@ -31,7 +31,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import {
   IconDownload,
@@ -46,9 +46,9 @@ import { format, subDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
 
-export type ReportType = 
+export type ReportType =
   | 'daily_service'
-  | 'technician_performance' 
+  | 'technician_performance'
   | 'customer_history'
   | 'revenue_analysis'
   | 'vehicle_status'
@@ -75,10 +75,17 @@ export interface DateRange {
 
 interface VehicleReportsProps {
   className?: string;
-  onReportGenerate?: (reportType: ReportType, format: ExportFormat, params: any) => void;
+  onReportGenerate?: (
+    reportType: ReportType,
+    format: ExportFormat,
+    params: any
+  ) => void;
 }
 
-export function VehicleReports({ className, onReportGenerate }: VehicleReportsProps) {
+export function VehicleReports({
+  className,
+  onReportGenerate
+}: VehicleReportsProps) {
   const [selectedReport, setSelectedReport] = useState<ReportType | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('pdf');
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -95,7 +102,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       id: 'daily_service',
       name: 'Daily Service Report',
       description: 'Comprehensive daily operations summary',
-      icon: <IconFileText className="h-5 w-5" />,
+      icon: <IconFileText className='h-5 w-5' />,
       category: 'operational',
       supportedFormats: ['pdf', 'excel'],
       estimatedTime: '2-3 mins',
@@ -105,7 +112,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       id: 'technician_performance',
       name: 'Technician Performance',
       description: 'Individual and team performance metrics',
-      icon: <IconFileSpreadsheet className="h-5 w-5" />,
+      icon: <IconFileSpreadsheet className='h-5 w-5' />,
       category: 'performance',
       requiredParams: ['technician_id'],
       supportedFormats: ['pdf', 'excel', 'csv'],
@@ -116,7 +123,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       id: 'customer_history',
       name: 'Customer History',
       description: 'Customer service records and trends',
-      icon: <IconFileText className="h-5 w-5" />,
+      icon: <IconFileText className='h-5 w-5' />,
       category: 'operational',
       requiredParams: ['customer_id'],
       supportedFormats: ['pdf', 'excel'],
@@ -127,7 +134,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       id: 'revenue_analysis',
       name: 'Revenue Analysis',
       description: 'Financial performance and revenue breakdown',
-      icon: <IconFileSpreadsheet className="h-5 w-5" />,
+      icon: <IconFileSpreadsheet className='h-5 w-5' />,
       category: 'financial',
       supportedFormats: ['pdf', 'excel', 'csv'],
       estimatedTime: '3-4 mins',
@@ -137,7 +144,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       id: 'vehicle_status',
       name: 'Vehicle Status Report',
       description: 'Current status and workload distribution',
-      icon: <IconFileText className="h-5 w-5" />,
+      icon: <IconFileText className='h-5 w-5' />,
       category: 'operational',
       supportedFormats: ['csv', 'excel'],
       estimatedTime: '1 min',
@@ -147,7 +154,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       id: 'sla_compliance',
       name: 'SLA Compliance Report',
       description: 'Service level agreement performance tracking',
-      icon: <IconFileText className="h-5 w-5" />,
+      icon: <IconFileText className='h-5 w-5' />,
       category: 'performance',
       supportedFormats: ['pdf', 'excel'],
       estimatedTime: '2 mins',
@@ -158,18 +165,24 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
   // Get format icon
   const getFormatIcon = (format: ExportFormat) => {
     switch (format) {
-      case 'pdf': return <IconFileText className="h-4 w-4" />;
-      case 'excel': return <IconFileSpreadsheet className="h-4 w-4" />;
-      case 'csv': return <IconFileText className="h-4 w-4" />;
+      case 'pdf':
+        return <IconFileText className='h-4 w-4' />;
+      case 'excel':
+        return <IconFileSpreadsheet className='h-4 w-4' />;
+      case 'csv':
+        return <IconFileText className='h-4 w-4' />;
     }
   };
 
   // Get format color
   const getFormatColor = (format: ExportFormat) => {
     switch (format) {
-      case 'pdf': return 'text-red-600';
-      case 'excel': return 'text-green-600';
-      case 'csv': return 'text-blue-600';
+      case 'pdf':
+        return 'text-red-600';
+      case 'excel':
+        return 'text-green-600';
+      case 'csv':
+        return 'text-blue-600';
     }
   };
 
@@ -186,7 +199,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       };
 
       // Simulate report generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       onReportGenerate?.(selectedReport, selectedFormat, params);
 
@@ -198,72 +211,90 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedReport, selectedFormat, dateRange, customParams, onReportGenerate]);
+  }, [
+    selectedReport,
+    selectedFormat,
+    dateRange,
+    customParams,
+    onReportGenerate
+  ]);
 
   // Get category reports
   const getReportsByCategory = (category: string) => {
-    return reportConfigs.filter(report => report.category === category);
+    return reportConfigs.filter((report) => report.category === category);
   };
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between mb-6">
+      <div className='mb-6 flex items-center justify-between'>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Reports</h2>
-          <p className="text-muted-foreground">
+          <h2 className='text-2xl font-bold tracking-tight'>Reports</h2>
+          <p className='text-muted-foreground'>
             Generate and export detailed analytics reports
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <IconSettings className="h-4 w-4 mr-2" />
+        <div className='flex items-center gap-2'>
+          <Button variant='outline' size='sm'>
+            <IconSettings className='mr-2 h-4 w-4' />
             Preferences
           </Button>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
-        <EnhancedCard variant="elevated" hoverable onClick={() => setSelectedReport('daily_service')}>
-          <div className="p-4 text-center">
-            <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mx-auto mb-3">
-              <IconFileText className="h-6 w-6 text-blue-600" />
+      <div className='mb-8 grid gap-4 md:grid-cols-3'>
+        <EnhancedCard
+          variant='elevated'
+          hoverable
+          onClick={() => setSelectedReport('daily_service')}
+        >
+          <div className='p-4 text-center'>
+            <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50'>
+              <IconFileText className='h-6 w-6 text-blue-600' />
             </div>
-            <h3 className="font-semibold mb-1">Today&apos;s Report</h3>
-            <p className="text-sm text-muted-foreground mb-3">
+            <h3 className='mb-1 font-semibold'>Today&apos;s Report</h3>
+            <p className='text-muted-foreground mb-3 text-sm'>
               Generate today&apos;s service summary
             </p>
-            <Button size="sm" className="w-full">
+            <Button size='sm' className='w-full'>
               Generate Now
             </Button>
           </div>
         </EnhancedCard>
 
-        <EnhancedCard variant="elevated" hoverable onClick={() => setSelectedReport('vehicle_status')}>
-          <div className="p-4 text-center">
-            <div className="h-12 w-12 rounded-full bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center mx-auto mb-3">
-              <IconFileText className="h-6 w-6 text-cyan-600" />
+        <EnhancedCard
+          variant='elevated'
+          hoverable
+          onClick={() => setSelectedReport('vehicle_status')}
+        >
+          <div className='p-4 text-center'>
+            <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100 dark:bg-cyan-900/50'>
+              <IconFileText className='h-6 w-6 text-cyan-600' />
             </div>
-            <h3 className="font-semibold mb-1">Status Export</h3>
-            <p className="text-sm text-muted-foreground mb-3">
+            <h3 className='mb-1 font-semibold'>Status Export</h3>
+            <p className='text-muted-foreground mb-3 text-sm'>
               Export current vehicle statuses
             </p>
-            <Button size="sm" variant="outline" className="w-full">
+            <Button size='sm' variant='outline' className='w-full'>
               Export CSV
             </Button>
           </div>
         </EnhancedCard>
 
-        <EnhancedCard variant="elevated" hoverable onClick={() => setSelectedReport('sla_compliance')}>
-          <div className="p-4 text-center">
-            <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-3">
-              <IconFileText className="h-6 w-6 text-red-600" />
+        <EnhancedCard
+          variant='elevated'
+          hoverable
+          onClick={() => setSelectedReport('sla_compliance')}
+        >
+          <div className='p-4 text-center'>
+            <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50'>
+              <IconFileText className='h-6 w-6 text-red-600' />
             </div>
-            <h3 className="font-semibold mb-1">SLA Report</h3>
-            <p className="text-sm text-muted-foreground mb-3">
+            <h3 className='mb-1 font-semibold'>SLA Report</h3>
+            <p className='text-muted-foreground mb-3 text-sm'>
               Check compliance metrics
             </p>
-            <Button size="sm" variant="outline" className="w-full">
+            <Button size='sm' variant='outline' className='w-full'>
               Generate PDF
             </Button>
           </div>
@@ -271,74 +302,95 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
       </div>
 
       {/* Report Categories */}
-      <div className="space-y-8">
+      <div className='space-y-8'>
         {['operational', 'performance', 'financial'].map((category) => (
           <div key={category}>
-            <div className="flex items-center gap-2 mb-4">
-              <h3 className="text-lg font-semibold capitalize">{category} Reports</h3>
-              <Badge variant="outline">
+            <div className='mb-4 flex items-center gap-2'>
+              <h3 className='text-lg font-semibold capitalize'>
+                {category} Reports
+              </h3>
+              <Badge variant='outline'>
                 {getReportsByCategory(category).length} reports
               </Badge>
             </div>
-            
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
+            <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {getReportsByCategory(category).map((report) => (
-                <Card key={report.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", report.color, "text-white")}>
+                <Card
+                  key={report.id}
+                  className='cursor-pointer transition-shadow hover:shadow-md'
+                >
+                  <CardHeader className='pb-3'>
+                    <div className='flex items-start justify-between'>
+                      <div className='flex items-center gap-3'>
+                        <div
+                          className={cn(
+                            'flex h-10 w-10 items-center justify-center rounded-lg',
+                            report.color,
+                            'text-white'
+                          )}
+                        >
                           {report.icon}
                         </div>
                         <div>
-                          <CardTitle className="text-base">{report.name}</CardTitle>
-                          <CardDescription className="text-sm">
+                          <CardTitle className='text-base'>
+                            {report.name}
+                          </CardTitle>
+                          <CardDescription className='text-sm'>
                             {report.description}
                           </CardDescription>
                         </div>
                       </div>
                     </div>
                   </CardHeader>
-                  
-                  <CardContent className="pt-0">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Est. time:</span>
-                        <span className="font-medium">{report.estimatedTime}</span>
+
+                  <CardContent className='pt-0'>
+                    <div className='space-y-3'>
+                      <div className='flex items-center justify-between text-sm'>
+                        <span className='text-muted-foreground'>
+                          Est. time:
+                        </span>
+                        <span className='font-medium'>
+                          {report.estimatedTime}
+                        </span>
                       </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm text-muted-foreground">Formats:</span>
+
+                      <div className='flex items-center gap-1'>
+                        <span className='text-muted-foreground text-sm'>
+                          Formats:
+                        </span>
                         {report.supportedFormats.map((format) => (
-                          <div key={format} className="flex items-center gap-1">
-                            <div className={cn("h-4 w-4", getFormatColor(format))}>
+                          <div key={format} className='flex items-center gap-1'>
+                            <div
+                              className={cn('h-4 w-4', getFormatColor(format))}
+                            >
                               {getFormatIcon(format)}
                             </div>
                           </div>
                         ))}
                       </div>
-                      
-                      <div className="flex gap-2 pt-2">
-                        <Button 
-                          size="sm" 
-                          className="flex-1"
+
+                      <div className='flex gap-2 pt-2'>
+                        <Button
+                          size='sm'
+                          className='flex-1'
                           onClick={() => {
                             setSelectedReport(report.id);
                             setSelectedFormat(report.supportedFormats[0]);
                             setShowConfirmDialog(true);
                           }}
                         >
-                          <IconDownload className="h-4 w-4 mr-2" />
+                          <IconDownload className='mr-2 h-4 w-4' />
                           Generate
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
+                        <Button
+                          size='sm'
+                          variant='outline'
                           onClick={() => {
                             // Handle preview
                           }}
                         >
-                          <IconEye className="h-4 w-4" />
+                          <IconEye className='h-4 w-4' />
                         </Button>
                       </div>
                     </div>
@@ -352,7 +404,7 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
 
       {/* Report Generation Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent className="max-w-2xl">
+        <AlertDialogContent className='max-w-2xl'>
           <AlertDialogHeader>
             <AlertDialogTitle>Generate Report</AlertDialogTitle>
             <AlertDialogDescription>
@@ -361,81 +413,107 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
           </AlertDialogHeader>
 
           {selectedReport && (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {/* Report Info */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center text-white", 
-                  reportConfigs.find(r => r.id === selectedReport)?.color)}>
-                  {reportConfigs.find(r => r.id === selectedReport)?.icon}
+              <div className='bg-muted/50 flex items-center gap-3 rounded-lg p-3'>
+                <div
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-lg text-white',
+                    reportConfigs.find((r) => r.id === selectedReport)?.color
+                  )}
+                >
+                  {reportConfigs.find((r) => r.id === selectedReport)?.icon}
                 </div>
                 <div>
-                  <h4 className="font-semibold">
-                    {reportConfigs.find(r => r.id === selectedReport)?.name}
+                  <h4 className='font-semibold'>
+                    {reportConfigs.find((r) => r.id === selectedReport)?.name}
                   </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {reportConfigs.find(r => r.id === selectedReport)?.description}
+                  <p className='text-muted-foreground text-sm'>
+                    {
+                      reportConfigs.find((r) => r.id === selectedReport)
+                        ?.description
+                    }
                   </p>
                 </div>
               </div>
 
               {/* Format Selection */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Export Format</label>
-                <Select value={selectedFormat} onValueChange={(value: ExportFormat) => setSelectedFormat(value)}>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium'>Export Format</label>
+                <Select
+                  value={selectedFormat}
+                  onValueChange={(value: ExportFormat) =>
+                    setSelectedFormat(value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {reportConfigs.find(r => r.id === selectedReport)?.supportedFormats.map(format => (
-                      <SelectItem key={format} value={format}>
-                        <div className="flex items-center gap-2">
-                          <div className={getFormatColor(format)}>
-                            {getFormatIcon(format)}
+                    {reportConfigs
+                      .find((r) => r.id === selectedReport)
+                      ?.supportedFormats.map((format) => (
+                        <SelectItem key={format} value={format}>
+                          <div className='flex items-center gap-2'>
+                            <div className={getFormatColor(format)}>
+                              {getFormatIcon(format)}
+                            </div>
+                            {format.toUpperCase()}
                           </div>
-                          {format.toUpperCase()}
-                        </div>
-                      </SelectItem>
-                    ))}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Date Range Selection */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">From Date</label>
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium'>From Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <IconCalendar className="mr-2 h-4 w-4" />
+                      <Button
+                        variant='outline'
+                        className='w-full justify-start text-left font-normal'
+                      >
+                        <IconCalendar className='mr-2 h-4 w-4' />
                         {format(dateRange.from, 'PPP')}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className='w-auto p-0' align='start'>
                       <Calendar
-                        mode="single"
+                        mode='single'
                         selected={dateRange.from}
-                        onSelect={(date) => date && setDateRange(prev => ({ ...prev, from: date }))}
+                        onSelect={(date) =>
+                          date &&
+                          setDateRange((prev) => ({ ...prev, from: date }))
+                        }
                         initialFocus
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">To Date</label>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium'>To Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <IconCalendar className="mr-2 h-4 w-4" />
+                      <Button
+                        variant='outline'
+                        className='w-full justify-start text-left font-normal'
+                      >
+                        <IconCalendar className='mr-2 h-4 w-4' />
                         {format(dateRange.to, 'PPP')}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className='w-auto p-0' align='start'>
                       <Calendar
-                        mode="single"
+                        mode='single'
                         selected={dateRange.to}
-                        onSelect={(date) => date && setDateRange(prev => ({ ...prev, to: date }))}
+                        onSelect={(date) =>
+                          date &&
+                          setDateRange((prev) => ({ ...prev, to: date }))
+                        }
                         initialFocus
                       />
                     </PopoverContent>
@@ -444,10 +522,13 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
               </div>
 
               {/* Additional Parameters */}
-              {reportConfigs.find(r => r.id === selectedReport)?.requiredParams && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Additional Parameters</label>
-                  <p className="text-sm text-muted-foreground">
+              {reportConfigs.find((r) => r.id === selectedReport)
+                ?.requiredParams && (
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium'>
+                    Additional Parameters
+                  </label>
+                  <p className='text-muted-foreground text-sm'>
                     This report requires additional parameters to be configured.
                   </p>
                 </div>
@@ -456,12 +537,16 @@ export function VehicleReports({ className, onReportGenerate }: VehicleReportsPr
           )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isGenerating}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel disabled={isGenerating}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleGenerateReport}
               disabled={isGenerating}
             >
-              {isGenerating && <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isGenerating && (
+                <IconLoader2 className='mr-2 h-4 w-4 animate-spin' />
+              )}
               Generate Report
             </AlertDialogAction>
           </AlertDialogFooter>

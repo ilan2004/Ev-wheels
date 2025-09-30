@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { testDatabaseConnection, getTestBattery } from '@/lib/api/test-connection';
+import {
+  testDatabaseConnection,
+  getTestBattery
+} from '@/lib/api/test-connection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -16,7 +19,7 @@ export default function TestDatabasePage() {
     try {
       const result = await testDatabaseConnection();
       setIsConnected(result);
-      
+
       if (result) {
         const battery = await getTestBattery();
         setTestBattery(battery);
@@ -34,11 +37,12 @@ export default function TestDatabasePage() {
   }, []);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-4">Database Connection Test</h1>
-        <p className="text-muted-foreground">
-          This page tests the connection to your Supabase database and verifies the BMS schema.
+    <div className='container mx-auto space-y-6 p-6'>
+      <div className='text-center'>
+        <h1 className='mb-4 text-3xl font-bold'>Database Connection Test</h1>
+        <p className='text-muted-foreground'>
+          This page tests the connection to your Supabase database and verifies
+          the BMS schema.
         </p>
       </div>
 
@@ -48,33 +52,33 @@ export default function TestDatabasePage() {
         </CardHeader>
         <CardContent>
           {loading && (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            <div className='flex items-center gap-2'>
+              <div className='border-primary h-4 w-4 animate-spin rounded-full border-b-2'></div>
               <span>Testing database connection...</span>
             </div>
           )}
-          
+
           {!loading && isConnected === true && (
-            <div className="text-green-600 flex items-center gap-2">
-              <span className="text-2xl">✅</span>
-              <span className="font-semibold">Database connected successfully!</span>
+            <div className='flex items-center gap-2 text-green-600'>
+              <span className='text-2xl'>✅</span>
+              <span className='font-semibold'>
+                Database connected successfully!
+              </span>
             </div>
           )}
-          
+
           {!loading && isConnected === false && (
-            <div className="text-red-600 flex items-center gap-2">
-              <span className="text-2xl">❌</span>
-              <span className="font-semibold">Database connection failed!</span>
+            <div className='flex items-center gap-2 text-red-600'>
+              <span className='text-2xl'>❌</span>
+              <span className='font-semibold'>Database connection failed!</span>
             </div>
           )}
-          
+
           {!loading && isConnected === null && (
-            <div className="text-gray-600">
-              Connection status unknown
-            </div>
+            <div className='text-gray-600'>Connection status unknown</div>
           )}
-          
-          <div className="mt-4">
+
+          <div className='mt-4'>
             <Button onClick={runDatabaseTest} disabled={loading}>
               {loading ? 'Testing...' : 'Test Again'}
             </Button>
@@ -88,15 +92,29 @@ export default function TestDatabasePage() {
             <CardTitle>Sample Battery Data</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div><strong>ID:</strong> {testBattery.id}</div>
-              <div><strong>Serial Number:</strong> {testBattery.serial_number}</div>
-              <div><strong>Brand:</strong> {testBattery.brand}</div>
-              <div><strong>Voltage:</strong> {testBattery.voltage}V</div>
-              <div><strong>Capacity:</strong> {testBattery.capacity}Ah</div>
-              <div><strong>Status:</strong> {testBattery.status}</div>
+            <div className='space-y-2'>
+              <div>
+                <strong>ID:</strong> {testBattery.id}
+              </div>
+              <div>
+                <strong>Serial Number:</strong> {testBattery.serial_number}
+              </div>
+              <div>
+                <strong>Brand:</strong> {testBattery.brand}
+              </div>
+              <div>
+                <strong>Voltage:</strong> {testBattery.voltage}V
+              </div>
+              <div>
+                <strong>Capacity:</strong> {testBattery.capacity}Ah
+              </div>
+              <div>
+                <strong>Status:</strong> {testBattery.status}
+              </div>
               {testBattery.customer && (
-                <div><strong>Customer:</strong> {testBattery.customer.name}</div>
+                <div>
+                  <strong>Customer:</strong> {testBattery.customer.name}
+                </div>
               )}
             </div>
           </CardContent>
@@ -109,23 +127,29 @@ export default function TestDatabasePage() {
         </CardHeader>
         <CardContent>
           {isConnected ? (
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <p>✅ Your database is properly set up!</p>
-              <p>🚀 You can now navigate to the battery details page to test the full functionality:</p>
-              <div className="mt-4">
+              <p>
+                🚀 You can now navigate to the battery details page to test the
+                full functionality:
+              </p>
+              <div className='mt-4'>
                 <Button asChild>
-                  <Link href="/dashboard/batteries">Go to Batteries</Link>
+                  <Link href='/dashboard/batteries'>Go to Batteries</Link>
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <p>❌ Your database schema needs to be set up.</p>
               <p>📝 Please run the SQL schema in your Supabase dashboard:</p>
-              <ol className="list-decimal list-inside space-y-1 ml-4">
+              <ol className='ml-4 list-inside list-decimal space-y-1'>
                 <li>Go to your Supabase project dashboard</li>
                 <li>Navigate to SQL Editor</li>
-                <li>Copy the contents of <code>src/lib/database/bms-schema.sql</code></li>
+                <li>
+                  Copy the contents of{' '}
+                  <code>src/lib/database/bms-schema.sql</code>
+                </li>
                 <li>Paste and execute the SQL</li>
                 <li>Refresh this page to test again</li>
               </ol>

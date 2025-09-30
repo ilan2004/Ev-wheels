@@ -5,7 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Quote } from '@/types/billing';
 import { QuoteForm } from './quote-form';
-import { CreateQuoteFormData, UpdateQuoteFormData, quoteToInvoiceFormData } from '@/lib/billing/schemas';
+import {
+  CreateQuoteFormData,
+  UpdateQuoteFormData,
+  quoteToInvoiceFormData
+} from '@/lib/billing/schemas';
 import { billingRepository } from '@/lib/billing/repository';
 import PageContainer from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
@@ -19,9 +23,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from '@/components/ui/table';
-import { 
+import {
   IconArrowLeft,
   IconEdit,
   IconReceipt,
@@ -40,54 +44,61 @@ interface QuoteDetailPageProps {
   id: string;
 }
 
-function QuoteViewMode({ quote, onEdit, onConvertToInvoice }: { 
-  quote: Quote; 
+function QuoteViewMode({
+  quote,
+  onEdit,
+  onConvertToInvoice
+}: {
+  quote: Quote;
   onEdit: () => void;
   onConvertToInvoice: () => void;
 }) {
   const getStatusBadge = (status: string) => {
     const variants = {
-      'draft': 'secondary',
-      'sent': 'default', 
-      'expired': 'destructive'
+      draft: 'secondary',
+      sent: 'default',
+      expired: 'destructive'
     } as const;
-    
+
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'} className="capitalize">
+      <Badge
+        variant={variants[status as keyof typeof variants] || 'secondary'}
+        className='capitalize'
+      >
         {status}
       </Badge>
     );
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Quote Header */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <IconFileText className="h-5 w-5" />
+              <CardTitle className='flex items-center gap-2'>
+                <IconFileText className='h-5 w-5' />
                 Quote {quote.number}
               </CardTitle>
-              <div className="flex items-center gap-2 mt-2">
+              <div className='mt-2 flex items-center gap-2'>
                 {getStatusBadge(quote.status)}
-                <span className="text-sm text-muted-foreground">
+                <span className='text-muted-foreground text-sm'>
                   Created {format(quote.createdAt, 'MMM dd, yyyy')}
                 </span>
               </div>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button variant="outline" size="sm" onClick={onEdit}>
-                <IconEdit className="mr-2 h-4 w-4" />
+            <div className='flex flex-col gap-2 sm:flex-row'>
+              <Button variant='outline' size='sm' onClick={onEdit}>
+                <IconEdit className='mr-2 h-4 w-4' />
                 Edit Quote
               </Button>
-              <Button variant="outline" size="sm">
-                <IconPrinter className="mr-2 h-4 w-4" />
+              <Button variant='outline' size='sm'>
+                <IconPrinter className='mr-2 h-4 w-4' />
                 Print
               </Button>
               <Button onClick={onConvertToInvoice}>
-                <IconReceipt className="mr-2 h-4 w-4" />
+                <IconReceipt className='mr-2 h-4 w-4' />
                 Convert to Invoice
               </Button>
             </div>
@@ -98,38 +109,48 @@ function QuoteViewMode({ quote, onEdit, onConvertToInvoice }: {
       {/* Customer Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconUser className="h-5 w-5" />
+          <CardTitle className='flex items-center gap-2'>
+            <IconUser className='h-5 w-5' />
             Customer Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className='grid gap-4 md:grid-cols-2'>
           <div>
-            <Label className="text-sm font-medium">Name</Label>
-            <p className="text-sm text-muted-foreground">{quote.customer.name}</p>
+            <Label className='text-sm font-medium'>Name</Label>
+            <p className='text-muted-foreground text-sm'>
+              {quote.customer.name}
+            </p>
           </div>
           {quote.customer.email && (
             <div>
-              <Label className="text-sm font-medium">Email</Label>
-              <p className="text-sm text-muted-foreground">{quote.customer.email}</p>
+              <Label className='text-sm font-medium'>Email</Label>
+              <p className='text-muted-foreground text-sm'>
+                {quote.customer.email}
+              </p>
             </div>
           )}
           {quote.customer.phone && (
             <div>
-              <Label className="text-sm font-medium">Phone</Label>
-              <p className="text-sm text-muted-foreground">{quote.customer.phone}</p>
+              <Label className='text-sm font-medium'>Phone</Label>
+              <p className='text-muted-foreground text-sm'>
+                {quote.customer.phone}
+              </p>
             </div>
           )}
           {quote.customer.gstNumber && (
             <div>
-              <Label className="text-sm font-medium">GST Number</Label>
-              <p className="text-sm text-muted-foreground">{quote.customer.gstNumber}</p>
+              <Label className='text-sm font-medium'>GST Number</Label>
+              <p className='text-muted-foreground text-sm'>
+                {quote.customer.gstNumber}
+              </p>
             </div>
           )}
           {quote.customer.address && (
-            <div className="md:col-span-2">
-              <Label className="text-sm font-medium">Address</Label>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{quote.customer.address}</p>
+            <div className='md:col-span-2'>
+              <Label className='text-sm font-medium'>Address</Label>
+              <p className='text-muted-foreground text-sm whitespace-pre-wrap'>
+                {quote.customer.address}
+              </p>
             </div>
           )}
         </CardContent>
@@ -141,31 +162,39 @@ function QuoteViewMode({ quote, onEdit, onConvertToInvoice }: {
           <CardTitle>Line Items</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className='overflow-x-auto'>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="text-right">Unit Price</TableHead>
-                  <TableHead className="text-right">Discount</TableHead>
-                  <TableHead className="text-right">Tax</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className='text-right'>Qty</TableHead>
+                  <TableHead className='text-right'>Unit Price</TableHead>
+                  <TableHead className='text-right'>Discount</TableHead>
+                  <TableHead className='text-right'>Tax</TableHead>
+                  <TableHead className='text-right'>Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {quote.items.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell className="font-medium">{item.description}</TableCell>
-                    <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className='font-medium'>
+                      {item.description}
+                    </TableCell>
+                    <TableCell className='text-right'>
+                      {item.quantity}
+                    </TableCell>
+                    <TableCell className='text-right'>
+                      {formatCurrency(item.unitPrice)}
+                    </TableCell>
+                    <TableCell className='text-right'>
                       {item.discount ? `${item.discount}%` : '-'}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className='text-right'>
                       {item.taxRate ? `${item.taxRate}%` : '-'}
                     </TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.total)}</TableCell>
+                    <TableCell className='text-right'>
+                      {formatCurrency(item.total)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -173,36 +202,36 @@ function QuoteViewMode({ quote, onEdit, onConvertToInvoice }: {
           </div>
 
           {/* Totals */}
-          <div className="mt-6 flex justify-end">
-            <div className="w-full max-w-sm space-y-2">
-              <div className="flex justify-between text-sm">
+          <div className='mt-6 flex justify-end'>
+            <div className='w-full max-w-sm space-y-2'>
+              <div className='flex justify-between text-sm'>
                 <span>Subtotal:</span>
                 <span>{formatCurrency(quote.totals.subtotal)}</span>
               </div>
               {quote.totals.discountTotal > 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className='text-muted-foreground flex justify-between text-sm'>
                   <span>Discount:</span>
                   <span>-{formatCurrency(quote.totals.discountTotal)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm">
+              <div className='flex justify-between text-sm'>
                 <span>Tax:</span>
                 <span>{formatCurrency(quote.totals.taxTotal)}</span>
               </div>
               {quote.totals.shippingAmount && (
-                <div className="flex justify-between text-sm">
+                <div className='flex justify-between text-sm'>
                   <span>Shipping:</span>
                   <span>{formatCurrency(quote.totals.shippingAmount)}</span>
                 </div>
               )}
               {quote.totals.adjustmentAmount && (
-                <div className="flex justify-between text-sm">
+                <div className='flex justify-between text-sm'>
                   <span>Adjustment:</span>
                   <span>{formatCurrency(quote.totals.adjustmentAmount)}</span>
                 </div>
               )}
               <Separator />
-              <div className="flex justify-between font-semibold">
+              <div className='flex justify-between font-semibold'>
                 <span>Grand Total:</span>
                 <span>{formatCurrency(quote.totals.grandTotal)}</span>
               </div>
@@ -214,30 +243,34 @@ function QuoteViewMode({ quote, onEdit, onConvertToInvoice }: {
       {/* Quote Details */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconCalendar className="h-5 w-5" />
+          <CardTitle className='flex items-center gap-2'>
+            <IconCalendar className='h-5 w-5' />
             Quote Details
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className='space-y-4'>
           {quote.validUntil && (
             <div>
-              <Label className="text-sm font-medium">Valid Until</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className='text-sm font-medium'>Valid Until</Label>
+              <p className='text-muted-foreground text-sm'>
                 {format(quote.validUntil, 'PPP')}
               </p>
             </div>
           )}
           {quote.notes && (
             <div>
-              <Label className="text-sm font-medium">Notes</Label>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{quote.notes}</p>
+              <Label className='text-sm font-medium'>Notes</Label>
+              <p className='text-muted-foreground text-sm whitespace-pre-wrap'>
+                {quote.notes}
+              </p>
             </div>
           )}
           {quote.terms && (
             <div>
-              <Label className="text-sm font-medium">Terms & Conditions</Label>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{quote.terms}</p>
+              <Label className='text-sm font-medium'>Terms & Conditions</Label>
+              <p className='text-muted-foreground text-sm whitespace-pre-wrap'>
+                {quote.terms}
+              </p>
             </div>
           )}
         </CardContent>
@@ -322,10 +355,10 @@ export function QuoteDetailPage({ id }: QuoteDetailPageProps) {
   if (loading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading quote...</p>
+        <div className='flex items-center justify-center py-8'>
+          <div className='text-center'>
+            <div className='border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2'></div>
+            <p className='text-muted-foreground'>Loading quote...</p>
           </div>
         </div>
       </PageContainer>
@@ -335,9 +368,12 @@ export function QuoteDetailPage({ id }: QuoteDetailPageProps) {
   if (!quote) {
     return (
       <PageContainer>
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">Quote not found.</p>
-          <Button className="mt-4" onClick={() => router.push('/dashboard/quotes')}>
+        <div className='py-8 text-center'>
+          <p className='text-muted-foreground'>Quote not found.</p>
+          <Button
+            className='mt-4'
+            onClick={() => router.push('/dashboard/quotes')}
+          >
             Back to Quotes
           </Button>
         </div>
@@ -347,26 +383,25 @@ export function QuoteDetailPage({ id }: QuoteDetailPageProps) {
 
   return (
     <PageContainer>
-      <div className="flex flex-1 flex-col space-y-6">
+      <div className='flex flex-1 flex-col space-y-6'>
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className='flex items-center gap-4'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => router.push('/dashboard/quotes')}
-            className="h-8 w-8 p-0"
+            className='h-8 w-8 p-0'
           >
-            <IconArrowLeft className="h-4 w-4" />
+            <IconArrowLeft className='h-4 w-4' />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className='text-2xl font-semibold tracking-tight'>
               {editMode ? 'Edit Quote' : 'Quote Details'}
             </h1>
-            <p className="text-muted-foreground">
-              {editMode 
+            <p className='text-muted-foreground'>
+              {editMode
                 ? 'Update your quote information'
-                : 'View and manage your quote'
-              }
+                : 'View and manage your quote'}
             </p>
           </div>
         </div>
@@ -376,7 +411,7 @@ export function QuoteDetailPage({ id }: QuoteDetailPageProps) {
           <QuoteForm
             initialData={{
               customer: quote.customer,
-              items: quote.items.map(item => ({
+              items: quote.items.map((item) => ({
                 id: item.id,
                 description: item.description,
                 quantity: item.quantity,
@@ -393,11 +428,11 @@ export function QuoteDetailPage({ id }: QuoteDetailPageProps) {
             onSubmit={handleUpdate}
             onCancel={handleCancelEdit}
             loading={saving}
-            mode="edit"
+            mode='edit'
           />
         ) : (
-          <QuoteViewMode 
-            quote={quote} 
+          <QuoteViewMode
+            quote={quote}
             onEdit={handleEdit}
             onConvertToInvoice={handleConvertToInvoice}
           />

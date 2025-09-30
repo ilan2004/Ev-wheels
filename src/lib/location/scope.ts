@@ -8,17 +8,24 @@ export const SCOPED_TABLES = new Set<string>([
   'customers',
   'battery_records',
   'service_tickets',
+  'vehicle_cases',
   'quotes',
   'invoices',
-  'payments',
+  'payments'
 ]);
 
 // Apply a location_id filter to a Postgrest query builder if applicable.
+// Admin users are not scoped and can see data from all locations.
 export function scopeQuery<T extends { eq: (col: string, val: any) => T }>(
   table: string,
-  query: T
+  query: T,
+  options?: { isAdmin?: boolean; isFrontDesk?: boolean }
 ): T {
   if (!isLocationScopeEnabled()) {
+    return query;
+  }
+  // Admins and front desk managers bypass location filtering
+  if (options?.isAdmin || options?.isFrontDesk) {
     return query;
   }
   const locId = getActiveLocationId();
@@ -33,7 +40,10 @@ export function scopeQuery<T extends { eq: (col: string, val: any) => T }>(
 }
 
 // Add location_id to insert payloads if not present and if the table is scoped.
-export function withLocationId<T extends Record<string, any>>(table: string, payload: T): T {
+export function withLocationId<T extends Record<string, any>>(
+  table: string,
+  payload: T
+): T {
   if (!isLocationScopeEnabled()) {
     return payload;
   }
@@ -45,4 +55,3 @@ export function withLocationId<T extends Record<string, any>>(table: string, pay
   }
   return payload;
 }
-

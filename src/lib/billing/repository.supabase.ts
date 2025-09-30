@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
 import {
   BillingRepository,
-  InMemoryBillingRepository,
+  InMemoryBillingRepository
 } from '@/lib/billing/repository';
 import { withLocationId } from '@/lib/location/scope';
 import {
@@ -17,21 +17,19 @@ import {
   InvoiceStatus,
   QuoteFilters,
   InvoiceFilters,
-  PaginatedResponse,
+  PaginatedResponse
 } from '@/types/billing';
 import {
   updateLineItemTotals,
   calculateBillingTotals,
-  calculateBalanceDue,
+  calculateBalanceDue
 } from '@/lib/billing/calculations';
-import {
-  generateLineItemId,
-} from '@/lib/billing/calculations';
+import { generateLineItemId } from '@/lib/billing/calculations';
 import {
   generateQuoteNumber,
   generateInvoiceNumber,
   DEFAULT_QUOTE_CONFIG,
-  DEFAULT_INVOICE_CONFIG,
+  DEFAULT_INVOICE_CONFIG
 } from '@/lib/billing/numbering';
 
 // Helper to map DB rows to typed Invoice with Dates (guards against invalid dates)
@@ -58,22 +56,27 @@ function mapInvoiceRow(row: any): Invoice {
     createdAt: parseDate(row.created_at ?? row.createdAt) as Date,
     updatedAt: parseDate(row.updated_at ?? row.updatedAt) as Date,
     sourceQuoteId: row.source_quote_id ?? row.sourceQuoteId ?? undefined,
-    payments: row.payments || [],
+    payments: row.payments || []
   };
 }
 
 export class SupabaseBillingRepository implements BillingRepository {
   // Quotes
-  async createQuote(input: CreateQuoteInput, createdBy: string): Promise<Quote> {
+  async createQuote(
+    input: CreateQuoteInput,
+    createdBy: string
+  ): Promise<Quote> {
     // Calculate items & totals
-    const processedItems = input.items.map(item => updateLineItemTotals({
-      id: generateLineItemId(),
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      discount: item.discount || 0,
-      taxRate: item.taxRate || 18,
-    }));
+    const processedItems = input.items.map((item) =>
+      updateLineItemTotals({
+        id: generateLineItemId(),
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        discount: item.discount || 0,
+        taxRate: item.taxRate || 18
+      })
+    );
 
     const totals = calculateBillingTotals(
       processedItems,
@@ -87,7 +90,10 @@ export class SupabaseBillingRepository implements BillingRepository {
       .select('number');
     if (exErr) throw exErr;
 
-    const number = generateQuoteNumber(DEFAULT_QUOTE_CONFIG, (existing || []).map(e => e.number));
+    const number = generateQuoteNumber(
+      DEFAULT_QUOTE_CONFIG,
+      (existing || []).map((e) => e.number)
+    );
 
     const now = new Date().toISOString();
 
@@ -99,10 +105,12 @@ export class SupabaseBillingRepository implements BillingRepository {
       currency: 'USD',
       notes: input.notes,
       terms: input.terms,
-      valid_until: input.validUntil ? new Date(input.validUntil).toISOString() : null,
+      valid_until: input.validUntil
+        ? new Date(input.validUntil).toISOString()
+        : null,
       created_by: createdBy,
       created_at: now,
-      updated_at: now,
+      updated_at: now
     });
 
     const { data, error } = await supabase
@@ -125,9 +133,11 @@ export class SupabaseBillingRepository implements BillingRepository {
       subtotal: it.subtotal,
       discount_amount: it.discountAmount,
       tax_amount: it.taxAmount,
-      total: it.total,
+      total: it.total
     }));
-    const { error: itemsErr } = await supabase.from('quote_items').insert(itemsPayload);
+    const { error: itemsErr } = await supabase
+      .from('quote_items')
+      .insert(itemsPayload);
     if (itemsErr) throw itemsErr;
 
     return {
@@ -143,7 +153,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       validUntil: input.validUntil,
       createdBy,
       createdAt: new Date(now),
-      updatedAt: new Date(now),
+      updatedAt: new Date(now)
     };
   }
 
@@ -180,7 +190,7 @@ export class SupabaseBillingRepository implements BillingRepository {
         subtotal: r.subtotal,
         discountAmount: r.discount_amount,
         taxAmount: r.tax_amount,
-        total: r.total,
+        total: r.total
       })),
       totals: quote.totals,
       currency: quote.currency,
@@ -190,21 +200,35 @@ export class SupabaseBillingRepository implements BillingRepository {
       createdBy: quote.created_by,
       createdAt: new Date(quote.created_at),
       updatedAt: new Date(quote.updated_at),
-      convertedToInvoiceId: quote.converted_to_invoice_id ?? undefined,
+      convertedToInvoiceId: quote.converted_to_invoice_id ?? undefined
     };
   }
 
-  async listQuotes(filters?: QuoteFilters, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Quote>> {
-    let query = supabase.from('quotes').select('*', { count: 'exact' }).order('created_at', { ascending: false });
-    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+  async listQuotes(
+    filters?: QuoteFilters,
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<PaginatedResponse<Quote>> {
+    let query = supabase
+      .from('quotes')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+    const locId = (
+      await import('@/lib/location/session')
+    ).getActiveLocationId();
     if (locId) query = (query as any).eq('location_id', locId);
 
     if (filters?.status?.length) query = query.in('status', filters.status);
-    if (filters?.customerName) query = query.ilike('customer->>name', `%${filters.customerName}%`);
-    if (filters?.dateFrom) query = query.gte('created_at', filters.dateFrom.toISOString());
-    if (filters?.dateTo) query = query.lte('created_at', filters.dateTo.toISOString());
-    if (typeof filters?.amountMin === 'number') query = query.gte('totals->>grandTotal', String(filters.amountMin));
-    if (typeof filters?.amountMax === 'number') query = query.lte('totals->>grandTotal', String(filters.amountMax));
+    if (filters?.customerName)
+      query = query.ilike('customer->>name', `%${filters.customerName}%`);
+    if (filters?.dateFrom)
+      query = query.gte('created_at', filters.dateFrom.toISOString());
+    if (filters?.dateTo)
+      query = query.lte('created_at', filters.dateTo.toISOString());
+    if (typeof filters?.amountMin === 'number')
+      query = query.gte('totals->>grandTotal', String(filters.amountMin));
+    if (typeof filters?.amountMax === 'number')
+      query = query.lte('totals->>grandTotal', String(filters.amountMax));
 
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -224,7 +248,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       validUntil: q.valid_until ? new Date(q.valid_until) : undefined,
       createdBy: q.created_by,
       createdAt: new Date(q.created_at),
-      updatedAt: new Date(q.updated_at),
+      updatedAt: new Date(q.updated_at)
     }));
 
     return {
@@ -232,7 +256,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       total: count || 0,
       page,
       pageSize,
-      totalPages: Math.ceil((count || 0) / pageSize),
+      totalPages: Math.ceil((count || 0) / pageSize)
     };
   }
 
@@ -245,18 +269,20 @@ export class SupabaseBillingRepository implements BillingRepository {
     let items = existing.items;
     let totals = existing.totals;
     if (input.items) {
-      items = input.items.map(it => updateLineItemTotals({
-        id: (it as any).id || generateLineItemId(),
-        description: it.description,
-        quantity: it.quantity,
-        unitPrice: it.unitPrice,
-        discount: it.discount || 0,
-        taxRate: it.taxRate || 18,
-      }));
+      items = input.items.map((it) =>
+        updateLineItemTotals({
+          id: (it as any).id || generateLineItemId(),
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          discount: it.discount || 0,
+          taxRate: it.taxRate || 18
+        })
+      );
       totals = calculateBillingTotals(
         items,
-        (input.shippingAmount ?? existing.totals.shippingAmount) ?? 0,
-        (input.adjustmentAmount ?? existing.totals.adjustmentAmount) ?? 0
+        input.shippingAmount ?? existing.totals.shippingAmount ?? 0,
+        input.adjustmentAmount ?? existing.totals.adjustmentAmount ?? 0
       );
 
       // Replace items
@@ -272,9 +298,11 @@ export class SupabaseBillingRepository implements BillingRepository {
         subtotal: it.subtotal,
         discount_amount: it.discountAmount,
         tax_amount: it.taxAmount,
-        total: it.total,
+        total: it.total
       }));
-      const { error: itemsErr } = await supabase.from('quote_items').insert(itemsPayload);
+      const { error: itemsErr } = await supabase
+        .from('quote_items')
+        .insert(itemsPayload);
       if (itemsErr) throw itemsErr;
     }
 
@@ -285,9 +313,10 @@ export class SupabaseBillingRepository implements BillingRepository {
         totals,
         notes: input.notes ?? existing.notes ?? null,
         terms: input.terms ?? existing.terms ?? null,
-        valid_until: (input.validUntil ?? existing.validUntil)?.toISOString?.() ?? null,
+        valid_until:
+          (input.validUntil ?? existing.validUntil)?.toISOString?.() ?? null,
         status: input.status ?? existing.status,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select('*')
@@ -298,22 +327,30 @@ export class SupabaseBillingRepository implements BillingRepository {
   }
 
   async deleteQuote(id: string): Promise<void> {
-    const { error: itemsErr } = await supabase.from('quote_items').delete().eq('quote_id', id);
+    const { error: itemsErr } = await supabase
+      .from('quote_items')
+      .delete()
+      .eq('quote_id', id);
     if (itemsErr) throw itemsErr;
     const { error } = await supabase.from('quotes').delete().eq('id', id);
     if (error) throw error;
   }
 
   // Invoices
-  async createInvoice(input: CreateInvoiceInput, createdBy: string): Promise<Invoice> {
-    const processedItems = input.items.map(item => updateLineItemTotals({
-      id: generateLineItemId(),
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      discount: item.discount || 0,
-      taxRate: item.taxRate || 18,
-    }));
+  async createInvoice(
+    input: CreateInvoiceInput,
+    createdBy: string
+  ): Promise<Invoice> {
+    const processedItems = input.items.map((item) =>
+      updateLineItemTotals({
+        id: generateLineItemId(),
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        discount: item.discount || 0,
+        taxRate: item.taxRate || 18
+      })
+    );
 
     const totals = calculateBillingTotals(
       processedItems,
@@ -327,7 +364,10 @@ export class SupabaseBillingRepository implements BillingRepository {
       .select('number');
     if (exErr) throw exErr;
 
-    const number = generateInvoiceNumber(DEFAULT_INVOICE_CONFIG, (existing || []).map(e => e.number));
+    const number = generateInvoiceNumber(
+      DEFAULT_INVOICE_CONFIG,
+      (existing || []).map((e) => e.number)
+    );
 
     const now = new Date().toISOString();
 
@@ -344,7 +384,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       created_by: createdBy,
       created_at: now,
       updated_at: now,
-      source_quote_id: input.sourceQuoteId ?? null,
+      source_quote_id: input.sourceQuoteId ?? null
     });
 
     const { data, error } = await supabase
@@ -367,9 +407,11 @@ export class SupabaseBillingRepository implements BillingRepository {
       subtotal: it.subtotal,
       discount_amount: it.discountAmount,
       tax_amount: it.taxAmount,
-      total: it.total,
+      total: it.total
     }));
-    const { error: itemsErr } = await supabase.from('invoice_items').insert(itemsPayload);
+    const { error: itemsErr } = await supabase
+      .from('invoice_items')
+      .insert(itemsPayload);
     if (itemsErr) throw itemsErr;
 
     return {
@@ -388,7 +430,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       createdAt: new Date(now),
       updatedAt: new Date(now),
       sourceQuoteId: input.sourceQuoteId,
-      payments: [],
+      payments: []
     };
   }
 
@@ -428,7 +470,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       subtotal: r.subtotal,
       discountAmount: r.discount_amount,
       taxAmount: r.tax_amount,
-      total: r.total,
+      total: r.total
     }));
     invoice.payments = (pay || []).map((p: any) => ({
       id: p.id,
@@ -439,24 +481,40 @@ export class SupabaseBillingRepository implements BillingRepository {
       notes: p.notes ?? undefined,
       receivedAt: new Date(p.received_at),
       createdBy: p.created_by,
-      createdAt: new Date(p.created_at),
+      createdAt: new Date(p.created_at)
     }));
     return invoice;
   }
 
-  async listInvoices(filters?: InvoiceFilters, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Invoice>> {
-    let query = supabase.from('invoices').select('*', { count: 'exact' }).order('created_at', { ascending: false });
-    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+  async listInvoices(
+    filters?: InvoiceFilters,
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<PaginatedResponse<Invoice>> {
+    let query = supabase
+      .from('invoices')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+    const locId = (
+      await import('@/lib/location/session')
+    ).getActiveLocationId();
     if (locId) query = (query as any).eq('location_id', locId);
 
     if (filters?.status?.length) query = query.in('status', filters.status);
-    if (filters?.customerName) query = query.ilike('customer->>name', `%${filters.customerName}%`);
-    if (filters?.dateFrom) query = query.gte('created_at', filters.dateFrom.toISOString());
-    if (filters?.dateTo) query = query.lte('created_at', filters.dateTo.toISOString());
-    if (typeof filters?.amountMin === 'number') query = query.gte('totals->>grandTotal', String(filters.amountMin));
-    if (typeof filters?.amountMax === 'number') query = query.lte('totals->>grandTotal', String(filters.amountMax));
+    if (filters?.customerName)
+      query = query.ilike('customer->>name', `%${filters.customerName}%`);
+    if (filters?.dateFrom)
+      query = query.gte('created_at', filters.dateFrom.toISOString());
+    if (filters?.dateTo)
+      query = query.lte('created_at', filters.dateTo.toISOString());
+    if (typeof filters?.amountMin === 'number')
+      query = query.gte('totals->>grandTotal', String(filters.amountMin));
+    if (typeof filters?.amountMax === 'number')
+      query = query.lte('totals->>grandTotal', String(filters.amountMax));
     if (typeof filters?.overdue === 'boolean') {
-      if (filters.overdue) query = query.lt('due_date', new Date().toISOString()); else query = query.gte('due_date', new Date().toISOString());
+      if (filters.overdue)
+        query = query.lt('due_date', new Date().toISOString());
+      else query = query.gte('due_date', new Date().toISOString());
     }
 
     const from = (page - 1) * pageSize;
@@ -470,7 +528,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       total: count || 0,
       page,
       pageSize,
-      totalPages: Math.ceil((count || 0) / pageSize),
+      totalPages: Math.ceil((count || 0) / pageSize)
     };
   }
 
@@ -482,20 +540,25 @@ export class SupabaseBillingRepository implements BillingRepository {
     let totals = existing.totals;
     let balanceDue = existing.balanceDue;
     if (input.items) {
-      items = input.items.map(it => updateLineItemTotals({
-        id: (it as any).id || generateLineItemId(),
-        description: it.description,
-        quantity: it.quantity,
-        unitPrice: it.unitPrice,
-        discount: it.discount || 0,
-        taxRate: it.taxRate || 18,
-      }));
+      items = input.items.map((it) =>
+        updateLineItemTotals({
+          id: (it as any).id || generateLineItemId(),
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          discount: it.discount || 0,
+          taxRate: it.taxRate || 18
+        })
+      );
       totals = calculateBillingTotals(
         items,
-        (input.shippingAmount ?? existing.totals.shippingAmount) ?? 0,
-        (input.adjustmentAmount ?? existing.totals.adjustmentAmount) ?? 0
+        input.shippingAmount ?? existing.totals.shippingAmount ?? 0,
+        input.adjustmentAmount ?? existing.totals.adjustmentAmount ?? 0
       );
-      const paymentsTotal = (existing.payments || []).reduce((s, p) => s + p.amount, 0);
+      const paymentsTotal = (existing.payments || []).reduce(
+        (s, p) => s + p.amount,
+        0
+      );
       balanceDue = calculateBalanceDue(totals.grandTotal, paymentsTotal);
 
       await supabase.from('invoice_items').delete().eq('invoice_id', id);
@@ -510,9 +573,11 @@ export class SupabaseBillingRepository implements BillingRepository {
         subtotal: it.subtotal,
         discount_amount: it.discountAmount,
         tax_amount: it.taxAmount,
-        total: it.total,
+        total: it.total
       }));
-      const { error: itemsErr } = await supabase.from('invoice_items').insert(itemsPayload);
+      const { error: itemsErr } = await supabase
+        .from('invoice_items')
+        .insert(itemsPayload);
       if (itemsErr) throw itemsErr;
     }
 
@@ -526,7 +591,7 @@ export class SupabaseBillingRepository implements BillingRepository {
         terms: input.terms ?? existing.terms ?? null,
         status: input.status ?? existing.status,
         due_date: (input.dueDate ?? existing.dueDate).toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('id', id);
     if (error) throw error;
@@ -542,7 +607,10 @@ export class SupabaseBillingRepository implements BillingRepository {
   }
 
   // Payments
-  async addPayment(input: CreatePaymentInput, createdBy: string): Promise<Payment> {
+  async addPayment(
+    input: CreatePaymentInput,
+    createdBy: string
+  ): Promise<Payment> {
     const now = new Date();
     const received = input.receivedAt ?? now;
 
@@ -554,7 +622,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       notes: input.notes ?? null,
       received_at: received.toISOString(),
       created_by: createdBy,
-      created_at: now.toISOString(),
+      created_at: now.toISOString()
     });
 
     const { data, error } = await supabase
@@ -569,10 +637,13 @@ export class SupabaseBillingRepository implements BillingRepository {
     if (!invoice) throw new Error('Invoice not found after payment');
     const payments = await this.getPaymentsByInvoiceId(input.invoiceId);
     const totalPaid = payments.reduce((s, p) => s + p.amount, 0);
-    const newBalance = calculateBalanceDue(invoice.totals.grandTotal, totalPaid);
+    const newBalance = calculateBalanceDue(
+      invoice.totals.grandTotal,
+      totalPaid
+    );
 
     await this.updateInvoice(input.invoiceId, {
-      status: newBalance === 0 ? InvoiceStatus.PAID : invoice.status,
+      status: newBalance === 0 ? InvoiceStatus.PAID : invoice.status
     });
 
     return {
@@ -584,7 +655,7 @@ export class SupabaseBillingRepository implements BillingRepository {
       notes: data.notes ?? undefined,
       receivedAt: new Date(data.received_at),
       createdBy: data.created_by,
-      createdAt: new Date(data.created_at),
+      createdAt: new Date(data.created_at)
     };
   }
 
@@ -605,31 +676,38 @@ export class SupabaseBillingRepository implements BillingRepository {
       notes: p.notes ?? undefined,
       receivedAt: new Date(p.received_at),
       createdBy: p.created_by,
-      createdAt: new Date(p.created_at),
+      createdAt: new Date(p.created_at)
     }));
   }
 
   // Utilities
-  async convertQuoteToInvoice(quoteId: string, dueDate: Date, createdBy: string): Promise<Invoice> {
+  async convertQuoteToInvoice(
+    quoteId: string,
+    dueDate: Date,
+    createdBy: string
+  ): Promise<Invoice> {
     const quote = await this.getQuote(quoteId);
     if (!quote) throw new Error('Quote not found');
 
-    const invoice = await this.createInvoice({
-      customer: quote.customer,
-      items: quote.items.map(it => ({
-        description: it.description,
-        quantity: it.quantity,
-        unitPrice: it.unitPrice,
-        discount: it.discount,
-        taxRate: it.taxRate,
-      })),
-      dueDate,
-      notes: quote.notes,
-      terms: quote.terms,
-      shippingAmount: quote.totals.shippingAmount,
-      adjustmentAmount: quote.totals.adjustmentAmount,
-      sourceQuoteId: quoteId,
-    }, createdBy);
+    const invoice = await this.createInvoice(
+      {
+        customer: quote.customer,
+        items: quote.items.map((it) => ({
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          discount: it.discount,
+          taxRate: it.taxRate
+        })),
+        dueDate,
+        notes: quote.notes,
+        terms: quote.terms,
+        shippingAmount: quote.totals.shippingAmount,
+        adjustmentAmount: quote.totals.adjustmentAmount,
+        sourceQuoteId: quoteId
+      },
+      createdBy
+    );
 
     await this.updateQuote(quoteId, { status: QuoteStatus.SENT });
     return invoice;
@@ -647,4 +725,3 @@ export class SupabaseBillingRepository implements BillingRepository {
     return (data || []).map((r: any) => r.number);
   }
 }
-

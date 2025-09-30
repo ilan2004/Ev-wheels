@@ -34,6 +34,15 @@ export const navItems: NavItem[] = [
     permissions: [Permission.VIEW_BATTERIES, Permission.VIEW_CUSTOMERS]
   },
   {
+    title: 'Activity',
+    url: '/dashboard/activity',
+    icon: 'activity',
+    isActive: false,
+    shortcut: ['a', 'a'],
+    items: [],
+    permissions: [Permission.VIEW_BATTERIES, Permission.VIEW_CUSTOMERS]
+  },
+  {
     title: 'Vehicles',
     url: '/dashboard/vehicles',
     icon: 'car',
@@ -90,21 +99,21 @@ export const navItems: NavItem[] = [
     permissions: [Permission.VIEW_BATTERIES]
   },
   {
-    title: 'Tickets',
-    url: '/dashboard/tickets',
+    title: 'Job Cards',
+    url: '/dashboard/job-cards',
     icon: 'list',
     shortcut: ['t', 't'],
     isActive: false,
     items: [
       {
-        title: 'All Tickets',
-        url: '/dashboard/tickets',
+        title: 'All Job Cards',
+        url: '/dashboard/job-cards',
         icon: 'list',
         permissions: [Permission.VIEW_CUSTOMERS]
       },
       {
-        title: 'New Ticket',
-        url: '/dashboard/tickets/new',
+        title: 'New Job Card',
+        url: '/dashboard/job-cards/new',
         icon: 'filePlus',
         permissions: [Permission.VIEW_CUSTOMERS]
       }
@@ -235,22 +244,16 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'User Management',
-    url: '/dashboard/users',
+    url: '/dashboard/admin/users',
     icon: 'userCog',
     shortcut: ['u', 'u'],
     isActive: false,
     items: [
       {
         title: 'All Users',
-        url: '/dashboard/users',
+        url: '/dashboard/admin/users',
         icon: 'list',
         permissions: [Permission.VIEW_USERS]
-      },
-      {
-        title: 'Add User',
-        url: '/dashboard/users/new',
-        icon: 'userPlus',
-        permissions: [Permission.CREATE_USER]
       },
       {
         title: 'Role Management',

@@ -16,7 +16,10 @@ export function setActiveLocation(loc: { id: string | null; name: string }) {
   } catch {}
 }
 
-export function getActiveLocation(): { id: string | null; name: string | null } {
+export function getActiveLocation(): {
+  id: string | null;
+  name: string | null;
+} {
   try {
     const id = localStorage.getItem(ACTIVE_LOCATION_ID_KEY);
     const name = localStorage.getItem(ACTIVE_LOCATION_NAME_KEY);
@@ -43,4 +46,3 @@ export async function fetchLocations(): Promise<LocationRow[]> {
     return [{ id: 'default', name: 'Default', code: 'DEFAULT' }];
   }
 }
-

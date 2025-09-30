@@ -1,0 +1,715 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+
+> ev-wheels-custom-software@1.0.0 build
+> next build
+
+   Γû▓ Next.js 15.3.2
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ┬╖ clientTraceMetadata
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 25.0s
+   Linting and checking validity of types ...
+
+./src/app/api/admin/users/route.ts
+92:7  Warning: Unexpected console statement.  no-console
+110:7  Warning: Unexpected console statement.  no-console
+125:7  Warning: Unexpected console statement.  no-console
+146:9  Warning: Unexpected console statement.  no-console
+161:5  Warning: Unexpected console statement.  no-console
+233:5  Warning: Unexpected console statement.  no-console
+
+./src/app/api/batteries/optimized/route.ts
+76:5  Warning: Unexpected console statement.  no-console
+93:28  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+116:5  Warning: Unexpected console statement.  no-console
+
+./src/app/api/batteries/[id]/diagnostics/route.ts
+41:5  Warning: Unexpected console statement.  no-console
+67:5  Warning: Unexpected console statement.  no-console
+100:5  Warning: Unexpected console statement.  no-console
+
+./src/app/api/batteries/[id]/route.ts
+4:3  Warning: 'BatteryStatusHistory' is defined but never used.  @typescript-eslint/no-unused-vars
+5:3  Warning: 'TechnicalDiagnostics' is defined but never used.  @typescript-eslint/no-unused-vars
+66:5  Warning: Unexpected console statement.  no-console
+94:5  Warning: Unexpected console statement.  no-console
+102:5  Warning: Unexpected console statement.  no-console
+
+./src/app/api/dashboard/optimized/route.ts
+6:10  Warning: 'CachePerformanceMonitor' is defined but never used.  @typescript-eslint/no-unused-vars
+70:5  Warning: Unexpected console statement.  no-console
+
+./src/app/api/search/route.ts
+77:5  Warning: Unexpected console statement.  no-console
+
+./src/app/api/vehicles/dashboard/route.ts
+165:5  Warning: Unexpected console statement.  no-console
+
+./src/app/auth/assign-role/page.tsx
+22:3  Warning: 'UserRole' is defined but never used.  @typescript-eslint/no-unused-vars
+58:7  Warning: Unexpected console statement.  no-console
+
+./src/app/dashboard/admin/users/page.tsx
+21:24  Warning: 'UserPlus' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/batteries/[id]/page.tsx
+2:10  Warning: 'notFound' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/customers/duplicates/page.tsx
+67:7  Warning: Unexpected console statement.  no-console
+
+./src/app/dashboard/customers/import/page.tsx
+7:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+54:10  Warning: 'result' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/customers/new/page.tsx
+24:7  Warning: Unexpected console statement.  no-console
+
+./src/app/dashboard/customers/page.tsx
+6:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+6:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+18:20  Warning: 'setPageSize' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/customers/[id]/edit/page.tsx
+38:7  Warning: Unexpected console statement.  no-console
+
+./src/app/dashboard/product/page.tsx
+7:29  Warning: 'serialize' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/tickets/new/page.tsx
+3:17  Warning: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+162:7  Warning: Unexpected console statement.  no-console
+
+./src/app/dashboard/tickets/page.tsx
+19:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+25:3  Warning: 'CombinedStatus' is defined but never used.  @typescript-eslint/no-unused-vars
+28:10  Warning: 'MetricCard' is defined but never used.  @typescript-eslint/no-unused-vars
+48:3  Warning: 'IconUsers' is defined but never used.  @typescript-eslint/no-unused-vars
+167:9  Warning: 'getStatusVariant' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/tickets/[id]/page.tsx
+678:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+991:10  Warning: 'TicketAttachmentCard' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/users/roles/page.tsx
+14:6  Warning: 'RoleRow' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/vehicles/analytics/page.tsx
+20:8  Warning: 'Link' is defined but never used.  @typescript-eslint/no-unused-vars
+59:5  Warning: Unexpected console statement.  no-console
+75:5  Warning: Unexpected console statement.  no-console
+
+./src/app/dashboard/vehicles/kanban/page.tsx
+47:29  Warning: 'setActiveQuickFilter' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/vehicles/page.tsx
+56:29  Warning: 'setActiveQuickFilter' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/vehicles/[id]/components/enhanced-attachment-manager.tsx
+23:10  Warning: 'ScrollArea' is defined but never used.  @typescript-eslint/no-unused-vars
+24:16  Warning: 'TabsContent' is defined but never used.  @typescript-eslint/no-unused-vars
+31:10  Warning: 'Alert' is defined but never used.  @typescript-eslint/no-unused-vars
+31:17  Warning: 'AlertDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+39:3  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+46:3  Warning: 'Play' is defined but never used.  @typescript-eslint/no-unused-vars
+47:3  Warning: 'Pause' is defined but never used.  @typescript-eslint/no-unused-vars
+48:3  Warning: 'Volume2' is defined but never used.  @typescript-eslint/no-unused-vars
+49:3  Warning: 'Maximize2' is defined but never used.  @typescript-eslint/no-unused-vars
+52:3  Warning: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+53:3  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+54:3  Warning: 'MoreVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+55:3  Warning: 'Share2' is defined but never used.  @typescript-eslint/no-unused-vars
+56:3  Warning: 'Edit' is defined but never used.  @typescript-eslint/no-unused-vars
+57:3  Warning: 'Copy' is defined but never used.  @typescript-eslint/no-unused-vars
+102:10  Warning: 'isPlaying' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+102:21  Warning: 'setIsPlaying' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+122:15  Warning: 'uploadingFile' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+201:5  Warning: React Hook useCallback has an unnecessary dependency: 'toast'. Either exclude it or remove the dependency array. Outer scope values like 'toast' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+291:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+589:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/vehicles/[id]/page-enhanced.tsx
+6:10  Warning: 'motion' is defined but never used.  @typescript-eslint/no-unused-vars
+6:18  Warning: 'AnimatePresence' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Warning: 'SectionHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+22:10  Warning: 'Avatar' is defined but never used.  @typescript-eslint/no-unused-vars
+22:18  Warning: 'AvatarFallback' is defined but never used.  @typescript-eslint/no-unused-vars
+22:34  Warning: 'AvatarImage' is defined but never used.  @typescript-eslint/no-unused-vars
+24:10  Warning: 'Separator' is defined but never used.  @typescript-eslint/no-unused-vars
+26:3  Warning: 'Tooltip' is defined but never used.  @typescript-eslint/no-unused-vars
+27:3  Warning: 'TooltipContent' is defined but never used.  @typescript-eslint/no-unused-vars
+28:3  Warning: 'TooltipProvider' is defined but never used.  @typescript-eslint/no-unused-vars
+29:3  Warning: 'TooltipTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+40:3  Warning: 'Sheet' is defined but never used.  @typescript-eslint/no-unused-vars
+41:3  Warning: 'SheetContent' is defined but never used.  @typescript-eslint/no-unused-vars
+42:3  Warning: 'SheetDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+43:3  Warning: 'SheetHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+44:3  Warning: 'SheetTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+45:3  Warning: 'SheetTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+48:10  Warning: 'ScrollArea' is defined but never used.  @typescript-eslint/no-unused-vars
+49:10  Warning: 'Alert' is defined but never used.  @typescript-eslint/no-unused-vars
+49:17  Warning: 'AlertDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+49:35  Warning: 'AlertTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+70:3  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+71:3  Warning: 'MessageSquare' is defined but never used.  @typescript-eslint/no-unused-vars
+72:3  Warning: 'MoreVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+74:3  Warning: 'Phone' is defined but never used.  @typescript-eslint/no-unused-vars
+78:3  Warning: 'Settings' is defined but never used.  @typescript-eslint/no-unused-vars
+80:3  Warning: 'Star' is defined but never used.  @typescript-eslint/no-unused-vars
+81:3  Warning: 'Timer' is defined but never used.  @typescript-eslint/no-unused-vars
+82:3  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+83:3  Warning: 'User' is defined but never used.  @typescript-eslint/no-unused-vars
+90:3  Warning: 'Mail' is defined but never used.  @typescript-eslint/no-unused-vars
+93:3  Warning: 'Upload' is defined but never used.  @typescript-eslint/no-unused-vars
+94:3  Warning: 'Zap' is defined but never used.  @typescript-eslint/no-unused-vars
+95:3  Warning: 'Activity' is defined but never used.  @typescript-eslint/no-unused-vars
+96:3  Warning: 'BarChart3' is defined but never used.  @typescript-eslint/no-unused-vars
+113:7  Warning: 'STATUSES' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+253:10  Warning: 'history' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+299:7  Warning: Unexpected console statement.  no-console
+530:19  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+579:34  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/vehicles/[id]/page.tsx
+10:10  Warning: 'Textarea' is defined but never used.  @typescript-eslint/no-unused-vars
+32:7  Warning: 'STATUSES' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+50:10  Warning: 'notes' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+75:6  Warning: React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/test-db/page.tsx
+28:7  Warning: Unexpected console statement.  no-console
+
+./src/components/admin/user-management/user-create-dialog.tsx
+28:19  Warning: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+125:7  Warning: Unexpected console statement.  no-console
+
+./src/components/admin/user-management/user-edit-dialog.tsx
+111:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/invoices/add-payment-form.tsx
+3:10  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+3:20  Warning: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/billing/invoices/add-payment-page.tsx
+28:6  Warning: React Hook useEffect has a missing dependency: 'loadInvoice'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+60:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/invoices/create-invoice-page.tsx
+11:25  Warning: 'IconDownload' is defined but never used.  @typescript-eslint/no-unused-vars
+22:10  Warning: 'createdInvoice' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+76:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/invoices/ev-invoice-template.tsx
+60:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/billing/invoices/invoice-detail-page.tsx
+27:6  Warning: React Hook useEffect has a missing dependency: 'loadInvoice'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/billing/invoices/invoice-detail-view.tsx
+4:10  Warning: 'useRouter' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'Payment' is defined but never used.  @typescript-eslint/no-unused-vars
+18:32  Warning: 'printInvoice' is defined but never used.  @typescript-eslint/no-unused-vars
+107:3  Warning: 'onPrint' is defined but never used.  @typescript-eslint/no-unused-vars
+108:3  Warning: 'onDownloadPDF' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/billing/invoices/invoice-edit-page.tsx
+31:6  Warning: React Hook useEffect has a missing dependency: 'loadInvoice'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+63:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/invoices/invoice-form.tsx
+4:19  Warning: 'Controller' is defined but never used.  @typescript-eslint/no-unused-vars
+22:10  Warning: 'Label' is defined but never used.  @typescript-eslint/no-unused-vars
+366:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/invoices/invoice-preview-modal.tsx
+14:24  Warning: 'IconPrinter' is defined but never used.  @typescript-eslint/no-unused-vars
+41:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/invoices/invoice-template.tsx
+74:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/billing/invoices/invoices-list-page.tsx
+17:34  Warning: 'InvoiceFilters' is defined but never used.  @typescript-eslint/no-unused-vars
+533:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/quotes/create-quote-page.tsx
+31:7  Warning: Unexpected console statement.  no-console
+
+./src/components/billing/quotes/quote-detail-page.tsx
+9:3  Warning: 'CreateQuoteFormData' is defined but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'quoteToInvoiceFormData' is defined but never used.  @typescript-eslint/no-unused-vars
+33:3  Warning: 'IconDownload' is defined but never used.  @typescript-eslint/no-unused-vars
+34:3  Warning: 'IconTrash' is defined but never used.  @typescript-eslint/no-unused-vars
+299:6  Warning: React Hook useEffect has a missing dependency: 'loadQuote'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/billing/quotes/quote-form.tsx
+4:19  Warning: 'useFieldArray' is defined but never used.  @typescript-eslint/no-unused-vars
+4:34  Warning: 'Controller' is defined but never used.  @typescript-eslint/no-unused-vars
+22:10  Warning: 'Label' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/billing/quotes/quotes-list-page.tsx
+16:30  Warning: 'QuoteFilters' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/bms/battery-details.tsx
+125:7  Warning: Unexpected console statement.  no-console
+153:7  Warning: Unexpected console statement.  no-console
+187:7  Warning: Unexpected console statement.  no-console
+
+./src/components/bms/battery-diagnostics.tsx
+66:3  Warning: 'batteryId' is defined but never used.  @typescript-eslint/no-unused-vars
+109:9  Warning: Unexpected console statement.  no-console
+113:7  Warning: Unexpected console statement.  no-console
+
+./src/components/bms/battery-form.tsx
+3:27  Warning: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+106:7  Warning: Unexpected console statement.  no-console
+
+./src/components/bms/battery-management.tsx
+413:54  Warning: 'idx' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/bms/battery-status-workflow.tsx
+130:3  Warning: 'batteryId' is defined but never used.  @typescript-eslint/no-unused-vars
+151:7  Warning: Unexpected console statement.  no-console
+345:42  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/admin-dashboard.tsx
+43:15  Warning: 'OptimizedKpis' is defined but never used.  @typescript-eslint/no-unused-vars
+43:30  Warning: 'WeeklyDeliveryPoint' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/dashboard-content.tsx
+6:10  Warning: 'ManagerDashboard' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/front-desk-dashboard.tsx
+43:9  Warning: The 'topCustomers' logical expression could make the dependencies of useMemo Hook (at line 88) change on every render. To fix this, wrap the initialization of 'topCustomers' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./src/components/dashboard/manager/enhanced-kpi-cards.tsx
+14:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/manager/kpi-variants-demo.tsx
+182:46  Warning: Unexpected console statement.  no-console
+188:46  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager/modals/due-date-modal.tsx
+40:7  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager/phase2/enhanced-ticket-creation.tsx
+14:3  Warning: 'IconClock' is defined but never used.  @typescript-eslint/no-unused-vars
+57:3  Warning: 'SYMPTOM_TEMPLATES' is defined but never used.  @typescript-eslint/no-unused-vars
+63:3  Warning: 'PRIORITY_COLORS' is defined but never used.  @typescript-eslint/no-unused-vars
+168:21  Warning: 'setCustomers' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+169:23  Warning: 'setTechnicians' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+208:6  Warning: React Hook useEffect has a missing dependency: 'watchedValues.priority'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+259:11  Warning: 'estimatedHours' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+340:7  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager/phase2/quick-assignment.tsx
+6:3  Warning: 'IconUser' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Warning: 'IconUserCheck' is defined but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'IconBattery' is defined but never used.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'IconCheck' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/manager/phase2/smart-media-upload.tsx
+13:3  Warning: 'IconPlayerPlay' is defined but never used.  @typescript-eslint/no-unused-vars
+15:3  Warning: 'IconDownload' is defined but never used.  @typescript-eslint/no-unused-vars
+127:12  Warning: 'file' is defined but never used.  @typescript-eslint/no-unused-vars
+199:11  Warning: Unexpected console statement.  no-console
+258:13  Warning: 'stream' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+463:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/dashboard/manager/phase4/accessibility-integration.tsx
+41:22  Warning: Unexpected console statement.  no-console
+98:26  Warning: Unexpected console statement.  no-console
+140:38  Warning: Unexpected console statement.  no-console
+141:32  Warning: Unexpected console statement.  no-console
+148:37  Warning: Unexpected console statement.  no-console
+149:38  Warning: Unexpected console statement.  no-console
+150:33  Warning: Unexpected console statement.  no-console
+205:15  Warning: Unexpected console statement.  no-console
+274:13  Warning: 'skipLink' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+353:24  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager/phase4/accessible-components.tsx
+10:3  Warning: 'useKeyboardNavigation' is defined but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'AccessibleField' is defined but never used.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'AccessibleTooltip' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+20:3  Warning: 'Battery' is defined but never used.  @typescript-eslint/no-unused-vars
+23:3  Warning: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+26:3  Warning: 'ChevronDown' is defined but never used.  @typescript-eslint/no-unused-vars
+27:3  Warning: 'ChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
+28:3  Warning: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+212:24  Warning: 'setAnnouncement' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/manager/phase4/accessible-dashboard-wrapper.tsx
+7:3  Warning: 'FocusTrap' is defined but never used.  @typescript-eslint/no-unused-vars
+31:24  Warning: 'setAnnouncement' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/manager/phase4/loading-states.tsx
+10:3  Warning: 'IconArrowLeft' is defined but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'IconHome' is defined but never used.  @typescript-eslint/no-unused-vars
+497:35  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+502:5  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager/phase4/mobile-optimizations.tsx
+8:3  Warning: 'IconX' is defined but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'IconCheck' is defined but never used.  @typescript-eslint/no-unused-vars
+10:3  Warning: 'IconEdit' is defined but never used.  @typescript-eslint/no-unused-vars
+14:16  Warning: 'CardContent' is defined but never used.  @typescript-eslint/no-unused-vars
+14:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+14:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+506:9  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager/phase4/performance-utils.ts
+12:7  Warning: Unexpected console statement.  no-console
+36:5  Warning: Unexpected console statement.  no-console
+180:5  Warning: Unexpected console statement.  no-console
+185:3  Warning: Unexpected console statement.  no-console
+252:9  Warning: Unexpected console statement.  no-console
+281:7  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager-dashboard.tsx
+5:10  Warning: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+7:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'IconClipboardList' is defined but never used.  @typescript-eslint/no-unused-vars
+10:3  Warning: 'IconBattery' is defined but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'IconUsers' is defined but never used.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'IconTrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+13:3  Warning: 'IconAlertTriangle' is defined but never used.  @typescript-eslint/no-unused-vars
+14:3  Warning: 'IconListDetails' is defined but never used.  @typescript-eslint/no-unused-vars
+19:10  Warning: 'ManagerKanban' is defined but never used.  @typescript-eslint/no-unused-vars
+22:3  Warning: 'MetricCard' is defined but never used.  @typescript-eslint/no-unused-vars
+26:10  Warning: 'Tabs' is defined but never used.  @typescript-eslint/no-unused-vars
+26:16  Warning: 'TabsList' is defined but never used.  @typescript-eslint/no-unused-vars
+26:26  Warning: 'TabsTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+41:11  Warning: 'activeLocationName' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+52:10  Warning: 'ticketsByStatus' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+63:10  Warning: 'slaRiskCount' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+200:9  Warning: Unexpected console statement.  no-console
+207:9  Warning: 'userName' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+412:10  Warning: 'KpiCard' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/manager-kanban.tsx
+97:7  Warning: Unexpected console statement.  no-console
+126:7  Warning: Unexpected console statement.  no-console
+232:7  Warning: Unexpected console statement.  no-console
+
+./src/components/dashboard/manager-queue.tsx
+134:9  Warning: Unexpected console statement.  no-console
+
+./src/components/forms/demo-form.tsx
+115:5  Warning: Unexpected console statement.  no-console
+
+./src/components/forms/form-file-upload.tsx
+13:24  Warning: 'FileUploaderProps' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/forms/form-switch.tsx
+10:3  Warning: 'FormMessage' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/layout/app-sidebar.tsx
+3:3  Warning: 'Collapsible' is defined but never used.  @typescript-eslint/no-unused-vars
+4:3  Warning: 'CollapsibleContent' is defined but never used.  @typescript-eslint/no-unused-vars
+5:3  Warning: 'CollapsibleTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+20:3  Warning: 'SidebarGroup' is defined but never used.  @typescript-eslint/no-unused-vars
+21:3  Warning: 'SidebarGroupLabel' is defined but never used.  @typescript-eslint/no-unused-vars
+26:3  Warning: 'SidebarMenuSub' is defined but never used.  @typescript-eslint/no-unused-vars
+27:3  Warning: 'SidebarMenuSubButton' is defined but never used.  @typescript-eslint/no-unused-vars
+28:3  Warning: 'SidebarMenuSubItem' is defined but never used.  @typescript-eslint/no-unused-vars
+38:3  Warning: 'IconChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
+40:3  Warning: 'IconCreditCard' is defined but never used.  @typescript-eslint/no-unused-vars
+45:3  Warning: 'IconAlertCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+54:8  Warning: 'Link' is defined but never used.  @typescript-eslint/no-unused-vars
+57:10  Warning: 'Icons' is defined but never used.  @typescript-eslint/no-unused-vars
+59:10  Warning: 'cn' is defined but never used.  @typescript-eslint/no-unused-vars
+120:7  Warning: 'getItemStatus' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+120:39  Warning: 'pathname' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/media/capture-controls.tsx
+171:7  Warning: Unexpected console statement.  no-console
+
+./src/components/media/media-viewer-modal.tsx
+17:3  Warning: 'IconPlayerPlay' is defined but never used.  @typescript-eslint/no-unused-vars
+133:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ui/chart.tsx
+12:4  Warning: 'key' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/form.tsx
+10:3  Warning: 'UseFormReturn' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/query-states.tsx
+14:3  Warning: 'IconBattery' is defined but never used.  @typescript-eslint/no-unused-vars
+15:3  Warning: 'IconUsers' is defined but never used.  @typescript-eslint/no-unused-vars
+16:3  Warning: 'IconTrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/status-pills.tsx
+4:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+345:3  Warning: 'placeholder' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+347:9  Warning: 'statuses' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/vehicles/kanban-vehicle-card.tsx
+271:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/vehicles/vehicle-alerts.tsx
+13:3  Warning: 'IconX' is defined but never used.  @typescript-eslint/no-unused-vars
+133:7  Warning: Unexpected console statement.  no-console
+142:6  Warning: React Hook useEffect has a missing dependency: 'fetchAlerts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/vehicles/vehicle-dashboard.tsx
+4:10  Warning: 'motion' is defined but never used.  @typescript-eslint/no-unused-vars
+6:3  Warning: 'Card' is defined but never used.  @typescript-eslint/no-unused-vars
+14:3  Warning: 'StatusCard' is defined but never used.  @typescript-eslint/no-unused-vars
+17:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+19:16  Warning: 'TabsContent' is defined but never used.  @typescript-eslint/no-unused-vars
+50:3  Warning: 'IconFilter' is defined but never used.  @typescript-eslint/no-unused-vars
+51:3  Warning: 'IconDownload' is defined but never used.  @typescript-eslint/no-unused-vars
+52:3  Warning: 'IconEye' is defined but never used.  @typescript-eslint/no-unused-vars
+144:7  Warning: Unexpected console statement.  no-console
+154:6  Warning: React Hook useEffect has a missing dependency: 'fetchDashboardData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+177:9  Warning: 'getSeverityColor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/vehicles/vehicle-data-table.tsx
+276:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/vehicles/vehicle-filters.tsx
+31:32  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+126:3  Warning: 'loading' is defined but never used.  @typescript-eslint/no-unused-vars
+175:9  Warning: Unexpected console statement.  no-console
+
+./src/components/vehicles/vehicle-grid-view.tsx
+119:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/vehicles/vehicle-kanban-board.tsx
+3:27  Warning: 'useCallback' is defined but never used.  @typescript-eslint/no-unused-vars
+37:3  Warning: 'XCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/vehicles/vehicle-mobile-list.tsx
+92:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/vehicles/vehicle-reports.tsx
+95:24  Warning: 'setCustomParams' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+210:7  Warning: Unexpected console statement.  no-console
+
+./src/features/auth/components/github-auth-button.tsx
+9:9  Warning: 'callbackUrl' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+16:22  Warning: Unexpected console statement.  no-console
+
+./src/features/auth/components/sign-in-view.tsx
+18:42  Warning: 'stars' is defined but never used.  @typescript-eslint/no-unused-vars
+69:15  Warning: Unexpected console statement.  no-console
+76:11  Warning: Unexpected console statement.  no-console
+
+./src/features/auth/components/sign-up-view.tsx
+13:42  Warning: 'stars' is defined but never used.  @typescript-eslint/no-unused-vars
+24:13  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/features/auth/components/user-auth-form.tsx
+5:3  Warning: 'FormControl' is defined but never used.  @typescript-eslint/no-unused-vars
+6:3  Warning: 'FormField' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Warning: 'FormItem' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'FormLabel' is defined but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'FormMessage' is defined but never used.  @typescript-eslint/no-unused-vars
+11:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+29:9  Warning: 'callbackUrl' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+39:27  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+41:7  Warning: Unexpected console statement.  no-console
+
+./src/features/products/components/product-form.tsx
+69:5  Warning: Unexpected console statement.  no-console
+
+./src/hooks/use-batteries.ts
+14:31  Warning: 'ApiResponse' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/hooks/use-dashboard-data.ts
+186:7  Warning: Unexpected console statement.  no-console
+189:7  Warning: Unexpected console statement.  no-console
+
+./src/hooks/use-prefetch.ts
+120:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+286:9  Warning: 'queryClient' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+303:15  Warning: Unexpected console statement.  no-console
+
+./src/hooks/use-realtime.ts
+6:3  Warning: 'useQuery' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'useInfiniteQuery' is defined but never used.  @typescript-eslint/no-unused-vars
+179:13  Warning: Unexpected console statement.  no-console
+214:16  Warning: 'payload' is defined but never used.  @typescript-eslint/no-unused-vars
+253:16  Warning: 'payload' is defined but never used.  @typescript-eslint/no-unused-vars
+317:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/admin/users.ts
+72:5  Warning: Unexpected console statement.  no-console
+133:5  Warning: Unexpected console statement.  no-console
+166:5  Warning: Unexpected console statement.  no-console
+210:5  Warning: Unexpected console statement.  no-console
+239:5  Warning: Unexpected console statement.  no-console
+262:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/batteries.supabase.ts
+120:7  Warning: Unexpected console statement.  no-console
+143:7  Warning: Unexpected console statement.  no-console
+246:7  Warning: Unexpected console statement.  no-console
+342:7  Warning: Unexpected console statement.  no-console
+380:7  Warning: Unexpected console statement.  no-console
+459:7  Warning: Unexpected console statement.  no-console
+512:11  Warning: Unexpected console statement.  no-console
+536:9  Warning: Unexpected console statement.  no-console
+545:7  Warning: Unexpected console statement.  no-console
+667:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/batteries.ts
+78:5  Warning: 'params' is defined but never used.  @typescript-eslint/no-unused-vars
+282:5  Warning: Unexpected console statement.  no-console
+301:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/cache-layer.ts
+7:8  Warning: 'OptimizedKpis' is defined but never used.  @typescript-eslint/no-unused-vars
+8:8  Warning: 'WeeklyDeliveryPoint' is defined but never used.  @typescript-eslint/no-unused-vars
+9:8  Warning: 'BatterySummary' is defined but never used.  @typescript-eslint/no-unused-vars
+10:8  Warning: 'CustomerSummary' is defined but never used.  @typescript-eslint/no-unused-vars
+73:9  Warning: Unexpected console statement.  no-console
+92:9  Warning: Unexpected console statement.  no-console
+124:9  Warning: Unexpected console statement.  no-console
+152:9  Warning: Unexpected console statement.  no-console
+171:9  Warning: Unexpected console statement.  no-console
+196:9  Warning: Unexpected console statement.  no-console
+200:7  Warning: Unexpected console statement.  no-console
+268:7  Warning: Unexpected console statement.  no-console
+279:7  Warning: Unexpected console statement.  no-console
+281:7  Warning: Unexpected console statement.  no-console
+290:7  Warning: Unexpected console statement.  no-console
+300:7  Warning: Unexpected console statement.  no-console
+302:7  Warning: Unexpected console statement.  no-console
+341:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/customers.supabase.ts
+56:7  Warning: Unexpected console statement.  no-console
+85:7  Warning: Unexpected console statement.  no-console
+134:7  Warning: Unexpected console statement.  no-console
+189:7  Warning: Unexpected console statement.  no-console
+204:7  Warning: Unexpected console statement.  no-console
+254:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/global-search.ts
+68:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/kpis.ts
+95:5  Warning: Unexpected console statement.  no-console
+145:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/optimized-kpis.ts
+82:9  Warning: Unexpected console statement.  no-console
+99:7  Warning: Unexpected console statement.  no-console
+130:9  Warning: Unexpected console statement.  no-console
+144:7  Warning: Unexpected console statement.  no-console
+237:7  Warning: Unexpected console statement.  no-console
+298:7  Warning: Unexpected console statement.  no-console
+345:7  Warning: Unexpected console statement.  no-console
+419:7  Warning: Unexpected console statement.  no-console
+473:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/service-tickets.supabase.ts
+26:7  Warning: Unexpected console statement.  no-console
+76:7  Warning: Unexpected console statement.  no-console
+115:7  Warning: Unexpected console statement.  no-console
+135:7  Warning: Unexpected console statement.  no-console
+194:7  Warning: Unexpected console statement.  no-console
+270:7  Warning: Unexpected console statement.  no-console
+389:7  Warning: Unexpected console statement.  no-console
+448:7  Warning: Unexpected console statement.  no-console
+475:7  Warning: Unexpected console statement.  no-console
+499:7  Warning: Unexpected console statement.  no-console
+524:7  Warning: Unexpected console statement.  no-console
+549:7  Warning: Unexpected console statement.  no-console
+593:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/test-connection.ts
+6:5  Warning: Unexpected console statement.  no-console
+9:5  Warning: Unexpected console statement.  no-console
+16:7  Warning: Unexpected console statement.  no-console
+20:5  Warning: Unexpected console statement.  no-console
+27:5  Warning: Unexpected console statement.  no-console
+34:7  Warning: Unexpected console statement.  no-console
+38:5  Warning: Unexpected console statement.  no-console
+45:5  Warning: Unexpected console statement.  no-console
+52:7  Warning: Unexpected console statement.  no-console
+59:5  Warning: Unexpected console statement.  no-console
+66:5  Warning: Unexpected console statement.  no-console
+73:7  Warning: Unexpected console statement.  no-console
+80:5  Warning: Unexpected console statement.  no-console
+86:5  Warning: Unexpected console statement.  no-console
+89:5  Warning: Unexpected console statement.  no-console
+109:7  Warning: Unexpected console statement.  no-console
+115:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/api/vehicles.supabase.ts
+142:7  Warning: Unexpected console statement.  no-console
+172:7  Warning: Unexpected console statement.  no-console
+226:7  Warning: Unexpected console statement.  no-console
+260:7  Warning: Unexpected console statement.  no-console
+281:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/billing/numbering.ts
+360:40  Warning: 'repository' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/billing/repository.supabase.ts
+4:3  Warning: 'InMemoryBillingRepository' is defined but never used.  @typescript-eslint/no-unused-vars
+309:13  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/billing/repository.ts
+577:3  Warning: Unexpected console statement.  no-console
+583:7  Warning: Unexpected console statement.  no-console
+586:7  Warning: Unexpected console statement.  no-console
+593:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/billing/sample-data.ts
+294:3  Warning: Unexpected console statement.  no-console
+296:3  Warning: Unexpected console statement.  no-console
+297:3  Warning: Unexpected console statement.  no-console
+298:3  Warning: Unexpected console statement.  no-console
+305:3  Warning: Unexpected console statement.  no-console
+307:3  Warning: Unexpected console statement.  no-console
+
+./src/lib/invoice-download.ts
+227:5  Warning: Unexpected console statement.  no-console
+254:5  Warning: Unexpected console statement.  no-console
+294:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/location/scope.spec.ts
+1:32  Warning: 'vi' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/performance/monitor.ts
+18:5  Warning: Unexpected console statement.  no-console
+38:7  Warning: Unexpected console statement.  no-console
+45:5  Warning: Unexpected console statement.  no-console
+66:5  Warning: Unexpected console statement.  no-console
+82:5  Warning: Unexpected console statement.  no-console
+86:5  Warning: Unexpected console statement.  no-console
+113:5  Warning: Unexpected console statement.  no-console
+132:5  Warning: Unexpected console statement.  no-console
+
+./src/types/data-table.ts
+7:24  Warning: 'TData' is defined but never used.  @typescript-eslint/no-unused-vars
+7:47  Warning: 'TValue' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./src/app/dashboard/search/page.tsx:16:69
+Type error: Argument of type '() => { tickets: never[]; batteries: never[]; customers: never[]; }' is not assignable to parameter of type 'GlobalSearchResults | (() => GlobalSearchResults)'.
+  Type '() => { tickets: never[]; batteries: never[]; customers: never[]; }' is not assignable to type '() => GlobalSearchResults'.
+    Call signature return types '{ tickets: never[]; batteries: never[]; customers: never[]; }' and 'GlobalSearchResults' are incompatible.
+      The types of 'tickets' are incompatible between these types.
+        Type 'never[]' is not assignable to type 'Pick<ServiceTicket, "status" | "created_at" | "id" | "ticket_number" | "vehicle_reg_no"> & { location?: { id: string; name: string; code?: string | null | undefined; } | null | undefined; }[]'.
+          Type 'never[]' is missing the following properties from type 'Pick<ServiceTicket, "status" | "created_at" | "id" | "ticket_number" | "vehicle_reg_no">': status, created_at, id, ticket_number
+
+  14 |   const [q, setQ] = React.useState('');
+  15 |   const [loading, setLoading] = React.useState(false);
+> 16 |   const [results, setResults] = React.useState<GlobalSearchResults>(() => ({
+     |                                                                     ^
+  17 |     tickets: [],
+  18 |     batteries: [],
+  19 |     customers: []
+Next.js build worker exited with code: 1 and signal: null

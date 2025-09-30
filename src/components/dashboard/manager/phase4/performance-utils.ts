@@ -11,11 +11,14 @@ export const createLazyComponent = <T extends ComponentType<any>>(
     importFn().catch((error) => {
       console.error('Failed to load component:', error);
       toast.error('Failed to load component. Please refresh the page.');
-      
+
       // Return a fallback component or empty component
-      return fallback 
+      return fallback
         ? { default: fallback }
-: { default: () => React.createElement('div', null, 'Component failed to load') };
+        : {
+            default: () =>
+              React.createElement('div', null, 'Component failed to load')
+          };
     })
   );
 };
@@ -48,7 +51,7 @@ export const useIntersectionObserver = (
   if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
     return new IntersectionObserver(callback, defaultOptions);
   }
-  
+
   return null;
 };
 
@@ -59,18 +62,18 @@ export const debounce = <T extends (...args: any[]) => any>(
   immediate = false
 ): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout | null = null;
-  
+
   return (...args: Parameters<T>) => {
     const later = () => {
       timeout = null;
       if (!immediate) func(...args);
     };
-    
+
     const callNow = immediate && !timeout;
-    
+
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
-    
+
     if (callNow) func(...args);
   };
 };
@@ -81,12 +84,12 @@ export const throttle = <T extends (...args: any[]) => any>(
   wait: number
 ): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
-  
+
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, wait);
+      setTimeout(() => (inThrottle = false), wait);
     }
   };
 };
@@ -100,7 +103,7 @@ export const createVirtualizedList = (
 ) => {
   const visibleCount = Math.ceil(containerHeight / itemHeight);
   const totalHeight = items.length * itemHeight;
-  
+
   return {
     totalHeight,
     visibleCount,
@@ -111,14 +114,11 @@ export const createVirtualizedList = (
         startIndex + visibleCount + overscan,
         items.length
       );
-      
+
       return {
         startIndex: Math.max(0, startIndex - overscan),
         endIndex,
-        items: items.slice(
-          Math.max(0, startIndex - overscan),
-          endIndex
-        )
+        items: items.slice(Math.max(0, startIndex - overscan), endIndex)
       };
     }
   };
@@ -126,10 +126,14 @@ export const createVirtualizedList = (
 
 // Cache management
 class CacheManager {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private cache = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
   private maxSize = 100;
-  
-  set(key: string, data: any, ttl = 5 * 60 * 1000) { // 5 minutes default
+
+  set(key: string, data: any, ttl = 5 * 60 * 1000) {
+    // 5 minutes default
     // Remove oldest entries if cache is full
     if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
@@ -137,32 +141,32 @@ class CacheManager {
         this.cache.delete(oldestKey);
       }
     }
-    
+
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
       ttl
     });
   }
-  
+
   get(key: string) {
     const entry = this.cache.get(key);
-    
+
     if (!entry) return null;
-    
+
     // Check if expired
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return entry.data;
   }
-  
+
   clear() {
     this.cache.clear();
   }
-  
+
   delete(key: string) {
     this.cache.delete(key);
   }
@@ -176,7 +180,7 @@ export const analyzeBundleSize = () => {
     console.log('Bundle analysis available in production build');
     return;
   }
-  
+
   // This would integrate with webpack-bundle-analyzer or similar
   console.log('Bundle size analysis would run here in production');
 };
@@ -192,36 +196,40 @@ export const optimizeImage = (
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    
+
     img.onload = () => {
       // Calculate new dimensions
       let { width, height } = img;
-      
+
       if (width > maxWidth || height > maxHeight) {
         const ratio = Math.min(maxWidth / width, maxHeight / height);
         width *= ratio;
         height *= ratio;
       }
-      
+
       canvas.width = width;
       canvas.height = height;
-      
+
       // Draw and compress
       ctx?.drawImage(img, 0, 0, width, height);
-      
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const optimizedFile = new File([blob], file.name, {
-            type: 'image/jpeg',
-            lastModified: Date.now()
-          });
-          resolve(optimizedFile);
-        } else {
-          resolve(file);
-        }
-      }, 'image/jpeg', quality);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const optimizedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(optimizedFile);
+          } else {
+            resolve(file);
+          }
+        },
+        'image/jpeg',
+        quality
+      );
     };
-    
+
     img.src = URL.createObjectURL(file);
   });
 };
@@ -233,17 +241,19 @@ export const performanceMonitor = {
       performance.mark(`${label}-start`);
     }
   },
-  
+
   endTiming: (label: string) => {
     if (typeof window !== 'undefined' && window.performance) {
       performance.mark(`${label}-end`);
       performance.measure(label, `${label}-start`, `${label}-end`);
-      
+
       const measure = performance.getEntriesByName(label)[0];
       if (measure && measure.duration > 1000) {
-        console.warn(`Performance: ${label} took ${measure.duration.toFixed(2)}ms`);
+        console.warn(
+          `Performance: ${label} took ${measure.duration.toFixed(2)}ms`
+        );
       }
-      
+
       // Clean up marks
       performance.clearMarks(`${label}-start`);
       performance.clearMarks(`${label}-end`);
@@ -262,21 +272,21 @@ export const createErrorBoundary = (fallback: ComponentType<any>) => {
       super(props);
       this.state = { hasError: false };
     }
-    
+
     static getDerivedStateFromError(error: Error) {
       return { hasError: true, error };
     }
-    
+
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
       console.error('Component error:', error, errorInfo);
       toast.error('Something went wrong. Please try refreshing the page.');
     }
-    
+
     render() {
       if (this.state.hasError) {
         return React.createElement(fallback, { error: this.state.error });
       }
-      
+
       return this.props.children;
     }
   };

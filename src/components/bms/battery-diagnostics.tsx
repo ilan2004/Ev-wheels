@@ -10,7 +10,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import {
   Form,
@@ -19,14 +19,14 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { 
+import {
   IconActivity,
   IconBolt,
   IconGauge,
@@ -45,7 +45,10 @@ const diagnosticsSchema = z.object({
   current_capacity: z.number().min(0, 'Cannot be negative'),
   load_test_current: z.number().min(0, 'Cannot be negative'),
   load_test_duration: z.number().min(0, 'Cannot be negative'),
-  efficiency_rating: z.number().min(0, 'Cannot be negative').max(100, 'Cannot exceed 100%'),
+  efficiency_rating: z
+    .number()
+    .min(0, 'Cannot be negative')
+    .max(100, 'Cannot exceed 100%'),
   bms_error_codes: z.string().optional(),
   balancing_status: z.enum(['required', 'completed', 'not_needed']),
   test_temperature: z.number().optional()
@@ -59,10 +62,10 @@ interface BatteryDiagnosticsProps {
   onSave?: (data: DiagnosticsFormValues) => Promise<void>;
 }
 
-export function BatteryDiagnostics({ 
-  batteryId, 
-  initialData, 
-  onSave 
+export function BatteryDiagnostics({
+  batteryId,
+  initialData,
+  onSave
 }: BatteryDiagnosticsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -90,9 +93,10 @@ export function BatteryDiagnostics({
   const weakCells = watchedValues.weak_cells || 0;
   const deadCells = watchedValues.dead_cells || 0;
   const accountedCells = healthyCells + weakCells + deadCells;
-  
+
   // Calculate health metrics
-  const healthPercentage = totalCells > 0 ? Math.round((healthyCells / totalCells) * 100) : 0;
+  const healthPercentage =
+    totalCells > 0 ? Math.round((healthyCells / totalCells) * 100) : 0;
   const efficiencyRating = watchedValues.efficiency_rating || 0;
 
   const onSubmit = async (data: DiagnosticsFormValues) => {
@@ -103,7 +107,7 @@ export function BatteryDiagnostics({
       } else {
         // Default save behavior
         console.log('Diagnostics data:', data);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     } catch (error) {
       console.error('Error saving diagnostics:', error);
@@ -127,70 +131,91 @@ export function BatteryDiagnostics({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Battery Diagnostics</h2>
-          <p className="text-muted-foreground">
+          <h2 className='text-2xl font-bold tracking-tight'>
+            Battery Diagnostics
+          </h2>
+          <p className='text-muted-foreground'>
             Record technical analysis and test results
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <IconRefresh className="h-4 w-4 mr-2" />
+        <div className='flex gap-2'>
+          <Button variant='outline' size='sm'>
+            <IconRefresh className='mr-2 h-4 w-4' />
             Run Tests
           </Button>
         </div>
       </div>
 
       {/* Health Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Cell Health</p>
-                <p className="text-2xl font-bold">{healthPercentage}%</p>
-                <Progress value={healthPercentage} className={`mt-2 ${getHealthColor(healthPercentage)}`} />
+                <p className='text-muted-foreground text-sm font-medium'>
+                  Cell Health
+                </p>
+                <p className='text-2xl font-bold'>{healthPercentage}%</p>
+                <Progress
+                  value={healthPercentage}
+                  className={`mt-2 ${getHealthColor(healthPercentage)}`}
+                />
               </div>
-              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <IconActivity className="h-4 w-4 text-blue-600" />
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100'>
+                <IconActivity className='h-4 w-4 text-blue-600' />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Efficiency</p>
-                <p className={`text-2xl font-bold ${getEfficiencyColor(efficiencyRating)}`}>
+                <p className='text-muted-foreground text-sm font-medium'>
+                  Efficiency
+                </p>
+                <p
+                  className={`text-2xl font-bold ${getEfficiencyColor(efficiencyRating)}`}
+                >
                   {efficiencyRating}%
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">Load test result</p>
+                <p className='text-muted-foreground mt-1 text-xs'>
+                  Load test result
+                </p>
               </div>
-              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <IconGauge className="h-4 w-4 text-green-600" />
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-green-100'>
+                <IconGauge className='h-4 w-4 text-green-600' />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Balancing</p>
-                <Badge 
-                  variant={watchedValues.balancing_status === 'completed' ? 'default' : 'secondary'}
-                  className="mt-1"
+                <p className='text-muted-foreground text-sm font-medium'>
+                  Balancing
+                </p>
+                <Badge
+                  variant={
+                    watchedValues.balancing_status === 'completed'
+                      ? 'default'
+                      : 'secondary'
+                  }
+                  className='mt-1'
                 >
-                  {watchedValues.balancing_status?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {watchedValues.balancing_status
+                    ?.replace('_', ' ')
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
                 </Badge>
               </div>
-              <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <IconBolt className="h-4 w-4 text-purple-600" />
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100'>
+                <IconBolt className='h-4 w-4 text-purple-600' />
               </div>
             </div>
           </CardContent>
@@ -198,28 +223,30 @@ export function BatteryDiagnostics({
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             {/* Cell Analysis */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <IconActivity className="h-5 w-5" />
+                <CardTitle className='flex items-center gap-2'>
+                  <IconActivity className='h-5 w-5' />
                   Cell Analysis
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <FormField
                   control={form.control}
-                  name="total_cells"
+                  name='total_cells'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Total Cells</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
+                        <Input
+                          type='number'
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -227,18 +254,20 @@ export function BatteryDiagnostics({
                   )}
                 />
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className='grid grid-cols-3 gap-4'>
                   <FormField
                     control={form.control}
-                    name="healthy_cells"
+                    name='healthy_cells'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Healthy</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type='number'
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -248,15 +277,17 @@ export function BatteryDiagnostics({
 
                   <FormField
                     control={form.control}
-                    name="weak_cells"
+                    name='weak_cells'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Weak</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type='number'
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -266,15 +297,17 @@ export function BatteryDiagnostics({
 
                   <FormField
                     control={form.control}
-                    name="dead_cells"
+                    name='dead_cells'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Dead</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type='number'
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -284,25 +317,28 @@ export function BatteryDiagnostics({
                 </div>
 
                 {totalCells > 0 && accountedCells !== totalCells && (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      ⚠️ Cell count mismatch: {accountedCells} of {totalCells} cells accounted for
+                  <div className='rounded-lg border border-yellow-200 bg-yellow-50 p-3'>
+                    <p className='text-sm text-yellow-800'>
+                      ⚠️ Cell count mismatch: {accountedCells} of {totalCells}{' '}
+                      cells accounted for
                     </p>
                   </div>
                 )}
 
                 <FormField
                   control={form.control}
-                  name="ir_threshold"
+                  name='ir_threshold'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>IR Threshold (Ω)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.1"
+                        <Input
+                          type='number'
+                          step='0.1'
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -318,45 +354,51 @@ export function BatteryDiagnostics({
             {/* Performance Testing */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <IconGauge className="h-5 w-5" />
+                <CardTitle className='flex items-center gap-2'>
+                  <IconGauge className='h-5 w-5' />
                   Performance Testing
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <FormField
                   control={form.control}
-                  name="current_capacity"
+                  name='current_capacity'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Current Capacity (Ah)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.1"
+                        <Input
+                          type='number'
+                          step='0.1'
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
-                      <FormDescription>Measured capacity during testing</FormDescription>
+                      <FormDescription>
+                        Measured capacity during testing
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className='grid grid-cols-2 gap-4'>
                   <FormField
                     control={form.control}
-                    name="load_test_current"
+                    name='load_test_current'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Test Current (A)</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.1"
+                          <Input
+                            type='number'
+                            step='0.1'
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -366,15 +408,17 @@ export function BatteryDiagnostics({
 
                   <FormField
                     control={form.control}
-                    name="load_test_duration"
+                    name='load_test_duration'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Duration (min)</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number"
+                          <Input
+                            type='number'
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -385,20 +429,24 @@ export function BatteryDiagnostics({
 
                 <FormField
                   control={form.control}
-                  name="efficiency_rating"
+                  name='efficiency_rating'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Efficiency Rating (%)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          min="0"
-                          max="100"
+                        <Input
+                          type='number'
+                          min='0'
+                          max='100'
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
-                      <FormDescription>Overall battery performance rating</FormDescription>
+                      <FormDescription>
+                        Overall battery performance rating
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -406,16 +454,18 @@ export function BatteryDiagnostics({
 
                 <FormField
                   control={form.control}
-                  name="test_temperature"
+                  name='test_temperature'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Test Temperature (°C)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.1"
+                        <Input
+                          type='number'
+                          step='0.1'
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -429,29 +479,32 @@ export function BatteryDiagnostics({
           {/* BMS Analysis */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconBolt className="h-5 w-5" />
+              <CardTitle className='flex items-center gap-2'>
+                <IconBolt className='h-5 w-5' />
                 BMS Analysis
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className='space-y-4'>
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <FormField
                   control={form.control}
-                  name="balancing_status"
+                  name='balancing_status'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Balancing Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
+                            <SelectValue placeholder='Select status' />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="not_needed">Not Needed</SelectItem>
-                          <SelectItem value="required">Required</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value='not_needed'>Not Needed</SelectItem>
+                          <SelectItem value='required'>Required</SelectItem>
+                          <SelectItem value='completed'>Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -462,13 +515,13 @@ export function BatteryDiagnostics({
 
               <FormField
                 control={form.control}
-                name="bms_error_codes"
+                name='bms_error_codes'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>BMS Error Codes</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Enter any BMS error codes or fault descriptions..."
+                      <Textarea
+                        placeholder='Enter any BMS error codes or fault descriptions...'
                         {...field}
                       />
                     </FormControl>
@@ -483,13 +536,9 @@ export function BatteryDiagnostics({
           </Card>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-4">
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              size="lg"
-            >
-              <IconDeviceFloppy className="h-4 w-4 mr-2" />
+          <div className='flex justify-end gap-4'>
+            <Button type='submit' disabled={isLoading} size='lg'>
+              <IconDeviceFloppy className='mr-2 h-4 w-4' />
               {isLoading ? 'Saving...' : 'Save Diagnostics'}
             </Button>
           </div>

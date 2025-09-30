@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { 
-  AccessibleDashboardWrapper, 
-  AccessibleSection, 
+import {
+  AccessibleDashboardWrapper,
+  AccessibleSection,
   AccessibleGrid,
-  AccessibilityDebugPanel 
+  AccessibilityDebugPanel
 } from './accessible-dashboard-wrapper';
 import {
   AccessibleKPICard,
@@ -13,7 +13,7 @@ import {
   AccessibleSearch,
   AccessibleNotificationCenter
 } from './accessible-components';
-import { 
+import {
   AccessibleButton,
   AccessibleTooltip,
   LiveRegion
@@ -33,78 +33,78 @@ export function AccessibleManagerDashboard({
   // Example data - replace with your actual data
   const mockKPIs = [
     {
-      title: "Active Tickets",
-      value: "23",
-      description: "5 high priority",
-      trend: { value: 12, label: "12% increase from yesterday" },
-      status: "warning" as const,
+      title: 'Active Tickets',
+      value: '23',
+      description: '5 high priority',
+      trend: { value: 12, label: '12% increase from yesterday' },
+      status: 'warning' as const,
       onClick: () => console.log('Navigate to tickets')
     },
     {
-      title: "Technicians Available",
-      value: "8/12",
-      description: "4 on assignments",
-      status: "normal" as const
+      title: 'Technicians Available',
+      value: '8/12',
+      description: '4 on assignments',
+      status: 'normal' as const
     },
     {
-      title: "Average Response Time",
-      value: "45min",
-      trend: { value: -8, label: "8% faster than last week" },
-      status: "normal" as const
+      title: 'Average Response Time',
+      value: '45min',
+      trend: { value: -8, label: '8% faster than last week' },
+      status: 'normal' as const
     },
     {
-      title: "Customer Satisfaction",
-      value: "4.8/5",
-      trend: { value: 3, label: "3% improvement" },
-      status: "normal" as const
+      title: 'Customer Satisfaction',
+      value: '4.8/5',
+      trend: { value: 3, label: '3% improvement' },
+      status: 'normal' as const
     }
   ];
 
   const mockAlerts = [
     {
-      id: "1",
-      title: "Battery Temperature Critical",
-      description: "Vehicle ID: EV-2024-001 requires immediate attention",
-      severity: "critical" as const,
+      id: '1',
+      title: 'Battery Temperature Critical',
+      description: 'Vehicle ID: EV-2024-001 requires immediate attention',
+      severity: 'critical' as const,
       timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString()
     },
     {
-      id: "2", 
-      title: "Technician Overdue",
-      description: "John Doe has not checked in for 2 hours",
-      severity: "high" as const,
+      id: '2',
+      title: 'Technician Overdue',
+      description: 'John Doe has not checked in for 2 hours',
+      severity: 'high' as const,
       timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString()
     },
     {
-      id: "3",
-      title: "Low Battery Alert",
-      description: "Multiple vehicles showing low battery warnings",
-      severity: "medium" as const,
+      id: '3',
+      title: 'Low Battery Alert',
+      description: 'Multiple vehicles showing low battery warnings',
+      severity: 'medium' as const,
       timestamp: new Date(Date.now() - 90 * 60 * 1000).toISOString()
     }
   ];
 
   const mockNotifications = [
     {
-      id: "n1",
-      title: "New Service Request",
-      message: "Customer reported battery charging issue",
-      type: "info" as const,
+      id: 'n1',
+      title: 'New Service Request',
+      message: 'Customer reported battery charging issue',
+      type: 'info' as const,
       timestamp: new Date().toISOString(),
       read: false,
       actions: [
         {
-          label: "Assign Technician",
+          label: 'Assign Technician',
           onClick: () => console.log('Assign technician'),
-          variant: "default" as const
+          variant: 'default' as const
         }
       ]
     },
     {
-      id: "n2",
-      title: "Maintenance Complete", 
-      message: "Battery replacement completed for vehicle EV-2024-002",
-      type: "success" as const,
+      id: 'n2',
+      title: 'Maintenance Complete',
+      message: 'Battery replacement completed for vehicle EV-2024-002',
+      type: 'success' as const,
       timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
       read: true
     }
@@ -117,26 +117,26 @@ export function AccessibleManagerDashboard({
     >
       {/* Header Section */}
       <AccessibleSection
-        id="section-1"
-        title="Dashboard Header" 
+        id='section-1'
+        title='Dashboard Header'
         headingLevel={1}
-        className="p-6 border-b"
+        className='border-b p-6'
       >
-        <div className="flex items-center justify-between">
+        <div className='flex items-center justify-between'>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
               Service Manager Dashboard
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">
+            <p className='mt-1 text-gray-600 dark:text-gray-300'>
               EV Battery Service Operations
             </p>
           </div>
-          
-          <div className="flex items-center space-x-4">
+
+          <div className='flex items-center space-x-4'>
             {/* Search */}
-            <div id="search" className="w-64">
+            <div id='search' className='w-64'>
               <AccessibleSearch
-                placeholder="Search tickets, customers, vehicles..."
+                placeholder='Search job cards, customers, vehicles...'
                 onSearch={(query) => console.log('Search:', query)}
                 onClear={() => console.log('Search cleared')}
               />
@@ -151,9 +151,9 @@ export function AccessibleManagerDashboard({
             />
 
             {/* Emergency Toggle */}
-            <AccessibleTooltip content="Toggle emergency mode for priority operations">
+            <AccessibleTooltip content='Toggle emergency mode for priority operations'>
               <AccessibleButton
-                variant={emergencyMode ? "destructive" : "outline"}
+                variant={emergencyMode ? 'destructive' : 'outline'}
                 onClick={onEmergencyToggle}
                 aria-label={`${emergencyMode ? 'Deactivate' : 'Activate'} emergency mode`}
                 aria-pressed={emergencyMode}
@@ -167,12 +167,12 @@ export function AccessibleManagerDashboard({
 
       {/* KPIs Section */}
       <AccessibleSection
-        id="section-2"
-        title="Key Performance Indicators"
-        className="p-6"
+        id='section-2'
+        title='Key Performance Indicators'
+        className='p-6'
         emergency={emergencyMode}
       >
-        <div id="kpis">
+        <div id='kpis'>
           <AccessibleGrid cols={4} gap={6}>
             {mockKPIs.map((kpi, index) => (
               <AccessibleKPICard
@@ -191,58 +191,58 @@ export function AccessibleManagerDashboard({
 
       {/* Alerts Section */}
       <AccessibleSection
-        id="section-3"
-        title="Active Alerts"
-        className="p-6"
-        emergency={emergencyMode && mockAlerts.some(a => a.severity === 'critical')}
+        id='section-3'
+        title='Active Alerts'
+        className='p-6'
+        emergency={
+          emergencyMode && mockAlerts.some((a) => a.severity === 'critical')
+        }
       >
-        <div id="alerts">
+        <div id='alerts'>
           <AccessibleAlertList
             alerts={mockAlerts}
-            onFilterChange={(severity) => console.log('Filter alerts:', severity)}
+            onFilterChange={(severity) =>
+              console.log('Filter alerts:', severity)
+            }
           />
         </div>
       </AccessibleSection>
 
       {/* Quick Actions Section */}
-      <AccessibleSection
-        id="section-4"
-        title="Quick Actions"
-        className="p-6"
-      >
+      <AccessibleSection id='section-4' title='Quick Actions' className='p-6'>
         <AccessibleGrid cols={3} gap={4}>
           <AccessibleButton
-            variant="outline"
-            className="h-24 flex-col"
-            aria-describedby="create-ticket-desc"
+            variant='outline'
+            className='h-24 flex-col'
+            aria-describedby='create-ticket-desc'
           >
-            <span className="text-lg mb-1">📋</span>
-            <span>Create Ticket</span>
-            <div id="create-ticket-desc" className="sr-only">
-              Create a new service ticket for a customer issue
+            <span className='mb-1 text-lg'>📋</span>
+            <span>Create Job Card</span>
+            <div id='create-ticket-desc' className='sr-only'>
+              Create a new job card for a customer issue
             </div>
           </AccessibleButton>
 
           <AccessibleButton
-            variant="outline"
-            className="h-24 flex-col"
-            aria-describedby="assign-tech-desc"
+            variant='outline'
+            className='h-24 flex-col'
+            aria-describedby='assign-tech-desc'
           >
-            <span className="text-lg mb-1">👥</span>
+            <span className='mb-1 text-lg'>👥</span>
             <span>Assign Technician</span>
-            <div id="assign-tech-desc" className="sr-only">
+            <div id='assign-tech-desc' className='sr-only'>
               Assign available technician to pending service requests
             </div>
           </AccessibleButton>
 
           <AccessibleButton
-            variant="outline"
-            className="h-24 flex-col"
-            aria-describedby="view-reports-desc"
+            variant='outline'
+            className='h-24 flex-col'
+            aria-describedby='view-reports-desc'
           >
-            <span className="text-lg mb-1">📊</span>
+            <span className='mb-1 text-lg'>📊</span>
             <span>View Reports</span>
-            <div id="view-reports-desc" className="sr-only">
+            <div id='view-reports-desc' className='sr-only'>
               Access performance reports and analytics
             </div>
           </AccessibleButton>
@@ -250,7 +250,7 @@ export function AccessibleManagerDashboard({
       </AccessibleSection>
 
       {/* Additional sections would follow the same pattern... */}
-      
+
       {/* Development Tools */}
       <AccessibilityDebugPanel />
     </AccessibleDashboardWrapper>
@@ -262,7 +262,11 @@ export function withAccessibility<T extends object>(
   Component: React.ComponentType<T>,
   options: {
     skipLink?: { id: string; label: string };
-    section?: { id: string; title: string; headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 };
+    section?: {
+      id: string;
+      title: string;
+      headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+    };
     liveRegion?: boolean;
   } = {}
 ) {
@@ -318,7 +322,10 @@ export const AccessibilityMigrationUtils = {
   }),
 
   // Add live region for dynamic content
-  addLiveRegion: (content: string, priority: 'polite' | 'assertive' = 'polite') => ({
+  addLiveRegion: (
+    content: string,
+    priority: 'polite' | 'assertive' = 'polite'
+  ) => ({
     'aria-live': priority,
     'aria-atomic': 'true',
     children: content
@@ -338,13 +345,13 @@ export function migrateExistingComponent() {
   // After (accessible version):
   return (
     <AccessibleSection
-      id="service-tickets"
-      title="Service Tickets"
+      id='service-tickets'
+      title='Job Cards'
       headingLevel={2}
     >
       <AccessibleButton
-        onClick={() => console.log('View all tickets')}
-        aria-label="View all service tickets"
+        onClick={() => console.log('View all job cards')}
+        aria-label='View all job cards'
       >
         View All
       </AccessibleButton>

@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
+
     // Mock diagnostics data
     const diagnostics: TechnicalDiagnostics = {
       id: `diag-${id}`,
@@ -40,9 +40,9 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching diagnostics:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch diagnostics data' 
+      {
+        success: false,
+        error: 'Failed to fetch diagnostics data'
       },
       { status: 500 }
     );
@@ -57,15 +57,15 @@ export async function POST(
   try {
     const { id } = await params;
     const diagnosticsData: DiagnosticsFormData = await request.json();
-    
+
     // In a real implementation:
     // 1. Validate input data
-    // 2. Check user permissions  
+    // 2. Check user permissions
     // 3. Save to database
     // 4. Update battery record if needed
-    
+
     console.log('Saving diagnostics:', { batteryId: id, diagnosticsData });
-    
+
     // Mock saved diagnostics response
     const savedDiagnostics: TechnicalDiagnostics = {
       id: `diag-${id}`,
@@ -74,14 +74,17 @@ export async function POST(
       healthy_cells: diagnosticsData.healthy_cells,
       weak_cells: diagnosticsData.weak_cells,
       dead_cells: diagnosticsData.dead_cells,
-      cells_above_threshold: diagnosticsData.weak_cells + diagnosticsData.dead_cells,
+      cells_above_threshold:
+        diagnosticsData.weak_cells + diagnosticsData.dead_cells,
       ir_threshold: diagnosticsData.ir_threshold,
       current_capacity: diagnosticsData.current_capacity,
       capacity_retention: 95.4,
       load_test_current: diagnosticsData.load_test_current,
       load_test_duration: diagnosticsData.load_test_duration,
       efficiency_rating: diagnosticsData.efficiency_rating,
-      bms_error_codes: diagnosticsData.bms_error_codes ? [diagnosticsData.bms_error_codes] : [],
+      bms_error_codes: diagnosticsData.bms_error_codes
+        ? [diagnosticsData.bms_error_codes]
+        : [],
       balancing_status: diagnosticsData.balancing_status,
       test_temperature: diagnosticsData.test_temperature,
       diagnosed_at: new Date().toISOString(),
@@ -96,9 +99,9 @@ export async function POST(
   } catch (error) {
     console.error('Error saving diagnostics:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to save diagnostics data' 
+      {
+        success: false,
+        error: 'Failed to save diagnostics data'
       },
       { status: 500 }
     );

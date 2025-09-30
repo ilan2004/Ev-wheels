@@ -10,10 +10,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form';
 import { SectionHeader } from '@/components/layout/section-header';
 import { serviceTicketsApi } from '@/lib/api/service-tickets';
-import { FormFileUpload, FileUploadConfig } from '@/components/forms/form-file-upload';
+import {
+  FormFileUpload,
+  FileUploadConfig
+} from '@/components/forms/form-file-upload';
 import CaptureControls from '@/components/media/capture-controls';
 import { CustomerPicker } from '@/components/customers/customer-picker';
 import { toast } from 'sonner';
@@ -34,7 +44,9 @@ const schema = z.object({
       (val) =>
         val === undefined ||
         val.trim() === '' ||
-        (Number.isFinite(Number(val)) && Number(val) > 1900 && Number(val) < 2100),
+        (Number.isFinite(Number(val)) &&
+          Number(val) > 1900 &&
+          Number(val) < 2100),
       {
         message: 'Enter a valid year'
       }
@@ -53,12 +65,16 @@ export default function NewServiceTicketPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [photoProgresses, setPhotoProgresses] = useState<Record<string, number>>({});
-  const [audioProgresses, setAudioProgresses] = useState<Record<string, number>>({});
+  const [photoProgresses, setPhotoProgresses] = useState<
+    Record<string, number>
+  >({});
+  const [audioProgresses, setAudioProgresses] = useState<
+    Record<string, number>
+  >({});
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-defaultValues: {
+    defaultValues: {
       customer_id: '',
       symptom: '',
       description: '',
@@ -70,7 +86,6 @@ defaultValues: {
       audio: []
     }
   });
-
 
   const photoUploadConfig: FileUploadConfig = useMemo(
     () => ({
@@ -108,10 +123,11 @@ defaultValues: {
         vehicle_reg_no: values.vehicle_reg_no || null,
         vehicle_year: values.vehicle_year ? Number(values.vehicle_year) : null
       });
-      if (!res.success || !res.data) throw new Error(res.error || 'Failed to create ticket');
+      if (!res.success || !res.data)
+        throw new Error(res.error || 'Failed to create job card');
       const newTicketId = res.data.id;
       createdTicketId.current = newTicketId;
-      toast.success(`Ticket ${res.data.ticket_number || ''} created`);
+      toast.success(`Job card ${res.data.ticket_number || ''} created`);
 
       // If user added files in the form, upload them now before navigating
       const photos = (values.photos as unknown as File[]) || [];
@@ -136,14 +152,15 @@ defaultValues: {
           onProgress: (file, progress) =>
             setAudioProgresses((p) => ({ ...p, [file.name]: progress }))
         });
-        if (!upa.success) throw new Error(upa.error || 'Failed to upload audio');
+        if (!upa.success)
+          throw new Error(upa.error || 'Failed to upload audio');
       }
 
       // Navigate to detail page after uploads
-      router.push(`/dashboard/tickets/${newTicketId}`);
+      router.push(`/dashboard/job-cards/${newTicketId}`);
     } catch (e) {
       console.error(e);
-      toast.error(e instanceof Error ? e.message : 'Failed to create ticket');
+      toast.error(e instanceof Error ? e.message : 'Failed to create job card');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,149 +168,189 @@ defaultValues: {
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        <SectionHeader title="Create Service Ticket" description="Log a customer issue and attach intake media." />
+      <div className='flex flex-col gap-6'>
+        <SectionHeader
+          title='Create Job Card'
+          description='Log a customer issue and attach intake media.'
+        />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 order-2 xl:order-1">
+        <div className='grid grid-cols-1 gap-6 xl:grid-cols-3'>
+          <div className='order-2 xl:order-1 xl:col-span-2'>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Customer & Symptom</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="customer_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Customer *</FormLabel>
-                          <FormControl>
-                            <CustomerPicker
-                              value={field.value || null}
-                              onChange={(id) => field.onChange(id || '')}
-                              allowQuickAdd
-                              placeholder="Search or add customer"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-6'
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Customer & Symptom</CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+                      <FormField
+                        control={form.control}
+                        name='customer_id'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Customer *</FormLabel>
+                            <FormControl>
+                              <CustomerPicker
+                                value={field.value || null}
+                                onChange={(id) => field.onChange(id || '')}
+                                allowQuickAdd
+                                placeholder='Search or add customer'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name="symptom"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Symptom *</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Describe the issue reported by customer" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name='symptom'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Symptom *</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder='Describe the issue reported by customer'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="vehicle_make"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Vehicle Make</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., TVS, Bajaj" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="vehicle_model"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Vehicle Model</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Model (optional)" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="vehicle_reg_no"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Reg No</FormLabel>
-                          <FormControl>
-                            <Input placeholder="KL-xx-xxxx" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+                      <FormField
+                        control={form.control}
+                        name='vehicle_make'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Vehicle Make</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='e.g., TVS, Bajaj'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name='vehicle_model'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Vehicle Model</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='Model (optional)'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name='vehicle_reg_no'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Reg No</FormLabel>
+                            <FormControl>
+                              <Input placeholder='KL-xx-xxxx' {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Media Attachments</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <FormFileUpload
-                      control={form.control}
-                      name={"photos" as any}
-                      label="Photos"
-                      description="Upload intake photos (up to 8, 10MB each)"
-                      config={photoUploadConfig}
-                      className=""
-                    />
-                    <CaptureControls onPhotos={(files) => {
-                      const current = (form.getValues("photos") as unknown as File[]) || [];
-                      form.setValue("photos" as any, [...current, ...files]);
-                    }} />
-                  </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Media Attachments</CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-6'>
+                    <div className='space-y-2'>
+                      <FormFileUpload
+                        control={form.control}
+                        name={'photos' as any}
+                        label='Photos'
+                        description='Upload intake photos (up to 8, 10MB each)'
+                        config={photoUploadConfig}
+                        className=''
+                      />
+                      <CaptureControls
+                        onPhotos={(files) => {
+                          const current =
+                            (form.getValues('photos') as unknown as File[]) ||
+                            [];
+                          form.setValue('photos' as any, [
+                            ...current,
+                            ...files
+                          ]);
+                        }}
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <FormFileUpload
-                      control={form.control}
-                      name={"audio" as any}
-                      label="Voice Notes"
-                      description="Upload short voice notes (up to 3, 15MB each)"
-                      config={audioUploadConfig}
-                      className=""
-                    />
-                    <CaptureControls onAudio={(files) => {
-                      const current = (form.getValues("audio") as unknown as File[]) || [];
-                      form.setValue("audio" as any, [...current, ...files]);
-                    }} />
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className='space-y-2'>
+                      <FormFileUpload
+                        control={form.control}
+                        name={'audio' as any}
+                        label='Voice Notes'
+                        description='Upload short voice notes (up to 3, 15MB each)'
+                        config={audioUploadConfig}
+                        className=''
+                      />
+                      <CaptureControls
+                        onAudio={(files) => {
+                          const current =
+                            (form.getValues('audio') as unknown as File[]) ||
+                            [];
+                          form.setValue('audio' as any, [...current, ...files]);
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <div className="flex items-center justify-end gap-3">
-                <Button type="button" variant="secondary" onClick={() => router.push('/dashboard')}>Cancel</Button>
-                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Ticket'}</Button>
-              </div>
+                <div className='flex items-center justify-end gap-3'>
+                  <Button
+                    type='button'
+                    variant='secondary'
+                    onClick={() => router.push('/dashboard')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type='submit' disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save Ticket'}
+                  </Button>
+                </div>
               </form>
             </Form>
           </div>
-          <div className="order-1 xl:order-2">
+          <div className='order-1 xl:order-2'>
             <Card>
               <CardHeader>
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm text-muted-foreground">
-                <p>Photos and audio uploads will start after the ticket is created. You can add more later from the ticket page.</p>
-                <p>Customer creation will be added as a quick action in a later iteration.</p>
+              <CardContent className='text-muted-foreground space-y-2 text-sm'>
+                <p>
+                  Photos and audio uploads will start after the ticket is
+                  created. You can add more later from the ticket page.
+                </p>
+                <p>
+                  Customer creation will be added as a quick action in a later
+                  iteration.
+                </p>
               </CardContent>
             </Card>
           </div>

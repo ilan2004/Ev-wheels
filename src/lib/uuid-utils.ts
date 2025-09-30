@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
  * Validate if a string is a valid UUID v4 format
  */
 export function isValidUUID(id: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
 }
 
@@ -35,8 +36,8 @@ export function testIdToUUID(id: string | number): string {
  */
 export const SAMPLE_BATTERY_UUIDS = {
   '1': 'a1b2c3d4-e5f6-4789-8abc-123456789001',
-  '2': 'a1b2c3d4-e5f6-4789-8abc-123456789002', 
-  '3': 'a1b2c3d4-e5f6-4789-8abc-123456789003',
+  '2': 'a1b2c3d4-e5f6-4789-8abc-123456789002',
+  '3': 'a1b2c3d4-e5f6-4789-8abc-123456789003'
   // Add more as needed
 } as const;
 

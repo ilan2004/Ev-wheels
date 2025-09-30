@@ -9,7 +9,7 @@ vi.mock('@/lib/supabase/client', () => {
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     range: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis()
   } as any;
   return {
     supabase: {
@@ -24,8 +24,8 @@ vi.mock('@/lib/supabase/client', () => {
           return { insert: vi.fn().mockResolvedValue({ error: null }) } as any;
         }
         return selectChain;
-      }),
-    },
+      })
+    }
   };
 });
 
@@ -37,4 +37,3 @@ describe('customersApi.merge', () => {
     expect(res.success).toBe(true);
   });
 });
-

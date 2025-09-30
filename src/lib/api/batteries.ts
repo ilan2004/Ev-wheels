@@ -1,5 +1,15 @@
 // API Contract for Battery Operations
-import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, DiagnosticsFormData, BatteryStatus, BatteryFormData, Customer, BatteryType, CellType } from '@/types/bms';
+import {
+  BatteryRecord,
+  BatteryStatusHistory,
+  TechnicalDiagnostics,
+  DiagnosticsFormData,
+  BatteryStatus,
+  BatteryFormData,
+  Customer,
+  BatteryType,
+  CellType
+} from '@/types/bms';
 import { isValidUUID, extractSimpleId } from '@/lib/uuid-utils';
 
 // Base API Response structure
@@ -13,7 +23,7 @@ export interface ApiResponse<T = any> {
 export interface ListBatteriesParams {
   search?: string; // matches serial_number or brand (client filters can refine further)
   status?: string; // single status value
-  brand?: string;  // single brand value
+  brand?: string; // single brand value
   limit?: number;
   offset?: number;
 }
@@ -21,7 +31,9 @@ export interface ListBatteriesParams {
 // Battery API Operations
 export interface BatteryApiContract {
   // Fetch list of batteries
-  listBatteries(params?: ListBatteriesParams): Promise<ApiResponse<BatteryRecord[]>>;
+  listBatteries(
+    params?: ListBatteriesParams
+  ): Promise<ApiResponse<BatteryRecord[]>>;
 
   // Create a new battery
   createBattery(data: BatteryFormData): Promise<ApiResponse<BatteryRecord>>;
@@ -31,27 +43,40 @@ export interface BatteryApiContract {
 
   // Fetch single battery
   fetchBattery(batteryId: string): Promise<ApiResponse<BatteryRecord>>;
-  
+
   // Fetch battery status history
-  fetchStatusHistory(batteryId: string): Promise<ApiResponse<BatteryStatusHistory[]>>;
-  
+  fetchStatusHistory(
+    batteryId: string
+  ): Promise<ApiResponse<BatteryStatusHistory[]>>;
+
   // Fetch battery diagnostics
-  fetchDiagnostics(batteryId: string): Promise<ApiResponse<TechnicalDiagnostics>>;
-  
+  fetchDiagnostics(
+    batteryId: string
+  ): Promise<ApiResponse<TechnicalDiagnostics>>;
+
   // Update battery status
-  updateBatteryStatus(batteryId: string, newStatus: BatteryStatus, notes?: string): Promise<ApiResponse<BatteryRecord>>;
-  
+  updateBatteryStatus(
+    batteryId: string,
+    newStatus: BatteryStatus,
+    notes?: string
+  ): Promise<ApiResponse<BatteryRecord>>;
+
   // Save diagnostics data
-  saveDiagnostics(batteryId: string, diagnostics: DiagnosticsFormData): Promise<ApiResponse<TechnicalDiagnostics>>;
+  saveDiagnostics(
+    batteryId: string,
+    diagnostics: DiagnosticsFormData
+  ): Promise<ApiResponse<TechnicalDiagnostics>>;
 }
 
 // Mock implementation for development
 export class MockBatteryApi implements BatteryApiContract {
   private delay(ms: number = 1000) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  async listBatteries(params?: ListBatteriesParams): Promise<ApiResponse<BatteryRecord[]>> {
+  async listBatteries(
+    params?: ListBatteriesParams
+  ): Promise<ApiResponse<BatteryRecord[]>> {
     await this.delay();
     // Simple mock: reuse a few generated entries based on params
     const base = await this.fetchBattery('mock-1');
@@ -59,7 +84,9 @@ export class MockBatteryApi implements BatteryApiContract {
     return { success: true, data: batteries };
   }
 
-  async createBattery(data: BatteryFormData): Promise<ApiResponse<BatteryRecord>> {
+  async createBattery(
+    data: BatteryFormData
+  ): Promise<ApiResponse<BatteryRecord>> {
     await this.delay();
     const created: BatteryRecord = {
       id: `mock-${Date.now()}`,
@@ -78,7 +105,7 @@ export class MockBatteryApi implements BatteryApiContract {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       created_by: 'mock-user',
-      updated_by: 'mock-user',
+      updated_by: 'mock-user'
     };
     return { success: true, data: created };
   }
@@ -88,19 +115,33 @@ export class MockBatteryApi implements BatteryApiContract {
     return {
       success: true,
       data: [
-        { id: 'cust-1', name: 'Basheer', contact: '9946467546', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        { id: 'cust-2', name: 'Abdhul Manaf', contact: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        {
+          id: 'cust-1',
+          name: 'Basheer',
+          contact: '9946467546',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'cust-2',
+          name: 'Abdhul Manaf',
+          contact: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
       ]
     };
   }
 
   async fetchBattery(batteryId: string): Promise<ApiResponse<BatteryRecord>> {
     await this.delay();
-    
+
     // If batteryId is a UUID, extract simple ID for mock data lookup
     // This allows the mock API to work with both UUID and simple ID formats
-    const simpleId = isValidUUID(batteryId) ? extractSimpleId(batteryId) : batteryId;
-    
+    const simpleId = isValidUUID(batteryId)
+      ? extractSimpleId(batteryId)
+      : batteryId;
+
     // Mock battery data
     const mockBattery: BatteryRecord = {
       id: simpleId,
@@ -123,7 +164,8 @@ export class MockBatteryApi implements BatteryApiContract {
       status: BatteryStatus.COMPLETED,
       bms_status: 'ok',
       repair_notes: '72v 39Ah. All cell ok, bms ok, Cell above 40 Ohms',
-      technician_notes: 'Customer reported reduced range. Initial testing shows cell imbalance.',
+      technician_notes:
+        'Customer reported reduced range. Initial testing shows cell imbalance.',
       estimated_cost: 4400,
       final_cost: 4400,
       parts_cost: 3200,
@@ -142,12 +184,16 @@ export class MockBatteryApi implements BatteryApiContract {
     };
   }
 
-  async fetchStatusHistory(batteryId: string): Promise<ApiResponse<BatteryStatusHistory[]>> {
+  async fetchStatusHistory(
+    batteryId: string
+  ): Promise<ApiResponse<BatteryStatusHistory[]>> {
     await this.delay();
-    
+
     // Handle both UUID and simple ID formats
-    const simpleId = isValidUUID(batteryId) ? extractSimpleId(batteryId) : batteryId;
-    
+    const simpleId = isValidUUID(batteryId)
+      ? extractSimpleId(batteryId)
+      : batteryId;
+
     const mockHistory: BatteryStatusHistory[] = [
       {
         id: 'hist-1',
@@ -156,7 +202,8 @@ export class MockBatteryApi implements BatteryApiContract {
         new_status: BatteryStatus.DIAGNOSED,
         changed_by: 'user-1',
         changed_at: '2025-07-30T10:00:00Z',
-        notes: 'Initial diagnosis completed. Cell imbalance detected, BMS functioning normally.'
+        notes:
+          'Initial diagnosis completed. Cell imbalance detected, BMS functioning normally.'
       },
       {
         id: 'hist-2',
@@ -174,7 +221,8 @@ export class MockBatteryApi implements BatteryApiContract {
         new_status: BatteryStatus.COMPLETED,
         changed_by: 'user-1',
         changed_at: '2025-08-06T16:30:00Z',
-        notes: 'Cell balancing completed. Load test passed at 85% efficiency. Ready for delivery.'
+        notes:
+          'Cell balancing completed. Load test passed at 85% efficiency. Ready for delivery.'
       }
     ];
 
@@ -184,12 +232,16 @@ export class MockBatteryApi implements BatteryApiContract {
     };
   }
 
-  async fetchDiagnostics(batteryId: string): Promise<ApiResponse<TechnicalDiagnostics>> {
+  async fetchDiagnostics(
+    batteryId: string
+  ): Promise<ApiResponse<TechnicalDiagnostics>> {
     await this.delay();
-    
+
     // Handle both UUID and simple ID formats
-    const simpleId = isValidUUID(batteryId) ? extractSimpleId(batteryId) : batteryId;
-    
+    const simpleId = isValidUUID(batteryId)
+      ? extractSimpleId(batteryId)
+      : batteryId;
+
     const mockDiagnostics: TechnicalDiagnostics = {
       id: `diag-${simpleId}`,
       battery_id: simpleId,
@@ -220,34 +272,34 @@ export class MockBatteryApi implements BatteryApiContract {
   }
 
   async updateBatteryStatus(
-    batteryId: string, 
-    newStatus: BatteryStatus, 
+    batteryId: string,
+    newStatus: BatteryStatus,
     notes?: string
   ): Promise<ApiResponse<BatteryRecord>> {
     await this.delay();
-    
+
     // In real implementation, this would update the database
     console.log('Updating battery status:', { batteryId, newStatus, notes });
-    
+
     // Return updated battery data
     const updatedBattery = await this.fetchBattery(batteryId);
     if (updatedBattery.success && updatedBattery.data) {
       updatedBattery.data.status = newStatus;
       updatedBattery.data.updated_at = new Date().toISOString();
     }
-    
+
     return updatedBattery;
   }
 
   async saveDiagnostics(
-    batteryId: string, 
+    batteryId: string,
     diagnostics: DiagnosticsFormData
   ): Promise<ApiResponse<TechnicalDiagnostics>> {
     await this.delay();
-    
+
     // In real implementation, this would save to database
     console.log('Saving diagnostics:', { batteryId, diagnostics });
-    
+
     const savedDiagnostics: TechnicalDiagnostics = {
       id: `diag-${batteryId}`,
       battery_id: batteryId,
@@ -262,7 +314,9 @@ export class MockBatteryApi implements BatteryApiContract {
       load_test_current: diagnostics.load_test_current,
       load_test_duration: diagnostics.load_test_duration,
       efficiency_rating: diagnostics.efficiency_rating,
-      bms_error_codes: diagnostics.bms_error_codes ? [diagnostics.bms_error_codes] : [],
+      bms_error_codes: diagnostics.bms_error_codes
+        ? [diagnostics.bms_error_codes]
+        : [],
       balancing_status: diagnostics.balancing_status,
       test_temperature: diagnostics.test_temperature,
       diagnosed_at: new Date().toISOString(),
@@ -280,8 +334,10 @@ export class MockBatteryApi implements BatteryApiContract {
 import { supabaseBatteryRepository } from './batteries.supabase';
 
 // Use real Supabase repository in production, mock for development/testing
-const USE_MOCK = process.env.NODE_ENV === 'development' && process.env.USE_MOCK_API === 'true';
+const USE_MOCK =
+  process.env.NODE_ENV === 'development' && process.env.USE_MOCK_API === 'true';
 
 // Create singleton instance - switch between mock and real implementation
-export const batteryApi = USE_MOCK ? new MockBatteryApi() : supabaseBatteryRepository;
-
+export const batteryApi = USE_MOCK
+  ? new MockBatteryApi()
+  : supabaseBatteryRepository;

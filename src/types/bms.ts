@@ -3,7 +3,7 @@
 
 export enum BatteryStatus {
   RECEIVED = 'received',
-  DIAGNOSED = 'diagnosed', 
+  DIAGNOSED = 'diagnosed',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   DELIVERED = 'delivered',
@@ -27,7 +27,7 @@ export enum CellType {
 
 export enum RepairType {
   CELL_REPLACEMENT = 'cell_replacement',
-  BMS_REPLACEMENT = 'bms_replacement', 
+  BMS_REPLACEMENT = 'bms_replacement',
   CELL_BALANCING = 'cell_balancing',
   FULL_RECONDITIONING = 'full_reconditioning',
   BATTERY_PACK_REPLACEMENT = 'battery_pack_replacement',
@@ -46,7 +46,7 @@ export interface Customer {
 
 export interface BatteryRecord {
   id: string;
-  
+
   // Basic Battery Information
   serial_number: string;
   brand: string; // E-Wheels, TVS, PURE, Okinawa, etc.
@@ -56,36 +56,38 @@ export interface BatteryRecord {
   capacity: number; // Ah rating
   cell_type: CellType;
   cell_count?: number;
-  
+
   // Customer Information
   customer_id: string;
   customer?: Customer;
-  
+  location_id?: string;
+  location?: { id: string; name: string; code?: string | null };
+
   // Service Information
   received_date: string;
   delivered_date?: string;
   status: BatteryStatus;
-  
+
   // Technical Diagnostics
   initial_voltage?: number;
   load_test_result?: number; // Percentage efficiency
   ir_values?: number[]; // Internal resistance values
   cell_voltages?: number[];
   bms_status: 'ok' | 'faulty' | 'replaced' | 'unknown';
-  
+
   // Repair Details
   repair_type?: RepairType;
   cells_replaced?: number;
   rows_replaced?: number;
   repair_notes: string;
   technician_notes?: string;
-  
+
   // Pricing
   estimated_cost?: number;
   final_cost?: number;
   parts_cost?: number;
   labor_cost?: number;
-  
+
   // Metadata
   created_at: string;
   updated_at: string;
@@ -118,7 +120,7 @@ export interface RepairEstimate {
 export interface TechnicalDiagnostics {
   id: string;
   battery_id: string;
-  
+
   // Cell Analysis
   total_cells: number;
   healthy_cells: number;
@@ -126,23 +128,23 @@ export interface TechnicalDiagnostics {
   dead_cells: number;
   cells_above_threshold: number; // Cells with high IR
   ir_threshold: number; // ohm threshold
-  
-  // Performance Metrics  
+
+  // Performance Metrics
   current_capacity: number; // Measured Ah
   capacity_retention: number; // Percentage of original
   load_test_current: number; // Test current in A
   load_test_duration: number; // Test duration in minutes
   efficiency_rating: number; // Overall efficiency %
-  
+
   // BMS Diagnostics
   bms_firmware_version?: string;
   bms_error_codes?: string[];
   balancing_status: 'required' | 'completed' | 'not_needed';
-  
+
   // Environmental
   test_temperature: number;
   humidity?: number;
-  
+
   // Timestamps
   diagnosed_at: string;
   diagnosed_by: string;
@@ -163,7 +165,13 @@ export interface BatteryFilters {
 }
 
 export interface BatterySortOptions {
-  field: 'received_date' | 'status' | 'brand' | 'voltage' | 'customer_name' | 'estimated_cost';
+  field:
+    | 'received_date'
+    | 'status'
+    | 'brand'
+    | 'voltage'
+    | 'customer_name'
+    | 'estimated_cost';
   direction: 'asc' | 'desc';
 }
 
@@ -176,7 +184,7 @@ export interface BMSAnalytics {
   revenue_this_month: number;
   pending_deliveries: number;
   overdue_batteries: number;
-  
+
   // Charts data
   monthly_revenue: Array<{ month: string; revenue: number }>;
   repair_type_distribution: Array<{ type: RepairType; count: number }>;

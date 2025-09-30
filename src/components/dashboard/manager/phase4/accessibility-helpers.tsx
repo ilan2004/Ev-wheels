@@ -4,7 +4,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 // Accessible button component with proper focus management
-interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface AccessibleButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'default' | 'outline' | 'ghost' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
@@ -12,17 +13,23 @@ interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEle
   loadingText?: string;
 }
 
-export const AccessibleButton = React.forwardRef<HTMLButtonElement, AccessibleButtonProps>(function AccessibleButton({
-  children,
-  variant = 'default',
-  size = 'md',
-  loading = false,
-  loadingText = 'Loading...',
-  disabled,
-  className,
-  'aria-label': ariaLabel,
-  ...props
-}, ref) {
+export const AccessibleButton = React.forwardRef<
+  HTMLButtonElement,
+  AccessibleButtonProps
+>(function AccessibleButton(
+  {
+    children,
+    variant = 'default',
+    size = 'md',
+    loading = false,
+    loadingText = 'Loading...',
+    disabled,
+    className,
+    'aria-label': ariaLabel,
+    ...props
+  },
+  ref
+) {
   return (
     <button
       ref={ref}
@@ -34,57 +41,70 @@ export const AccessibleButton = React.forwardRef<HTMLButtonElement, AccessibleBu
       className={cn(
         // Base styles
         'inline-flex items-center justify-center font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
         'disabled:pointer-events-none disabled:opacity-50',
         // Size variants
         size === 'sm' && 'h-9 px-3 text-sm',
         size === 'md' && 'h-10 px-4 py-2',
         size === 'lg' && 'h-11 px-8 text-base',
         // Style variants
-        variant === 'default' && 'bg-primary text-primary-foreground hover:bg-primary/90',
-        variant === 'outline' && 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        variant === 'default' &&
+          'bg-primary text-primary-foreground hover:bg-primary/90',
+        variant === 'outline' &&
+          'border-input bg-background hover:bg-accent hover:text-accent-foreground border',
         variant === 'ghost' && 'hover:bg-accent hover:text-accent-foreground',
-        variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        variant === 'destructive' &&
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         className
       )}
     >
       {loading && (
         <svg
-          className="mr-2 h-4 w-4 animate-spin"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
+          className='mr-2 h-4 w-4 animate-spin'
+          xmlns='http://www.w3.org/2000/svg'
+          fill='none'
+          viewBox='0 0 24 24'
+          aria-hidden='true'
         >
           <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
+            className='opacity-25'
+            cx='12'
+            cy='12'
+            r='10'
+            stroke='currentColor'
+            strokeWidth='4'
           />
           <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            className='opacity-75'
+            fill='currentColor'
+            d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
           />
         </svg>
       )}
       <span className={loading ? 'sr-only' : ''}>{children}</span>
-      {loading && <span aria-live="polite" className="sr-only">{loadingText}</span>}
+      {loading && (
+        <span aria-live='polite' className='sr-only'>
+          {loadingText}
+        </span>
+      )}
     </button>
   );
 });
 
 // Skip link component for keyboard navigation
-export function SkipLink({ targetId, children }: { targetId: string; children: React.ReactNode }) {
+export function SkipLink({
+  targetId,
+  children
+}: {
+  targetId: string;
+  children: React.ReactNode;
+}) {
   return (
     <a
       href={`#${targetId}`}
       className={cn(
-        'absolute left-0 top-0 z-50 bg-primary text-primary-foreground px-4 py-2 font-medium',
-        'transform -translate-y-full transition-transform duration-200',
+        'bg-primary text-primary-foreground absolute top-0 left-0 z-50 px-4 py-2 font-medium',
+        '-translate-y-full transform transition-transform duration-200',
         'focus:translate-y-0'
       )}
     >
@@ -100,7 +120,11 @@ interface FocusTrapProps {
   restoreFocus?: boolean;
 }
 
-export function FocusTrap({ children, active = true, restoreFocus = true }: FocusTrapProps) {
+export function FocusTrap({
+  children,
+  active = true,
+  restoreFocus = true
+}: FocusTrapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
@@ -150,7 +174,7 @@ export function FocusTrap({ children, active = true, restoreFocus = true }: Focu
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      
+
       // Restore focus to the previously focused element
       if (restoreFocus && previousActiveElement.current) {
         previousActiveElement.current.focus();
@@ -168,7 +192,11 @@ interface LiveRegionProps {
   clearOnUnmount?: boolean;
 }
 
-export function LiveRegion({ message, priority = 'polite', clearOnUnmount = true }: LiveRegionProps) {
+export function LiveRegion({
+  message,
+  priority = 'polite',
+  clearOnUnmount = true
+}: LiveRegionProps) {
   const [content, setContent] = useState(message);
 
   useEffect(() => {
@@ -184,11 +212,7 @@ export function LiveRegion({ message, priority = 'polite', clearOnUnmount = true
   }, [clearOnUnmount]);
 
   return (
-    <div
-      aria-live={priority}
-      aria-atomic="true"
-      className="sr-only"
-    >
+    <div aria-live={priority} aria-atomic='true' className='sr-only'>
       {content}
     </div>
   );
@@ -196,7 +220,7 @@ export function LiveRegion({ message, priority = 'polite', clearOnUnmount = true
 
 // Screen reader only text
 export function ScreenReaderOnly({ children }: { children: React.ReactNode }) {
-  return <span className="sr-only">{children}</span>;
+  return <span className='sr-only'>{children}</span>;
 }
 
 // Keyboard navigation helper hook
@@ -211,62 +235,69 @@ export function useKeyboardNavigation(
   const { loop = true, orientation = 'vertical', onActivate } = options;
   const [activeIndex, setActiveIndex] = useState(-1);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    const itemList = typeof items === 'function' ? items() : items;
-    if (itemList.length === 0) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const itemList = typeof items === 'function' ? items() : items;
+      if (itemList.length === 0) return;
 
-    const isVertical = orientation === 'vertical';
-    const nextKey = isVertical ? 'ArrowDown' : 'ArrowRight';
-    const prevKey = isVertical ? 'ArrowUp' : 'ArrowLeft';
-    const homeKey = 'Home';
-    const endKey = 'End';
+      const isVertical = orientation === 'vertical';
+      const nextKey = isVertical ? 'ArrowDown' : 'ArrowRight';
+      const prevKey = isVertical ? 'ArrowUp' : 'ArrowLeft';
+      const homeKey = 'Home';
+      const endKey = 'End';
 
-    let newIndex = activeIndex;
+      let newIndex = activeIndex;
 
-    switch (e.key) {
-      case nextKey:
-        e.preventDefault();
-        newIndex = activeIndex + 1;
-        if (newIndex >= itemList.length) {
-          newIndex = loop ? 0 : itemList.length - 1;
-        }
-        break;
-
-      case prevKey:
-        e.preventDefault();
-        newIndex = activeIndex - 1;
-        if (newIndex < 0) {
-          newIndex = loop ? itemList.length - 1 : 0;
-        }
-        break;
-
-      case homeKey:
-        e.preventDefault();
-        newIndex = 0;
-        break;
-
-      case endKey:
-        e.preventDefault();
-        newIndex = itemList.length - 1;
-        break;
-
-      case 'Enter':
-      case ' ':
-        if (activeIndex >= 0 && activeIndex < itemList.length) {
+      switch (e.key) {
+        case nextKey:
           e.preventDefault();
-          onActivate?.(itemList[activeIndex], activeIndex);
-        }
-        break;
+          newIndex = activeIndex + 1;
+          if (newIndex >= itemList.length) {
+            newIndex = loop ? 0 : itemList.length - 1;
+          }
+          break;
 
-      default:
-        return;
-    }
+        case prevKey:
+          e.preventDefault();
+          newIndex = activeIndex - 1;
+          if (newIndex < 0) {
+            newIndex = loop ? itemList.length - 1 : 0;
+          }
+          break;
 
-    if (newIndex !== activeIndex && newIndex >= 0 && newIndex < itemList.length) {
-      setActiveIndex(newIndex);
-      itemList[newIndex].focus();
-    }
-  }, [activeIndex, items, loop, orientation, onActivate]);
+        case homeKey:
+          e.preventDefault();
+          newIndex = 0;
+          break;
+
+        case endKey:
+          e.preventDefault();
+          newIndex = itemList.length - 1;
+          break;
+
+        case 'Enter':
+        case ' ':
+          if (activeIndex >= 0 && activeIndex < itemList.length) {
+            e.preventDefault();
+            onActivate?.(itemList[activeIndex], activeIndex);
+          }
+          break;
+
+        default:
+          return;
+      }
+
+      if (
+        newIndex !== activeIndex &&
+        newIndex >= 0 &&
+        newIndex < itemList.length
+      ) {
+        setActiveIndex(newIndex);
+        itemList[newIndex].focus();
+      }
+    },
+    [activeIndex, items, loop, orientation, onActivate]
+  );
 
   return {
     activeIndex,
@@ -299,19 +330,22 @@ export function AccessibleCard({
   const cardProps = {
     className: cn(
       'rounded-lg border bg-card text-card-foreground shadow-sm',
-      clickable && 'cursor-pointer hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      clickable &&
+        'cursor-pointer hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       className
     ),
     role: role || (clickable ? 'button' : undefined),
     'aria-label': ariaLabel,
     tabIndex: clickable ? (tabIndex ?? 0) : undefined,
     onClick: clickable ? onClick : undefined,
-    onKeyDown: clickable ? (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onClick?.();
-      }
-    } : undefined,
+    onKeyDown: clickable
+      ? (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick?.();
+          }
+        }
+      : undefined,
     ...props
   };
 
@@ -328,13 +362,14 @@ export function useHighContrastMode() {
       if (window.matchMedia) {
         const highContrastQuery = window.matchMedia('(prefers-contrast: high)');
         setIsHighContrast(highContrastQuery.matches);
-        
+
         const handleChange = (e: MediaQueryListEvent) => {
           setIsHighContrast(e.matches);
         };
-        
+
         highContrastQuery.addEventListener('change', handleChange);
-        return () => highContrastQuery.removeEventListener('change', handleChange);
+        return () =>
+          highContrastQuery.removeEventListener('change', handleChange);
       }
     };
 
@@ -364,7 +399,10 @@ export function useReducedMotion() {
 }
 
 // Color contrast checker
-export function checkColorContrast(foreground: string, background: string): {
+export function checkColorContrast(
+  foreground: string,
+  background: string
+): {
   ratio: number;
   passes: {
     aa: boolean;
@@ -374,16 +412,18 @@ export function checkColorContrast(foreground: string, background: string): {
   // Convert hex to RGB
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        }
+      : null;
   };
 
   // Calculate relative luminance
   const getLuminance = (r: number, g: number, b: number) => {
-    const [rs, gs, bs] = [r, g, b].map(c => {
+    const [rs, gs, bs] = [r, g, b].map((c) => {
       c = c / 255;
       return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
     });
@@ -400,8 +440,9 @@ export function checkColorContrast(foreground: string, background: string): {
   const fgLuminance = getLuminance(fgRgb.r, fgRgb.g, fgRgb.b);
   const bgLuminance = getLuminance(bgRgb.r, bgRgb.g, bgRgb.b);
 
-  const ratio = (Math.max(fgLuminance, bgLuminance) + 0.05) / 
-                (Math.min(fgLuminance, bgLuminance) + 0.05);
+  const ratio =
+    (Math.max(fgLuminance, bgLuminance) + 0.05) /
+    (Math.min(fgLuminance, bgLuminance) + 0.05);
 
   return {
     ratio: Math.round(ratio * 100) / 100,
@@ -435,27 +476,35 @@ export function AccessibleField({
   if (error) describedBy.push(`${id}-error`);
 
   return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+    <div className='space-y-2'>
+      <label
+        htmlFor={id}
+        className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+      >
         {label}
-        {required && <span className="text-destructive ml-1" aria-label="required">*</span>}
+        {required && (
+          <span className='text-destructive ml-1' aria-label='required'>
+            *
+          </span>
+        )}
       </label>
-      
+
       {React.cloneElement(children as React.ReactElement<any>, {
         id,
-        'aria-describedby': describedBy.length > 0 ? describedBy.join(' ') : undefined,
+        'aria-describedby':
+          describedBy.length > 0 ? describedBy.join(' ') : undefined,
         'aria-invalid': error ? 'true' : 'false',
         'aria-required': required
       })}
-      
+
       {description && (
-        <p id={`${id}-description`} className="text-sm text-muted-foreground">
+        <p id={`${id}-description`} className='text-muted-foreground text-sm'>
           {description}
         </p>
       )}
-      
+
       {error && (
-        <p id={`${id}-error`} className="text-sm text-destructive" role="alert">
+        <p id={`${id}-error`} className='text-destructive text-sm' role='alert'>
           {error}
         </p>
       )}
@@ -470,12 +519,16 @@ interface AccessibleTooltipProps {
   id?: string;
 }
 
-export function AccessibleTooltip({ children, content, id }: AccessibleTooltipProps) {
+export function AccessibleTooltip({
+  children,
+  content,
+  id
+}: AccessibleTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const tooltipId = id || `tooltip-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
-    <div className="relative inline-block">
+    <div className='relative inline-block'>
       {React.cloneElement(children as React.ReactElement<any>, {
         'aria-describedby': isVisible ? tooltipId : undefined,
         onMouseEnter: () => setIsVisible(true),
@@ -483,15 +536,15 @@ export function AccessibleTooltip({ children, content, id }: AccessibleTooltipPr
         onFocus: () => setIsVisible(true),
         onBlur: () => setIsVisible(false)
       })}
-      
+
       {isVisible && (
         <div
           id={tooltipId}
-          role="tooltip"
-          className="absolute z-50 px-3 py-2 text-sm bg-popover text-popover-foreground border rounded-md shadow-md -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+          role='tooltip'
+          className='bg-popover text-popover-foreground absolute -top-10 left-1/2 z-50 -translate-x-1/2 transform rounded-md border px-3 py-2 text-sm whitespace-nowrap shadow-md'
         >
           {content}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-popover" />
+          <div className='border-t-popover absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent' />
         </div>
       )}
     </div>
@@ -499,15 +552,18 @@ export function AccessibleTooltip({ children, content, id }: AccessibleTooltipPr
 }
 
 // Accessible announcement utility
-export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
+export function announceToScreenReader(
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite'
+) {
   const announcement = document.createElement('div');
   announcement.setAttribute('aria-live', priority);
   announcement.setAttribute('aria-atomic', 'true');
   announcement.className = 'sr-only';
   announcement.textContent = message;
-  
+
   document.body.appendChild(announcement);
-  
+
   // Clean up after announcement
   setTimeout(() => {
     document.body.removeChild(announcement);

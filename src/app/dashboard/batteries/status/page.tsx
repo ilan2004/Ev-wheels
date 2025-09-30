@@ -17,13 +17,13 @@ export default function BatteryStatusPage() {
 
   return (
     <PageContainer>
-      <div className="mb-4">
+      <div className='mb-4'>
         <Breadcrumbs />
       </div>
-      <div className="space-y-6">
+      <div className='space-y-6'>
         <SectionHeader
-          title="Battery Status"
-          description="Track and update repair workflow status"
+          title='Battery Status'
+          description='Track and update repair workflow status'
         />
         <StatusPageClient currentStatus={currentStatus} batteryId={batteryId} />
       </div>

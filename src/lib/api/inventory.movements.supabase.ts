@@ -24,16 +24,25 @@ export async function listInventoryMovements(params: { limit?: number } = {}) {
   const limit = params.limit ?? 100;
   const { data, error } = await supabase
     .from('inventory_movements')
-    .select('*, from_location:locations!inventory_movements_from_location_id_fkey(id,name), to_location:locations!inventory_movements_to_location_id_fkey(id,name)')
+    .select(
+      '*, from_location:locations!inventory_movements_from_location_id_fkey(id,name), to_location:locations!inventory_movements_to_location_id_fkey(id,name)'
+    )
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw error;
   return (data || []) as InventoryMovement[];
 }
 
-export async function requestIssue(params: { item_id?: string; item_sku?: string; quantity: number; notes?: string; locationId?: string }) {
+export async function requestIssue(params: {
+  item_id?: string;
+  item_sku?: string;
+  quantity: number;
+  notes?: string;
+  locationId?: string;
+}) {
   const loc = params.locationId ?? getActiveLocationId();
-  if (!loc) throw new Error('Please select a location before creating a movement');
+  if (!loc)
+    throw new Error('Please select a location before creating a movement');
   const payload: Partial<InventoryMovement> = {
     item_id: params.item_id ?? null,
     item_sku: params.item_sku ?? null,
@@ -42,7 +51,7 @@ export async function requestIssue(params: { item_id?: string; item_sku?: string
     to_location_id: null,
     quantity: params.quantity,
     notes: params.notes ?? null,
-    status: 'pending',
+    status: 'pending'
   };
   const { data, error } = await supabase
     .from('inventory_movements')
@@ -53,9 +62,16 @@ export async function requestIssue(params: { item_id?: string; item_sku?: string
   return data as InventoryMovement;
 }
 
-export async function requestReceive(params: { item_id?: string; item_sku?: string; quantity: number; notes?: string; locationId?: string }) {
+export async function requestReceive(params: {
+  item_id?: string;
+  item_sku?: string;
+  quantity: number;
+  notes?: string;
+  locationId?: string;
+}) {
   const loc = params.locationId ?? getActiveLocationId();
-  if (!loc) throw new Error('Please select a location before creating a movement');
+  if (!loc)
+    throw new Error('Please select a location before creating a movement');
   const payload: Partial<InventoryMovement> = {
     item_id: params.item_id ?? null,
     item_sku: params.item_sku ?? null,
@@ -64,7 +80,7 @@ export async function requestReceive(params: { item_id?: string; item_sku?: stri
     to_location_id: loc,
     quantity: params.quantity,
     notes: params.notes ?? null,
-    status: 'pending',
+    status: 'pending'
   };
   const { data, error } = await supabase
     .from('inventory_movements')
@@ -75,9 +91,17 @@ export async function requestReceive(params: { item_id?: string; item_sku?: stri
   return data as InventoryMovement;
 }
 
-export async function requestTransfer(params: { item_id?: string; item_sku?: string; quantity: number; to_location_id: string; notes?: string; from_location_id?: string }) {
+export async function requestTransfer(params: {
+  item_id?: string;
+  item_sku?: string;
+  quantity: number;
+  to_location_id: string;
+  notes?: string;
+  from_location_id?: string;
+}) {
   const from = params.from_location_id ?? getActiveLocationId();
-  if (!from) throw new Error('Please select a location before creating a transfer');
+  if (!from)
+    throw new Error('Please select a location before creating a transfer');
   const payload: Partial<InventoryMovement> = {
     item_id: params.item_id ?? null,
     item_sku: params.item_sku ?? null,
@@ -86,7 +110,7 @@ export async function requestTransfer(params: { item_id?: string; item_sku?: str
     to_location_id: params.to_location_id,
     quantity: params.quantity,
     notes: params.notes ?? null,
-    status: 'pending',
+    status: 'pending'
   };
   const { data, error } = await supabase
     .from('inventory_movements')
@@ -107,4 +131,3 @@ export async function approveMovement(id: string) {
   if (error) throw error;
   return data as InventoryMovement;
 }
-

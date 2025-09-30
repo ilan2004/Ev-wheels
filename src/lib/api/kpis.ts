@@ -37,23 +37,38 @@ export async function fetchKpis(): Promise<KpiResponse<Kpis>> {
   try {
     const monthStart = startOfMonthISO();
 
-    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+    const locId = (
+      await import('@/lib/location/session')
+    ).getActiveLocationId();
 
-    const bCountQ = supabase.from('battery_records').select('id', { count: 'exact', head: true });
-    const pendingQ = supabase.from('battery_records').select('id', { count: 'exact', head: true }).in('status', ['received','diagnosed','in_progress']);
-    const completedMonthQ = supabase.from('battery_records').select('id', { count: 'exact', head: true }).gte('delivered_date', monthStart).in('status', ['completed','delivered']);
-    const customersQ = supabase.from('customers').select('id', { count: 'exact', head: true });
+    const bCountQ = supabase
+      .from('battery_records')
+      .select('id', { count: 'exact', head: true });
+    const pendingQ = supabase
+      .from('battery_records')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['received', 'diagnosed', 'in_progress']);
+    const completedMonthQ = supabase
+      .from('battery_records')
+      .select('id', { count: 'exact', head: true })
+      .gte('delivered_date', monthStart)
+      .in('status', ['completed', 'delivered']);
+    const customersQ = supabase
+      .from('customers')
+      .select('id', { count: 'exact', head: true });
     const ticketsQ = supabase.from('service_tickets').select('status');
 
-    const scoped = (table: string, q: any) => locId ? q.eq('location_id', locId) : q;
+    const scoped = (table: string, q: any) =>
+      locId ? q.eq('location_id', locId) : q;
 
-    const [bCount, pending, completedMonth, customers, tickets] = await Promise.all([
-      scoped('battery_records', bCountQ),
-      scoped('battery_records', pendingQ),
-      scoped('battery_records', completedMonthQ),
-      scoped('customers', customersQ),
-      scoped('service_tickets', ticketsQ)
-    ]);
+    const [bCount, pending, completedMonth, customers, tickets] =
+      await Promise.all([
+        scoped('battery_records', bCountQ),
+        scoped('battery_records', pendingQ),
+        scoped('battery_records', completedMonthQ),
+        scoped('customers', customersQ),
+        scoped('service_tickets', ticketsQ)
+      ]);
 
     if (bCount.error) throw bCount.error;
     if (pending.error) throw pending.error;
@@ -78,17 +93,24 @@ export async function fetchKpis(): Promise<KpiResponse<Kpis>> {
     };
   } catch (e) {
     console.error('fetchKpis error:', e);
-    return { success: false, error: e instanceof Error ? e.message : 'Failed to fetch KPIs' };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : 'Failed to fetch KPIs'
+    };
   }
 }
 
-export async function fetchWeeklyDeliveredBatteries(weeks = 8): Promise<KpiResponse<WeeklyPoint[]>> {
+export async function fetchWeeklyDeliveredBatteries(
+  weeks = 8
+): Promise<KpiResponse<WeeklyPoint[]>> {
   try {
     const end = startOfWeek(new Date());
     const start = new Date(end);
     start.setDate(end.getDate() - weeks * 7);
 
-    const locId = (await import('@/lib/location/session')).getActiveLocationId();
+    const locId = (
+      await import('@/lib/location/session')
+    ).getActiveLocationId();
     let q = supabase
       .from('battery_records')
       .select('delivered_date')
@@ -121,6 +143,9 @@ export async function fetchWeeklyDeliveredBatteries(weeks = 8): Promise<KpiRespo
     return { success: true, data: points };
   } catch (e) {
     console.error('fetchWeeklyDeliveredBatteries error:', e);
-    return { success: false, error: e instanceof Error ? e.message : 'Failed to fetch weekly trend' };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : 'Failed to fetch weekly trend'
+    };
   }
 }

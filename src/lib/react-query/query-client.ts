@@ -11,14 +11,14 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       // Retry failed requests twice with exponential backoff
       retry: 2,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
     },
     mutations: {
       // Retry mutations once on failure
       retry: 1,
-      retryDelay: 1000,
-    },
-  },
+      retryDelay: 1000
+    }
+  }
 });
 
 // Query client configuration for production optimizations
@@ -29,9 +29,11 @@ if (typeof window !== 'undefined') {
       queryClient.refetchQueries({
         predicate: (query) => {
           // Only refetch critical queries on visibility change
-          return query.queryKey[0] === 'dashboard' || 
-                 query.queryKey[0] === 'urgent-tickets';
-        },
+          return (
+            query.queryKey[0] === 'dashboard' ||
+            query.queryKey[0] === 'urgent-tickets'
+          );
+        }
       });
     }
   });

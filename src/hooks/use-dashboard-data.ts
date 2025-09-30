@@ -3,8 +3,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cachedKpiService, CacheManager } from '@/lib/api/cache-layer';
-import type { OptimizedKpis, WeeklyDeliveryPoint, BatterySummary, CustomerSummary } from '@/lib/api/cache-layer';
-import { startPerformanceTrace, endPerformanceTrace } from '@/lib/performance/monitor';
+import type {
+  OptimizedKpis,
+  WeeklyDeliveryPoint,
+  BatterySummary,
+  CustomerSummary
+} from '@/lib/api/cache-layer';
+import {
+  startPerformanceTrace,
+  endPerformanceTrace
+} from '@/lib/performance/monitor';
 
 /**
  * Query keys for React Query cache management
@@ -15,7 +23,7 @@ export const dashboardKeys = {
   trends: (weeks?: number) => [...dashboardKeys.all, 'trends', weeks] as const,
   bundle: () => [...dashboardKeys.all, 'bundle'] as const,
   batteries: () => [...dashboardKeys.all, 'batteries'] as const,
-  customers: () => [...dashboardKeys.all, 'customers'] as const,
+  customers: () => [...dashboardKeys.all, 'customers'] as const
 } as const;
 
 /**
@@ -37,19 +45,19 @@ export function useDashboardBundle() {
     queryKey: dashboardKeys.bundle(),
     queryFn: async () => {
       const traceId = startPerformanceTrace('dashboard_bundle_query');
-      
+
       try {
         const result = await cachedKpiService.fetchDashboardBundle();
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch dashboard data');
         }
-        
+
         endPerformanceTrace(traceId, 'success', {
           cached: true,
           dataPoints: Object.keys(result.data!).length
         });
-        
+
         return result.data!;
       } catch (error) {
         endPerformanceTrace(traceId, 'error', {
@@ -63,7 +71,7 @@ export function useDashboardBundle() {
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchInterval: 5 * 60 * 1000, // Background refetch every 5 minutes
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
 }
 
@@ -76,19 +84,19 @@ export function useDashboardKpis() {
     queryKey: dashboardKeys.kpis(),
     queryFn: async () => {
       const traceId = startPerformanceTrace('dashboard_kpis_query');
-      
+
       try {
         const result = await cachedKpiService.fetchDashboardKpis();
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch KPI data');
         }
-        
+
         endPerformanceTrace(traceId, 'success', {
           cached: true,
           metrics: Object.keys(result.data!).length
         });
-        
+
         return result.data!;
       } catch (error) {
         endPerformanceTrace(traceId, 'error', {
@@ -100,7 +108,7 @@ export function useDashboardKpis() {
     staleTime: 3 * 60 * 1000, // 3 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
     refetchOnWindowFocus: true,
-    refetchInterval: 3 * 60 * 1000, // Every 3 minutes
+    refetchInterval: 3 * 60 * 1000 // Every 3 minutes
   });
 }
 
@@ -113,20 +121,20 @@ export function useWeeklyTrends(weeks: number = 8) {
     queryKey: dashboardKeys.trends(weeks),
     queryFn: async () => {
       const traceId = startPerformanceTrace('weekly_trends_query');
-      
+
       try {
         const result = await cachedKpiService.fetchWeeklyDeliveryTrends(weeks);
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch trends data');
         }
-        
+
         endPerformanceTrace(traceId, 'success', {
           cached: true,
           dataPoints: result.data!.length,
           weeks
         });
-        
+
         return result.data!;
       } catch (error) {
         endPerformanceTrace(traceId, 'error', {
@@ -138,7 +146,7 @@ export function useWeeklyTrends(weeks: number = 8) {
     staleTime: 30 * 60 * 1000, // 30 minutes - trends change less frequently
     gcTime: 60 * 60 * 1000, // 1 hour
     refetchOnWindowFocus: false, // Don't refetch trends on focus
-    refetchInterval: 30 * 60 * 1000, // Every 30 minutes
+    refetchInterval: 30 * 60 * 1000 // Every 30 minutes
   });
 }
 
@@ -148,24 +156,24 @@ export function useWeeklyTrends(weeks: number = 8) {
  */
 export function useInvalidateDashboard() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async (options?: { 
+    mutationFn: async (options?: {
       invalidateServer?: boolean;
       refetchActive?: boolean;
     }) => {
       const { invalidateServer = true, refetchActive = true } = options || {};
-      
+
       // Invalidate server-side caches
       if (invalidateServer) {
         await CacheManager.invalidateDashboard();
       }
-      
+
       // Invalidate React Query caches
       await queryClient.invalidateQueries({
         queryKey: dashboardKeys.all
       });
-      
+
       // Optionally refetch active queries
       if (refetchActive) {
         await queryClient.refetchQueries({
@@ -189,7 +197,7 @@ export function useInvalidateDashboard() {
  */
 export function usePrefetchDashboard() {
   const queryClient = useQueryClient();
-  
+
   const prefetchBundle = async () => {
     await queryClient.prefetchQuery({
       queryKey: dashboardKeys.bundle(),
@@ -198,10 +206,10 @@ export function usePrefetchDashboard() {
         if (!result.success) throw new Error(result.error);
         return result.data!;
       },
-      staleTime: 2 * 60 * 1000,
+      staleTime: 2 * 60 * 1000
     });
   };
-  
+
   const prefetchKpis = async () => {
     await queryClient.prefetchQuery({
       queryKey: dashboardKeys.kpis(),
@@ -210,10 +218,10 @@ export function usePrefetchDashboard() {
         if (!result.success) throw new Error(result.error);
         return result.data!;
       },
-      staleTime: 3 * 60 * 1000,
+      staleTime: 3 * 60 * 1000
     });
   };
-  
+
   const prefetchTrends = async (weeks: number = 8) => {
     await queryClient.prefetchQuery({
       queryKey: dashboardKeys.trends(weeks),
@@ -222,20 +230,16 @@ export function usePrefetchDashboard() {
         if (!result.success) throw new Error(result.error);
         return result.data!;
       },
-      staleTime: 30 * 60 * 1000,
+      staleTime: 30 * 60 * 1000
     });
   };
-  
+
   return {
     prefetchBundle,
     prefetchKpis,
     prefetchTrends,
     prefetchAll: async () => {
-      await Promise.all([
-        prefetchBundle(),
-        prefetchKpis(),
-        prefetchTrends()
-      ]);
+      await Promise.all([prefetchBundle(), prefetchKpis(), prefetchTrends()]);
     }
   };
 }
@@ -246,15 +250,15 @@ export function usePrefetchDashboard() {
  */
 export function useDashboardRefresh() {
   const queryClient = useQueryClient();
-  
+
   const refreshAll = async () => {
     const traceId = startPerformanceTrace('dashboard_manual_refresh');
-    
+
     try {
       await queryClient.refetchQueries({
         queryKey: dashboardKeys.all
       });
-      
+
       endPerformanceTrace(traceId, 'success', {
         operation: 'manual_refresh'
       });
@@ -265,19 +269,19 @@ export function useDashboardRefresh() {
       throw error;
     }
   };
-  
+
   const refreshKpis = async () => {
     await queryClient.refetchQueries({
       queryKey: dashboardKeys.kpis()
     });
   };
-  
+
   const refreshTrends = async () => {
     await queryClient.refetchQueries({
       queryKey: dashboardKeys.trends()
     });
   };
-  
+
   return {
     refreshAll,
     refreshKpis,
@@ -294,7 +298,7 @@ export function useDashboard() {
   const invalidate = useInvalidateDashboard();
   const prefetch = usePrefetchDashboard();
   const refresh = useDashboardRefresh();
-  
+
   return {
     // Data
     data: bundle.data,
@@ -302,24 +306,24 @@ export function useDashboard() {
     isError: bundle.isError,
     error: bundle.error,
     isSuccess: bundle.isSuccess,
-    
+
     // Individual data pieces (derived from bundle)
     kpis: bundle.data?.kpis,
     trends: bundle.data?.weeklyTrends,
     recentBatteries: bundle.data?.recentBatteries,
     topCustomers: bundle.data?.topCustomers,
-    
+
     // Cache status
     isFetching: bundle.isFetching,
     isStale: bundle.isStale,
     dataUpdatedAt: bundle.dataUpdatedAt,
-    
+
     // Actions
     invalidate: invalidate.mutate,
     isInvalidating: invalidate.isPending,
     prefetch,
     refresh,
-    
+
     // Refetch with loading state
     refetch: bundle.refetch
   };
@@ -331,22 +335,28 @@ export function useDashboard() {
  */
 export function useDashboardPerformance() {
   const queryClient = useQueryClient();
-  
+
   const getQueryMetrics = () => {
     const cache = queryClient.getQueryCache();
     const dashboardQueries = cache.findAll({
       queryKey: dashboardKeys.all
     });
-    
+
     return {
       totalQueries: dashboardQueries.length,
-      activeQueries: dashboardQueries.filter(q => q.observers.length > 0).length,
-      staleQueries: dashboardQueries.filter(q => q.isStale()).length,
-      cacheSize: dashboardQueries.reduce((size, q) => size + JSON.stringify(q.state.data || {}).length, 0),
-      lastUpdated: Math.max(...dashboardQueries.map(q => q.state.dataUpdatedAt || 0))
+      activeQueries: dashboardQueries.filter((q) => q.observers.length > 0)
+        .length,
+      staleQueries: dashboardQueries.filter((q) => q.isStale()).length,
+      cacheSize: dashboardQueries.reduce(
+        (size, q) => size + JSON.stringify(q.state.data || {}).length,
+        0
+      ),
+      lastUpdated: Math.max(
+        ...dashboardQueries.map((q) => q.state.dataUpdatedAt || 0)
+      )
     };
   };
-  
+
   return {
     getMetrics: getQueryMetrics,
     clearCache: () => queryClient.clear()

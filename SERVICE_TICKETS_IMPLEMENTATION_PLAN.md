@@ -7,6 +7,7 @@ This document outlines the phased execution plan to implement the Service Intake
 ## Phase 0 — Foundation (DB + Storage + Policies)
 
 What to build
+
 - Supabase tables/enums:
   - service_tickets (parent)
   - ticket_attachments (photos/audio, linked to ticket; optional link to subcase)
@@ -18,6 +19,7 @@ What to build
 - RLS policies for tickets and attachments (read/write by owner/assignee/admin)
 
 How it connects
+
 - Parent service_tickets can link to battery_records and vehicle_cases (one or both)
 - Attachments always hang off the parent, with optional case_type to scope to a subcase later
 
@@ -26,6 +28,7 @@ How it connects
 ## Phase 1 — Intake: Create Ticket (Office)
 
 Screens
+
 - /dashboard/tickets/new: “Create Service Ticket”
   - Fields (required): Customer (select/create), Symptom (textarea)
   - Optional: Vehicle make/model/reg no
@@ -33,13 +36,16 @@ Screens
   - Actions: Save (status = reported), Cancel
 
 UI fit
+
 - Use SectionHeader + Cards + shadcn Form + Zod (like your BatteryForm)
 - Media uploader in Card with progress bars and small previews; simple audio player
 
 Data flow
+
 - Create service_ticket row; upload media to storage; store paths in ticket_attachments
 
 Media capture details (Phase 1 scope)
+
 - In-app camera capture (Office Intake)
   - Images: use `<input type="file" accept="image/*" capture="environment">` to open the rear camera on iOS/Android; gracefully falls back to file picker on desktop.
   - Audio: use MediaRecorder API to record short voice notes (e.g., 60–120s). Show timer and size while recording.
@@ -54,6 +60,7 @@ Media capture details (Phase 1 scope)
 ## Phase 2 — Ticket List and Detail (Parent)
 
 Screens
+
 - /dashboard/tickets: table with filters (status, date, search by customer/reg no)
 - /dashboard/tickets/[id]: Tabs: Overview | Attachments | Activity
   - Overview: Customer, Symptom, Vehicle (if provided), Ticket Status, Linked Cases, “Triage”
@@ -64,9 +71,11 @@ Screens
   - Activity: timeline of events (created, triaged, status updates)
 
 UI fit
+
 - Reuse Badge (status), Card (sections), Tabs, Table (TanStack)
 
 Customer upload portal via QR link (mobile-friendly) — Deferred (separate folder)
+
 - Note: The customer-facing upload portal will be implemented in a separate folder/module and is not part of Phase 2 scope in this app.
 - For Phase 2, focus on internal UI only: tickets list, ticket detail (Overview | Attachments | Activity), and triage widget.
 - Optional placeholder: A disabled/hidden "Share Upload Link" button can be shown in Ticket Detail and wired up later when the portal is ready.
@@ -76,11 +85,13 @@ Customer upload portal via QR link (mobile-friendly) — Deferred (separate fold
 ## Phase 3 — Integrate Battery Cases (Existing)
 
 What to do
+
 - On Ticket Detail, show “Linked Cases”: Battery case links to /dashboard/batteries/[id]
 - On Battery Details, show a small strip “Linked Ticket: T-123” back to the parent
 - When battery status changes to completed/delivered, reflect in parent Ticket timeline
 
 UX
+
 - Single-click navigation between ticket and battery details
 - Keep battery UX unchanged; only add the small linked ticket strip for context
 
@@ -89,15 +100,18 @@ UX
 ## Phase 4 — Vehicle Cases MVP (New)
 
 Screens (mirrors battery)
+
 - /dashboard/vehicles
 - /dashboard/vehicles/[id]
 
 Scope
+
 - Status flow: received → diagnosed → in_progress → completed → delivered (with on_hold/cancelled)
 - Basic fields: technician_notes, diagnostics summary, costs (optional), created_at, updated_at
 - History: vehicle_status_history (optional now; can reuse pattern from battery later)
 
 UX
+
 - Same layout style as Battery Details: SectionHeader + Cards + Tabs (Overview, History, Attachments)
 - Keep it lean (notes + statuses first)
 
@@ -106,12 +120,14 @@ UX
 ## Phase 5 — Attachments Enhancements
 
 Features
+
 - Multiple image upload with previews, delete, replace
 - Simple audio player list with duration
 - Signed URLs for secure access; auto-expire links
 - Basic image optimization: store 1–2 web-friendly variants
 
 UX
+
 - Attachments tab on Ticket, Vehicle, Battery pages
 - Same uploader component reused across pages
 
@@ -120,10 +136,12 @@ UX
 ## Phase 6 — Audit & Notifications
 
 What to add
+
 - service_ticket_history (who/when/what/note) populated on create/triage/status changes
 - Optional notifications (email/Slack) for assignment and approval requests
 
 UX
+
 - Activity timeline in Ticket Detail reads from history
 - “Request customer approval” action (if needed) to mark waiting_approval
 
@@ -137,6 +155,7 @@ UX
   - From battery/vehicle modules back to the parent ticket, and vice versa
 
 UX
+
 - Keep one-line search with intelligent hints (e.g., “Search ticket, battery serial or customer”)
 
 ---
@@ -144,6 +163,7 @@ UX
 ## Phase 8 — Reports & KPIs (Lightweight)
 
 KPIs on a dashboard card group:
+
 - Time to triage, average diagnosis time, in progress counts
 - Distribution: vehicle vs battery causes
 - Attachment coverage (tickets with photos/voice notes)
@@ -191,4 +211,3 @@ KPIs on a dashboard card group:
 - 7: Global search
 - 8: KPIs
 - 9: Polish and performance
-

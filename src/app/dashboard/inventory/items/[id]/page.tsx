@@ -14,15 +14,15 @@ export default function ItemDetailPage() {
   return (
     <RoleGuard permissions={[Permission.VIEW_INVENTORY]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Item Details"
-            description="Edit item info and view stock movement history."
+            title='Item Details'
+            description='Edit item info and view stock movement history.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
             Item detail view will be implemented in Phase 2/3.
           </div>
         </div>

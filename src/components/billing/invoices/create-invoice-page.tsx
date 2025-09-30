@@ -16,7 +16,9 @@ export function CreateInvoicePage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [initialData, setInitialData] = useState<CreateInvoiceFormData | undefined>();
+  const [initialData, setInitialData] = useState<
+    CreateInvoiceFormData | undefined
+  >();
   const [createdInvoice, setCreatedInvoice] = useState<string | null>(null);
 
   // Check if we're converting from a quote
@@ -34,7 +36,7 @@ export function CreateInvoicePage() {
         // Convert quote data to invoice form data
         setInitialData({
           customer: quote.customer,
-          items: quote.items.map(item => ({
+          items: quote.items.map((item) => ({
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
@@ -84,24 +86,25 @@ export function CreateInvoicePage() {
 
   return (
     <PageContainer>
-      <div className="flex flex-1 flex-col space-y-6">
+      <div className='flex flex-1 flex-col space-y-6'>
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className='flex items-center gap-4'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => router.back()}
-            className="h-8 w-8 p-0"
+            className='h-8 w-8 p-0'
           >
-            <IconArrowLeft className="h-4 w-4" />
+            <IconArrowLeft className='h-4 w-4' />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Create Invoice</h1>
-            <p className="text-muted-foreground">
-              {initialData?.sourceQuoteId 
+            <h1 className='text-2xl font-semibold tracking-tight'>
+              Create Invoice
+            </h1>
+            <p className='text-muted-foreground'>
+              {initialData?.sourceQuoteId
                 ? 'Create an invoice from the selected quote.'
-                : 'Create a new invoice for your customer.'
-              }
+                : 'Create a new invoice for your customer.'}
             </p>
           </div>
         </div>
@@ -112,7 +115,7 @@ export function CreateInvoicePage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           loading={loading}
-          mode="create"
+          mode='create'
         />
       </div>
     </PageContainer>

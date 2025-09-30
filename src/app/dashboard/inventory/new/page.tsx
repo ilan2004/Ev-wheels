@@ -14,16 +14,17 @@ export default function NewInventoryItemPage() {
   return (
     <RoleGuard permissions={[Permission.CREATE_INVENTORY_ITEM]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Add Inventory Item"
-            description="Define item details. Stock is adjusted via adjustments or receiving."
+            title='Add Inventory Item'
+            description='Define item details. Stock is adjusted via adjustments or receiving.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
-            Item creation form will be implemented in Phase 2. For now, this is a placeholder.
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
+            Item creation form will be implemented in Phase 2. For now, this is
+            a placeholder.
           </div>
         </div>
       </PageContainer>

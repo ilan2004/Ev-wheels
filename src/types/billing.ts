@@ -55,25 +55,25 @@ export interface Quote {
   id: string;
   number: string; // Q-YYYY-#### format
   status: QuoteStatus;
-  
+
   // Customer information
   customer: CustomerInfo;
-  
+
   // Financial details
   items: LineItem[];
   totals: BillingTotals;
   currency: string; // default 'USD'
-  
+
   // Terms and conditions
   notes?: string;
   terms?: string;
   validUntil?: Date; // quote expiration
-  
+
   // Metadata
   createdBy: string; // user ID
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Optional relationships
   convertedToInvoiceId?: string;
 }
@@ -82,26 +82,26 @@ export interface Invoice {
   id: string;
   number: string; // INV-YYYY-#### format
   status: InvoiceStatus;
-  
+
   // Customer information
   customer: CustomerInfo;
-  
+
   // Financial details
   items: LineItem[];
   totals: BillingTotals;
   currency: string; // default 'USD'
   balanceDue: number; // remaining amount after payments
-  
+
   // Payment terms
   dueDate: Date;
   notes?: string;
   terms?: string;
-  
+
   // Metadata
   createdBy: string; // user ID
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Optional relationships
   sourceQuoteId?: string; // if converted from quote
   payments?: Payment[];
@@ -122,7 +122,10 @@ export interface Payment {
 // Form types for UI
 export interface CreateQuoteInput {
   customer: CustomerInfo;
-  items: Omit<LineItem, 'id' | 'subtotal' | 'discountAmount' | 'taxAmount' | 'total'>[];
+  items: Omit<
+    LineItem,
+    'id' | 'subtotal' | 'discountAmount' | 'taxAmount' | 'total'
+  >[];
   notes?: string;
   terms?: string;
   validUntil?: Date;
@@ -132,7 +135,10 @@ export interface CreateQuoteInput {
 
 export interface CreateInvoiceInput {
   customer: CustomerInfo;
-  items: Omit<LineItem, 'id' | 'subtotal' | 'discountAmount' | 'taxAmount' | 'total'>[];
+  items: Omit<
+    LineItem,
+    'id' | 'subtotal' | 'discountAmount' | 'taxAmount' | 'total'
+  >[];
   dueDate: Date;
   notes?: string;
   terms?: string;

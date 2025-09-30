@@ -41,14 +41,14 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   /* KPI accent tokens (light) */
-  --kpi-batteries-strong: #4F46E5; /* indigo-600 */
-  --kpi-batteries-tint: #EEF2FF;
+  --kpi-batteries-strong: #4f46e5; /* indigo-600 */
+  --kpi-batteries-tint: #eef2ff;
   --kpi-customers-strong: #059669; /* emerald-600 */
-  --kpi-customers-tint: #ECFDF5;
-  --kpi-revenue-strong: #0D9488; /* teal-600 */
-  --kpi-revenue-tint: #F0FDFA;
-  --kpi-repairs-strong: #D97706; /* amber-600 */
-  --kpi-repairs-tint: #FFFBEB;
+  --kpi-customers-tint: #ecfdf5;
+  --kpi-revenue-strong: #0d9488; /* teal-600 */
+  --kpi-revenue-tint: #f0fdfa;
+  --kpi-repairs-strong: #d97706; /* amber-600 */
+  --kpi-repairs-tint: #fffbeb;
 }
 
 .dark {
@@ -85,14 +85,14 @@
   --sidebar-ring: oklch(0.439 0 0);
 
   /* KPI accent tokens (dark) */
-  --kpi-batteries-strong: #818CF8; /* indigo-400 */
-  --kpi-batteries-tint: rgba(129,140,248,0.12);
-  --kpi-customers-strong: #34D399; /* emerald-400 */
-  --kpi-customers-tint: rgba(52,211,153,0.10);
-  --kpi-revenue-strong: #2DD4BF; /* teal-400 */
-  --kpi-revenue-tint: rgba(45,212,191,0.10);
-  --kpi-repairs-strong: #FBBF24; /* amber-400 */
-  --kpi-repairs-tint: rgba(251,191,36,0.10);
+  --kpi-batteries-strong: #818cf8; /* indigo-400 */
+  --kpi-batteries-tint: rgba(129, 140, 248, 0.12);
+  --kpi-customers-strong: #34d399; /* emerald-400 */
+  --kpi-customers-tint: rgba(52, 211, 153, 0.1);
+  --kpi-revenue-strong: #2dd4bf; /* teal-400 */
+  --kpi-revenue-tint: rgba(45, 212, 191, 0.1);
+  --kpi-repairs-strong: #fbbf24; /* amber-400 */
+  --kpi-repairs-tint: rgba(251, 191, 36, 0.1);
 }
 
 @theme inline {
@@ -215,26 +215,26 @@
   }
 
   /* Sidebar scrollbar styles */
-  [data-sidebar="content"]::-webkit-scrollbar {
+  [data-sidebar='content']::-webkit-scrollbar {
     width: 6px;
   }
 
-  [data-sidebar="content"]::-webkit-scrollbar-track {
+  [data-sidebar='content']::-webkit-scrollbar-track {
     background: var(--sidebar);
   }
 
-  [data-sidebar="content"]::-webkit-scrollbar-thumb {
+  [data-sidebar='content']::-webkit-scrollbar-thumb {
     background: var(--sidebar-border);
     border-radius: 3px;
     transition: background 0.2s;
   }
 
-  [data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+  [data-sidebar='content']::-webkit-scrollbar-thumb:hover {
     background: var(--sidebar-accent);
   }
 
   /* Firefox sidebar scrollbar */
-  [data-sidebar="content"] {
+  [data-sidebar='content'] {
     scrollbar-width: thin;
     scrollbar-color: var(--sidebar-border) var(--sidebar);
   }
@@ -243,26 +243,26 @@
   .scrollbar-thin {
     scrollbar-width: thin;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .scrollbar-track-sidebar::-webkit-scrollbar-track {
     background: var(--sidebar);
     border-radius: 3px;
   }
-  
+
   .scrollbar-thumb-sidebar-border::-webkit-scrollbar-thumb {
     background: var(--sidebar-border);
     border-radius: 3px;
     transition: background 0.2s ease;
   }
-  
+
   .hover\:scrollbar-thumb-sidebar-accent:hover::-webkit-scrollbar-thumb {
     background: var(--sidebar-accent);
   }
-  
+
   .scrollbar-thumb-sidebar-border::-webkit-scrollbar-thumb:hover {
     background: var(--sidebar-accent);
   }
@@ -270,22 +270,28 @@
 
 /* Hover accent glow for KPI cards */
 @layer utilities {
-  .kpi-card { position: relative; }
+  .kpi-card {
+    position: relative;
+  }
   .kpi-card::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: -1px; /* slight outside ring */
     border-radius: inherit;
     pointer-events: none;
     opacity: 0;
-    transition: opacity .25s ease, box-shadow .25s ease;
+    transition:
+      opacity 0.25s ease,
+      box-shadow 0.25s ease;
     /* light mode ambient + ring using accent */
     box-shadow:
       0 0 0 1px color-mix(in oklch, var(--kpi-accent) 24%, transparent),
       0 20px 42px -22px color-mix(in oklch, var(--kpi-accent) 18%, transparent);
   }
   .kpi-card:hover::after,
-  .kpi-card:focus-within::after { opacity: 1; }
+  .kpi-card:focus-within::after {
+    opacity: 1;
+  }
 
   .dark .kpi-card::after {
     box-shadow:

@@ -4,7 +4,10 @@
 import { NextResponse } from 'next/server';
 import { cachedKpiService } from '@/lib/api/cache-layer';
 import { CacheManager } from '@/lib/api/cache-layer';
-import { startPerformanceTrace, endPerformanceTrace } from '@/lib/performance/monitor';
+import {
+  startPerformanceTrace,
+  endPerformanceTrace
+} from '@/lib/performance/monitor';
 
 /**
  * GET /api/batteries/optimized
@@ -12,17 +15,17 @@ import { startPerformanceTrace, endPerformanceTrace } from '@/lib/performance/mo
  */
 export async function GET(request: Request) {
   const traceId = startPerformanceTrace('batteries_optimized_api');
-  
+
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Parse query parameters
     const search = searchParams.get('search') || undefined;
     const status = searchParams.get('status') || undefined;
     const brand = searchParams.get('brand') || undefined;
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
-    
+
     // Validate parameters
     if (limit > 100) {
       return NextResponse.json(
@@ -30,7 +33,7 @@ export async function GET(request: Request) {
         { status: 400 }
       );
     }
-    
+
     const params = {
       search,
       status,
@@ -38,23 +41,25 @@ export async function GET(request: Request) {
       limit,
       offset: offset > 0 ? offset : undefined
     };
-    
+
     // Fetch optimized battery summaries
     const result = await cachedKpiService.fetchBatterySummaries(params);
-    
+
     if (!result.success) {
       return NextResponse.json(
         { error: result.error || 'Failed to fetch battery data' },
         { status: 500 }
       );
     }
-    
+
     endPerformanceTrace(traceId, 'success', {
       recordCount: result.data?.length || 0,
       cached: true,
-      filters: Object.keys(params).filter(key => params[key as keyof typeof params] !== undefined).length
+      filters: Object.keys(params).filter(
+        (key) => params[key as keyof typeof params] !== undefined
+      ).length
     });
-    
+
     return NextResponse.json({
       success: true,
       data: result.data,
@@ -67,14 +72,13 @@ export async function GET(request: Request) {
       cached: true,
       timestamp: new Date().toISOString()
     });
-    
   } catch (error) {
     console.error('Error in optimized batteries API:', error);
-    
+
     endPerformanceTrace(traceId, 'error', {
       error: error instanceof Error ? error.message : 'Unknown error'
     });
-    
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -88,34 +92,33 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   const traceId = startPerformanceTrace('batteries_create_optimized_api');
-  
+
   try {
     // Note: In a real implementation, you would:
     // 1. Validate the request body
     // 2. Create the battery using the optimized repository
     // 3. Invalidate relevant caches
-    
+
     // For this example, we'll simulate cache invalidation
     await CacheManager.invalidateBatteries();
-    
+
     endPerformanceTrace(traceId, 'success', {
       operation: 'create_battery',
       cacheInvalidated: true
     });
-    
+
     return NextResponse.json({
       success: true,
       message: 'Battery created and caches invalidated',
       timestamp: new Date().toISOString()
     });
-    
   } catch (error) {
     console.error('Error in optimized batteries create API:', error);
-    
+
     endPerformanceTrace(traceId, 'error', {
       error: error instanceof Error ? error.message : 'Unknown error'
     });
-    
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -15,7 +15,10 @@ import {
 } from '@tanstack/react-table';
 import { Quote, QuoteStatus, QuoteFilters } from '@/types/billing';
 import { billingRepository } from '@/lib/billing/repository';
-import { formatCurrency, formatDueDateStatus } from '@/lib/billing/calculations';
+import {
+  formatCurrency,
+  formatDueDateStatus
+} from '@/lib/billing/calculations';
 import PageContainer from '@/components/layout/page-container';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
@@ -27,21 +30,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  IconPlus, 
-  IconDotsVertical, 
-  IconEye, 
-  IconEdit, 
+import {
+  IconPlus,
+  IconDotsVertical,
+  IconEye,
+  IconEdit,
   IconTrash,
   IconReceipt,
   IconPrinter,
@@ -58,11 +61,14 @@ function getStatusBadge(status: QuoteStatus) {
   const colorMap: Record<QuoteStatus, string> = {
     [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-800 border-gray-200',
     [QuoteStatus.SENT]: 'bg-blue-100 text-blue-800 border-blue-200',
-    [QuoteStatus.EXPIRED]: 'bg-red-100 text-red-800 border-red-200',
+    [QuoteStatus.EXPIRED]: 'bg-red-100 text-red-800 border-red-200'
   } as const;
 
   return (
-    <Badge variant="outline" className={cn('capitalize border', colorMap[status])}>
+    <Badge
+      variant='outline'
+      className={cn('border capitalize', colorMap[status])}
+    >
       {status}
     </Badge>
   );
@@ -70,9 +76,10 @@ function getStatusBadge(status: QuoteStatus) {
 
 function QuoteRowActions({ quote }: { quote: Quote }) {
   const router = useRouter();
-  
+
   const handleView = () => router.push(`/dashboard/quotes/${quote.id}`);
-  const handleEdit = () => router.push(`/dashboard/quotes/${quote.id}?mode=edit`);
+  const handleEdit = () =>
+    router.push(`/dashboard/quotes/${quote.id}?mode=edit`);
   const handleDelete = async () => {
     try {
       await billingRepository.deleteQuote(quote.id);
@@ -82,7 +89,7 @@ function QuoteRowActions({ quote }: { quote: Quote }) {
       toast.error('Failed to delete quote');
     }
   };
-  
+
   const handleConvertToInvoice = () => {
     router.push(`/dashboard/invoices/new?fromQuote=${quote.id}`);
   };
@@ -90,33 +97,33 @@ function QuoteRowActions({ quote }: { quote: Quote }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <IconDotsVertical className="h-4 w-4" />
+        <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+          <IconDotsVertical className='h-4 w-4' />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align='end' className='w-48'>
         <DropdownMenuItem onClick={handleView}>
-          <IconEye className="mr-2 h-4 w-4" />
+          <IconEye className='mr-2 h-4 w-4' />
           View Details
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>
-          <IconEdit className="mr-2 h-4 w-4" />
+          <IconEdit className='mr-2 h-4 w-4' />
           Edit Quote
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleConvertToInvoice}>
-          <IconReceipt className="mr-2 h-4 w-4" />
+          <IconReceipt className='mr-2 h-4 w-4' />
           Convert to Invoice
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <IconPrinter className="mr-2 h-4 w-4" />
+          <IconPrinter className='mr-2 h-4 w-4' />
           Print
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <IconDownload className="mr-2 h-4 w-4" />
+          <IconDownload className='mr-2 h-4 w-4' />
           Download PDF
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-          <IconTrash className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={handleDelete} className='text-destructive'>
+          <IconTrash className='mr-2 h-4 w-4' />
           Delete Quote
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -132,107 +139,109 @@ export function QuotesListPage() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 10
   });
-  
+
   // Filters
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all');
   const [searchFilter, setSearchFilter] = useState('');
 
-  const columns: ColumnDef<Quote>[] = useMemo(() => [
-    {
-      accessorKey: 'number',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Quote #" />
-      ),
-      cell: ({ row }) => {
-        const quote = row.original;
-        return (
-          <div className="flex flex-col">
-            <span className="font-medium">{quote.number}</span>
-            <span className="text-xs text-muted-foreground">
-              {format(quote.createdAt, 'MMM dd, yyyy')}
-            </span>
-          </div>
-        );
+  const columns: ColumnDef<Quote>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'number',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Quote #' />
+        ),
+        cell: ({ row }) => {
+          const quote = row.original;
+          return (
+            <div className='flex flex-col'>
+              <span className='font-medium'>{quote.number}</span>
+              <span className='text-muted-foreground text-xs'>
+                {format(quote.createdAt, 'MMM dd, yyyy')}
+              </span>
+            </div>
+          );
+        },
+        meta: { label: 'Quote Number' }
       },
-      meta: { label: 'Quote Number' }
-    },
-    {
-      accessorKey: 'customer.name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Customer" />
-      ),
-      cell: ({ row }) => {
-        const customer = row.original.customer;
-        return (
-          <div className="flex flex-col max-w-[200px]">
-            <span className="font-medium truncate">{customer.name}</span>
-          </div>
-        );
+      {
+        accessorKey: 'customer.name',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Customer' />
+        ),
+        cell: ({ row }) => {
+          const customer = row.original.customer;
+          return (
+            <div className='flex max-w-[200px] flex-col'>
+              <span className='truncate font-medium'>{customer.name}</span>
+            </div>
+          );
+        },
+        meta: { label: 'Customer' }
       },
-      meta: { label: 'Customer' }
-    },
-    {
-      accessorKey: 'status',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
-      cell: ({ row }) => getStatusBadge(row.getValue('status')),
-      filterFn: (row, id, value) => {
-        return value === 'all' || value.includes(row.getValue(id));
+      {
+        accessorKey: 'status',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Status' />
+        ),
+        cell: ({ row }) => getStatusBadge(row.getValue('status')),
+        filterFn: (row, id, value) => {
+          return value === 'all' || value.includes(row.getValue(id));
+        },
+        meta: { label: 'Status' }
       },
-      meta: { label: 'Status' }
-    },
-    {
-      accessorKey: 'totals.grandTotal',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Amount" />
-      ),
-      cell: ({ row }) => {
-        const amount = row.getValue('totals.grandTotal') as number;
-        return (
-          <span className="font-medium">
-            {formatCurrency(amount)}
-          </span>
-        );
+      {
+        accessorKey: 'totals.grandTotal',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Amount' />
+        ),
+        cell: ({ row }) => {
+          const amount = row.getValue('totals.grandTotal') as number;
+          return <span className='font-medium'>{formatCurrency(amount)}</span>;
+        },
+        meta: { label: 'Amount' }
       },
-      meta: { label: 'Amount' }
-    },
-    {
-      accessorKey: 'validUntil',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Valid Until" />
-      ),
-      cell: ({ row }) => {
-        const validUntil = row.original.validUntil;
-        if (!validUntil) return <span className="text-muted-foreground">-</span>;
-        
-        const status = formatDueDateStatus(validUntil);
-        return (
-          <div className="flex flex-col">
-            <span className="text-sm">
-              {format(validUntil, 'MMM dd, yyyy')}
-            </span>
-            <span className={cn(
-              "text-xs",
-              status.status === 'overdue' && "text-destructive",
-              status.status === 'due-soon' && "text-warning",
-              status.status === 'due-later' && "text-muted-foreground"
-            )}>
-              {status.message}
-            </span>
-          </div>
-        );
+      {
+        accessorKey: 'validUntil',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Valid Until' />
+        ),
+        cell: ({ row }) => {
+          const validUntil = row.original.validUntil;
+          if (!validUntil)
+            return <span className='text-muted-foreground'>-</span>;
+
+          const status = formatDueDateStatus(validUntil);
+          return (
+            <div className='flex flex-col'>
+              <span className='text-sm'>
+                {format(validUntil, 'MMM dd, yyyy')}
+              </span>
+              <span
+                className={cn(
+                  'text-xs',
+                  status.status === 'overdue' && 'text-destructive',
+                  status.status === 'due-soon' && 'text-warning',
+                  status.status === 'due-later' && 'text-muted-foreground'
+                )}
+              >
+                {status.message}
+              </span>
+            </div>
+          );
+        },
+        meta: { label: 'Valid Until' }
       },
-      meta: { label: 'Valid Until' }
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => <QuoteRowActions quote={row.original} />,
-      meta: { label: 'Actions' }
-    }
-  ], []);
+      {
+        id: 'actions',
+        cell: ({ row }) => <QuoteRowActions quote={row.original} />,
+        meta: { label: 'Actions' }
+      }
+    ],
+    []
+  );
 
   const table = useReactTable({
     data,
@@ -247,8 +256,8 @@ export function QuotesListPage() {
     state: {
       sorting,
       columnFilters,
-      pagination,
-    },
+      pagination
+    }
   });
 
   useEffect(() => {
@@ -258,15 +267,15 @@ export function QuotesListPage() {
   useEffect(() => {
     // Apply filters
     const filters: ColumnFiltersState = [];
-    
+
     if (statusFilter !== 'all') {
       filters.push({ id: 'status', value: [statusFilter] });
     }
-    
+
     if (searchFilter) {
       filters.push({ id: 'customer.name', value: searchFilter });
     }
-    
+
     setColumnFilters(filters);
   }, [statusFilter, searchFilter]);
 
@@ -289,10 +298,10 @@ export function QuotesListPage() {
   if (loading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading quotes...</p>
+        <div className='flex items-center justify-center py-8'>
+          <div className='text-center'>
+            <div className='border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2'></div>
+            <p className='text-muted-foreground'>Loading quotes...</p>
           </div>
         </div>
       </PageContainer>
@@ -301,58 +310,62 @@ export function QuotesListPage() {
 
   return (
     <PageContainer>
-      <div className="flex flex-1 flex-col space-y-6">
+      <div className='flex flex-1 flex-col space-y-6'>
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Quotes</h1>
-            <p className="text-muted-foreground">
+            <h1 className='text-2xl font-semibold tracking-tight'>Quotes</h1>
+            <p className='text-muted-foreground'>
               Manage your sales quotes and convert them to invoices.
             </p>
           </div>
-          <Button onClick={handleCreateQuote} className="w-full sm:w-auto">
-            <IconPlus className="mr-2 h-4 w-4" />
+          <Button onClick={handleCreateQuote} className='w-full sm:w-auto'>
+            <IconPlus className='mr-2 h-4 w-4' />
             Create Quote
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className='grid gap-4 md:grid-cols-4'>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Quotes</CardTitle>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Quotes
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.length}</div>
+              <div className='text-2xl font-bold'>{data.length}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Draft</CardTitle>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Draft</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {data.filter(q => q.status === QuoteStatus.DRAFT).length}
+              <div className='text-2xl font-bold'>
+                {data.filter((q) => q.status === QuoteStatus.DRAFT).length}
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sent</CardTitle>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Sent</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {data.filter(q => q.status === QuoteStatus.SENT).length}
+              <div className='text-2xl font-bold'>
+                {data.filter((q) => q.status === QuoteStatus.SENT).length}
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Total Value</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(data.reduce((sum, quote) => sum + quote.totals.grandTotal, 0))}
+              <div className='text-2xl font-bold'>
+                {formatCurrency(
+                  data.reduce((sum, quote) => sum + quote.totals.grandTotal, 0)
+                )}
               </div>
             </CardContent>
           </Card>
@@ -361,34 +374,39 @@ export function QuotesListPage() {
         {/* Data Table */}
         <DataTable table={table}>
           {/* Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2'>
               {/* Search */}
-              <div className="relative w-full sm:w-64">
-                <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <div className='relative w-full sm:w-64'>
+                <IconSearch className='text-muted-foreground absolute top-2.5 left-2 h-4 w-4' />
                 <Input
-                  placeholder="Search customers..."
+                  placeholder='Search customers...'
                   value={searchFilter}
                   onChange={(event) => setSearchFilter(event.target.value)}
-                  className="pl-8"
+                  className='pl-8'
                 />
               </div>
-              
+
               {/* Status Filter */}
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as QuoteStatus | 'all')}>
-                <SelectTrigger className="w-full sm:w-32">
-                  <IconFilter className="mr-2 h-4 w-4" />
+              <Select
+                value={statusFilter}
+                onValueChange={(value) =>
+                  setStatusFilter(value as QuoteStatus | 'all')
+                }
+              >
+                <SelectTrigger className='w-full sm:w-32'>
+                  <IconFilter className='mr-2 h-4 w-4' />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value='all'>All Status</SelectItem>
                   <SelectItem value={QuoteStatus.DRAFT}>Draft</SelectItem>
                   <SelectItem value={QuoteStatus.SENT}>Sent</SelectItem>
                   <SelectItem value={QuoteStatus.EXPIRED}>Expired</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <DataTableViewOptions table={table} />
           </div>
         </DataTable>

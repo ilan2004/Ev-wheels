@@ -72,10 +72,10 @@ function SidebarProvider({
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
   const [_open, _setOpen] = React.useState(defaultOpen);
-  
+
   // Force sidebar to be open on desktop, allow control on mobile
   const open = isMobile ? (openProp ?? _open) : true;
-  
+
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       // Only allow state changes on mobile
@@ -347,7 +347,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot='sidebar-header'
       data-sidebar='header'
-      className={cn('flex flex-col gap-2 p-2 flex-shrink-0', className)}
+      className={cn('flex flex-shrink-0 flex-col gap-2 p-2', className)}
       {...props}
     />
   );
@@ -358,7 +358,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot='sidebar-footer'
       data-sidebar='footer'
-      className={cn('flex flex-col gap-2 p-2 flex-shrink-0', className)}
+      className={cn('flex flex-shrink-0 flex-col gap-2 p-2', className)}
       {...props}
     />
   );
@@ -390,10 +390,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
       showScrollButtons={true}
       scrollStep={80}
     >
-      <div
-        className="flex flex-col gap-2 p-2"
-        {...props}
-      />
+      <div className='flex flex-col gap-2 p-2' {...props} />
     </CustomScrollArea>
   );
 }
@@ -738,5 +735,5 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
+  useSidebar
 };

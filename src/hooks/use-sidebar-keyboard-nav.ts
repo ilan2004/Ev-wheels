@@ -20,9 +20,11 @@ export function useSidebarKeyboardNav({
       // Only handle keyboard events when sidebar is focused or active
       const activeElement = document.activeElement;
       const sidebarElement = document.querySelector('[data-sidebar="content"]');
-      
-      if (!sidebarElement?.contains(activeElement) && 
-          !sidebarElement?.matches(':hover')) {
+
+      if (
+        !sidebarElement?.contains(activeElement) &&
+        !sidebarElement?.matches(':hover')
+      ) {
         return;
       }
 
@@ -49,7 +51,9 @@ export function useSidebarKeyboardNav({
           if (event.ctrlKey) {
             event.preventDefault();
             // Scroll to top
-            const container = sidebarElement?.querySelector('[data-slot="sidebar-content"] > div');
+            const container = sidebarElement?.querySelector(
+              '[data-slot="sidebar-content"] > div'
+            );
             if (container) {
               (container as HTMLElement).scrollTop = 0;
             }
@@ -59,9 +63,13 @@ export function useSidebarKeyboardNav({
           if (event.ctrlKey) {
             event.preventDefault();
             // Scroll to bottom
-            const container = sidebarElement?.querySelector('[data-slot="sidebar-content"] > div');
+            const container = sidebarElement?.querySelector(
+              '[data-slot="sidebar-content"] > div'
+            );
             if (container) {
-              (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight;
+              (container as HTMLElement).scrollTop = (
+                container as HTMLElement
+              ).scrollHeight;
             }
           }
           break;

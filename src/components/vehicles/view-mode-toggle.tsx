@@ -6,7 +6,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
+  TooltipTrigger
 } from '@/components/ui/tooltip';
 import { LayoutGrid, Table, List } from 'lucide-react';
 
@@ -21,52 +21,55 @@ const viewModeConfig = {
   grid: {
     icon: LayoutGrid,
     label: 'Grid View',
-    tooltip: 'Show vehicles in a grid layout',
+    tooltip: 'Show vehicles in a grid layout'
   },
   table: {
     icon: Table,
     label: 'Table View',
-    tooltip: 'Show vehicles in a detailed table',
+    tooltip: 'Show vehicles in a detailed table'
   },
   compact: {
     icon: List,
     label: 'Compact View',
-    tooltip: 'Show vehicles in a compact list',
-  },
+    tooltip: 'Show vehicles in a compact list'
+  }
 };
 
 export function ViewModeToggle({ value, onValueChange }: ViewModeToggleProps) {
   return (
     <TooltipProvider>
       <ToggleGroup
-        type="single"
+        type='single'
         value={value}
         onValueChange={(newValue) => {
           if (newValue) onValueChange(newValue as ViewMode);
         }}
-        className="bg-muted/50"
+        className='bg-muted/50'
       >
-        {(Object.entries(viewModeConfig) as [ViewMode, typeof viewModeConfig[ViewMode]][]).map(
-          ([mode, config]) => {
-            const Icon = config.icon;
-            return (
-              <Tooltip key={mode}>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem
-                    value={mode}
-                    aria-label={config.label}
-                    className="data-[state=on]:bg-background data-[state=on]:shadow-sm"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{config.tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            );
-          }
-        )}
+        {(
+          Object.entries(viewModeConfig) as [
+            ViewMode,
+            (typeof viewModeConfig)[ViewMode]
+          ][]
+        ).map(([mode, config]) => {
+          const Icon = config.icon;
+          return (
+            <Tooltip key={mode}>
+              <TooltipTrigger asChild>
+                <ToggleGroupItem
+                  value={mode}
+                  aria-label={config.label}
+                  className='data-[state=on]:bg-background data-[state=on]:shadow-sm'
+                >
+                  <Icon className='h-4 w-4' />
+                </ToggleGroupItem>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{config.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </ToggleGroup>
     </TooltipProvider>
   );

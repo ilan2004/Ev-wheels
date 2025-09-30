@@ -9,7 +9,10 @@ interface StatusPageClientProps {
   batteryId: string;
 }
 
-export function StatusPageClient({ currentStatus, batteryId }: StatusPageClientProps) {
+export function StatusPageClient({
+  currentStatus,
+  batteryId
+}: StatusPageClientProps) {
   const handleStatusChange = async () => {
     // TODO: integrate with backend route to update status
     // This stays on the client and can call a server action or /api route

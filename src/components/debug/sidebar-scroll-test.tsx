@@ -6,7 +6,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
+  SidebarMenuButton
 } from '@/components/ui/sidebar';
 import { IconBattery } from '@tabler/icons-react';
 
@@ -15,7 +15,7 @@ export default function SidebarScrollTest() {
   const testItems = Array.from({ length: 20 }, (_, i) => ({
     id: i + 1,
     title: `Test Item ${i + 1}`,
-    icon: IconBattery,
+    icon: IconBattery
   }));
 
   return (
@@ -25,7 +25,7 @@ export default function SidebarScrollTest() {
         {testItems.map((item) => (
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton>
-              <item.icon className="h-4 w-4" />
+              <item.icon className='h-4 w-4' />
               <span>{item.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

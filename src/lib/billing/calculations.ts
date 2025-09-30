@@ -8,13 +8,16 @@ export const DEFAULT_BILLING_CONFIG = {
   currencySymbol: '₹',
   currencyLocale: 'en-IN',
   taxRate: 18, // 18% default tax rate
-  precision: 2, // decimal places for currency
+  precision: 2 // decimal places for currency
 };
 
 /**
  * Round a number to specified decimal places
  */
-export function roundToDecimalPlaces(value: number, places: number = 2): number {
+export function roundToDecimalPlaces(
+  value: number,
+  places: number = 2
+): number {
   return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
 }
 
@@ -82,11 +85,11 @@ export function calculateBillingTotals(
   const subtotal = roundToDecimalPlaces(
     items.reduce((sum, item) => sum + item.subtotal, 0)
   );
-  
+
   const discountTotal = roundToDecimalPlaces(
     items.reduce((sum, item) => sum + item.discountAmount, 0)
   );
-  
+
   const taxTotal = roundToDecimalPlaces(
     items.reduce((sum, item) => sum + item.taxAmount, 0)
   );
@@ -129,7 +132,7 @@ export function parseCurrency(currencyString: string): number {
   const cleanString = currencyString
     .replace(/[^\d.-]/g, '') // Keep only digits, dots, and minus signs
     .trim();
-  
+
   const parsed = parseFloat(cleanString);
   return isNaN(parsed) ? 0 : parsed;
 }
@@ -165,7 +168,11 @@ export function calculateTax(amount: number, taxRate: number): number {
 /**
  * Check if two currency amounts are equal (handles floating point precision issues)
  */
-export function currencyEquals(amount1: number, amount2: number, precision: number = 2): boolean {
+export function currencyEquals(
+  amount1: number,
+  amount2: number,
+  precision: number = 2
+): boolean {
   const factor = Math.pow(10, precision);
   return Math.round(amount1 * factor) === Math.round(amount2 * factor);
 }
@@ -215,7 +222,9 @@ export function generateLineItemId(): string {
 /**
  * Create a new empty line item with default values
  */
-export function createEmptyLineItem(taxRate: number = DEFAULT_BILLING_CONFIG.taxRate): LineItem {
+export function createEmptyLineItem(
+  taxRate: number = DEFAULT_BILLING_CONFIG.taxRate
+): LineItem {
   return {
     id: generateLineItemId(),
     description: '',
@@ -233,7 +242,10 @@ export function createEmptyLineItem(taxRate: number = DEFAULT_BILLING_CONFIG.tax
 /**
  * Calculate invoice balance due after payments
  */
-export function calculateBalanceDue(invoiceTotal: number, paymentsTotal: number): number {
+export function calculateBalanceDue(
+  invoiceTotal: number,
+  paymentsTotal: number
+): number {
   const balance = invoiceTotal - paymentsTotal;
   return roundToDecimalPlaces(Math.max(0, balance)); // Ensure non-negative
 }
@@ -241,14 +253,20 @@ export function calculateBalanceDue(invoiceTotal: number, paymentsTotal: number)
 /**
  * Check if invoice is overdue
  */
-export function isOverdue(dueDate: Date, currentDate: Date = new Date()): boolean {
+export function isOverdue(
+  dueDate: Date,
+  currentDate: Date = new Date()
+): boolean {
   return dueDate < currentDate;
 }
 
 /**
  * Calculate days until/past due date
  */
-export function getDaysDifference(dueDate: Date, currentDate: Date = new Date()): number {
+export function getDaysDifference(
+  dueDate: Date,
+  currentDate: Date = new Date()
+): number {
   const timeDiff = dueDate.getTime() - currentDate.getTime();
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 }
@@ -256,13 +274,16 @@ export function getDaysDifference(dueDate: Date, currentDate: Date = new Date())
 /**
  * Format due date status
  */
-export function formatDueDateStatus(dueDate: Date, currentDate: Date = new Date()): {
+export function formatDueDateStatus(
+  dueDate: Date,
+  currentDate: Date = new Date()
+): {
   status: 'overdue' | 'due-soon' | 'due-later';
   message: string;
   days: number;
 } {
   const days = getDaysDifference(dueDate, currentDate);
-  
+
   if (days < 0) {
     return {
       status: 'overdue',
@@ -272,7 +293,8 @@ export function formatDueDateStatus(dueDate: Date, currentDate: Date = new Date(
   } else if (days <= 7) {
     return {
       status: 'due-soon',
-      message: days === 0 ? 'Due today' : `Due in ${days} day${days === 1 ? '' : 's'}`,
+      message:
+        days === 0 ? 'Due today' : `Due in ${days} day${days === 1 ? '' : 's'}`,
       days
     };
   } else {

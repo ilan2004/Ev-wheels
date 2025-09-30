@@ -1,11 +1,13 @@
 # Vehicle Section Improvement Plan
 
 ## Executive Summary
+
 This document outlines a comprehensive plan to transform the vehicle service management section from a basic listing into a powerful, efficient workflow management system. The improvements are organized into 6 phases, prioritized by business impact and technical dependencies.
 
 ## Current State Analysis
 
 ### Existing Implementation
+
 - **Basic Grid View**: Simple card-based layout showing minimal vehicle information
 - **Limited Search**: Text-only search for registration number, make, or model
 - **Performance Issues**: Individual thumbnail loading causes slow page loads
@@ -13,6 +15,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
 - **No Workflow Management**: Missing visual workflow tools and bulk operations
 
 ### Key Problems
+
 1. **Performance**: Inefficient thumbnail loading strategy
 2. **Limited Filtering**: No status, date, or assignment filters
 3. **Poor Information Architecture**: Important details buried in detail views
@@ -23,11 +26,13 @@ This document outlines a comprehensive plan to transform the vehicle service man
 ## Improvement Phases
 
 ### Phase 1: Enhanced List View & Performance
+
 **Priority**: High  
 **Duration**: 1-2 weeks  
 **Goal**: Create a fast, informative, and flexible vehicle listing
 
 #### 1.1 Data Table Implementation
+
 - **Columns**:
   - Vehicle Info (Make/Model/Reg with thumbnail)
   - Customer Name (clickable link)
@@ -44,12 +49,14 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Column visibility toggle
 
 #### 1.2 View Options
+
 - **Grid View**: Enhanced card layout with more information
 - **Table View**: Full data table for detailed overview
 - **Compact View**: Minimal list for mobile devices
 - **Toggle Control**: Persistent user preference
 
 #### 1.3 Performance Optimizations
+
 - **Thumbnail Strategy**:
   ```sql
   ALTER TABLE vehicle_cases ADD COLUMN thumbnail_url TEXT;
@@ -63,17 +70,20 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Use WebP format for better compression
 
 #### 1.4 Loading States
+
 - Skeleton loaders for table rows
 - Progressive data loading
 - Optimistic UI updates
 
 ### Phase 2: Advanced Filtering & Search
+
 **Priority**: High  
 **Duration**: 1 week  
 **Goal**: Enable users to quickly find specific vehicles
 
 #### 2.1 Filter Panel
-- **Status Filter**: 
+
+- **Status Filter**:
   - Multi-select dropdown
   - Color-coded options
   - Show count per status
@@ -93,6 +103,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Popular makes quick access
 
 #### 2.2 Quick Filter Chips
+
 - **Predefined Filters** (one-click):
   - "Urgent" (>7 days in service)
   - "Ready for Delivery"
@@ -105,6 +116,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Clear all option
 
 #### 2.3 Search Enhancements
+
 - **Multi-field Search**:
   - Registration number
   - Customer name/phone
@@ -118,16 +130,19 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Highlight matching terms
 
 #### 2.4 Sorting Options
+
 - Sort by multiple columns
 - Custom sort preferences
 - Quick sort buttons for common scenarios
 
 ### Phase 3: Kanban Workflow View
+
 **Priority**: Medium  
 **Duration**: 2 weeks  
 **Goal**: Visual workflow management for service operations
 
 #### 3.1 Kanban Board Structure
+
 - **Columns by Status**:
   - Received (New arrivals)
   - Diagnosed (Assessment complete)
@@ -141,6 +156,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - WIP limits (optional)
 
 #### 3.2 Kanban Cards
+
 - **Card Information**:
   - Vehicle thumbnail
   - Make/Model/Reg (prominent)
@@ -156,6 +172,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - View full details
 
 #### 3.3 Drag & Drop
+
 - **Functionality**:
   - Smooth drag animations
   - Drop zone indicators
@@ -167,16 +184,19 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Blocked transitions (e.g., can't go back to "Received" from "Completed")
 
 #### 3.4 Kanban Filters
+
 - Apply same filters as list view
 - Filter persistence across views
 - Quick filter by technician (click avatar)
 
 ### Phase 4: Dashboard & Analytics
+
 **Priority**: Medium  
 **Duration**: 1.5 weeks  
 **Goal**: Provide insights for better decision making
 
 #### 4.1 Key Metrics Dashboard
+
 - **Metric Cards**:
   - Total Vehicles in Service
   - Average Turnaround Time
@@ -190,6 +210,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Click for detailed view
 
 #### 4.2 Visual Analytics
+
 - **Status Distribution**:
   - Donut chart with counts
   - Click to filter list
@@ -204,6 +225,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Bottleneck identification
 
 #### 4.3 Alerts & Notifications
+
 - **Alert Categories**:
   - Vehicles over SLA
   - Parts arrival pending
@@ -215,6 +237,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Direct action buttons
 
 #### 4.4 Reports
+
 - **Standard Reports**:
   - Daily service report
   - Technician performance
@@ -226,11 +249,13 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - CSV for data analysis
 
 ### Phase 5: Quick Actions & Bulk Operations
+
 **Priority**: Low  
 **Duration**: 1 week  
 **Goal**: Improve operational efficiency
 
 #### 5.1 Bulk Selection
+
 - **Selection Methods**:
   - Individual checkboxes
   - Select all in view
@@ -242,6 +267,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Clear selection button
 
 #### 5.2 Bulk Actions Menu
+
 - **Available Actions**:
   - Assign/reassign technician
   - Update status
@@ -255,6 +281,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Success/error feedback
 
 #### 5.3 Row-Level Quick Actions
+
 - **Action Menu Items**:
   - View service ticket
   - Quick status update
@@ -268,11 +295,13 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Shortcut overlay (? key)
 
 ### Phase 6: Enhanced Detail View
+
 **Priority**: Low  
 **Duration**: 2 weeks  
 **Goal**: Comprehensive single vehicle management
 
 #### 6.1 Layout Improvements
+
 - **Sticky Header**:
   - Vehicle info always visible
   - Status with quick change
@@ -284,6 +313,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Touch-friendly controls
 
 #### 6.2 Timeline View
+
 - **Timeline Events**:
   - Status changes
   - Notes added
@@ -297,6 +327,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Associated media
 
 #### 6.3 Parts Management
+
 - **Parts Section**:
   - Required parts list
   - Stock availability check
@@ -309,6 +340,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Track part installation
 
 #### 6.4 Cost Calculator
+
 - **Cost Components**:
   - Labor hours tracking
   - Parts cost (with markup)
@@ -321,6 +353,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Payment tracking
 
 #### 6.5 Communication Hub
+
 - **Communication Types**:
   - SMS history
   - Call logs
@@ -332,6 +365,7 @@ This document outlines a comprehensive plan to transform the vehicle service man
   - Communication preferences
 
 #### 6.6 Related Information
+
 - **Sections**:
   - Previous services for vehicle
   - Other vehicles (same customer)
@@ -344,7 +378,9 @@ This document outlines a comprehensive plan to transform the vehicle service man
 ## Technical Implementation Notes
 
 ### API Enhancements Required
+
 1. **New Endpoints**:
+
    - `/api/vehicles/dashboard` - Dashboard metrics
    - `/api/vehicles/bulk-update` - Bulk operations
    - `/api/vehicles/timeline/{id}` - Timeline data
@@ -357,7 +393,9 @@ This document outlines a comprehensive plan to transform the vehicle service man
    - Support multiple sort parameters
 
 ### Database Optimizations
+
 1. **New Indexes**:
+
    ```sql
    CREATE INDEX idx_vehicle_cases_assigned_tech ON vehicle_cases(assigned_technician);
    CREATE INDEX idx_vehicle_cases_multi_status ON vehicle_cases(status, received_date);
@@ -373,12 +411,15 @@ This document outlines a comprehensive plan to transform the vehicle service man
    ```
 
 ### Performance Considerations
+
 1. **Caching Strategy**:
+
    - Cache dashboard metrics (5-minute TTL)
    - Cache customer names for filters
    - Implement Redis for session data
 
 2. **Query Optimization**:
+
    - Use database views for complex queries
    - Implement query result pagination
    - Add database query monitoring
@@ -389,12 +430,15 @@ This document outlines a comprehensive plan to transform the vehicle service man
    - Lazy load heavy features (charts, kanban)
 
 ## Success Metrics
+
 1. **Performance KPIs**:
+
    - Page load time < 2 seconds
    - Filter application < 500ms
    - Search response < 300ms
 
 2. **Usability KPIs**:
+
    - 50% reduction in time to find specific vehicle
    - 70% adoption of new filtering features
    - 30% reduction in support requests
@@ -405,12 +449,15 @@ This document outlines a comprehensive plan to transform the vehicle service man
    - 15% increase in technician productivity
 
 ## Rollout Strategy
+
 1. **Phase 1-2**: Core improvements (Weeks 1-3)
+
    - Deploy to staging for testing
    - Train power users
    - Gradual rollout by location
 
 2. **Phase 3-4**: Workflow features (Weeks 4-6)
+
    - Beta test with selected teams
    - Gather feedback and iterate
    - Full deployment with training
@@ -421,12 +468,15 @@ This document outlines a comprehensive plan to transform the vehicle service man
    - Refine based on real usage
 
 ## Risk Mitigation
+
 1. **Data Migration**:
+
    - Maintain backward compatibility
    - Implement feature flags
    - Have rollback procedures
 
 2. **User Adoption**:
+
    - Provide comprehensive training
    - Create video tutorials
    - Maintain old view temporarily

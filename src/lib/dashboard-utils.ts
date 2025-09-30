@@ -3,7 +3,13 @@
 import { cn } from '@/lib/utils';
 
 // Status types for consistent theming across dashboard
-export type StatusType = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'pending';
+export type StatusType =
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'neutral'
+  | 'pending';
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 export type TrendDirection = 'up' | 'down' | 'neutral';
 
@@ -71,7 +77,8 @@ export const priorityColors = {
     bg: 'bg-orange-50 dark:bg-orange-950/30',
     border: 'border-orange-200 dark:border-orange-800',
     text: 'text-orange-600 dark:text-orange-400',
-    badge: 'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-300'
+    badge:
+      'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-300'
   },
   critical: {
     bg: 'bg-red-50 dark:bg-red-950/30',
@@ -92,22 +99,34 @@ export const getPriorityClasses = (priority: Priority) => {
 
 export const getTrendColor = (trend: TrendDirection) => {
   switch (trend) {
-    case 'up': return 'text-green-600 dark:text-green-400';
-    case 'down': return 'text-red-600 dark:text-red-400';
-    case 'neutral': return 'text-muted-foreground';
+    case 'up':
+      return 'text-green-600 dark:text-green-400';
+    case 'down':
+      return 'text-red-600 dark:text-red-400';
+    case 'neutral':
+      return 'text-muted-foreground';
   }
 };
 
 export const getTrendIcon = (trend: TrendDirection) => {
   switch (trend) {
-    case 'up': return '↗️';
-    case 'down': return '↘️';
-    case 'neutral': return '→';
+    case 'up':
+      return '↗️';
+    case 'down':
+      return '↘️';
+    case 'neutral':
+      return '→';
   }
 };
 
 // Battery status specific utilities
-export type BatteryStatus = 'pending' | 'in_progress' | 'testing' | 'completed' | 'delivered' | 'cancelled';
+export type BatteryStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'testing'
+  | 'completed'
+  | 'delivered'
+  | 'cancelled';
 
 export const getBatteryStatusInfo = (status: BatteryStatus) => {
   const statusMap = {
@@ -153,12 +172,12 @@ export const getBatteryStatusInfo = (status: BatteryStatus) => {
 };
 
 // Dashboard section identifiers for consistent styling
-export type DashboardSection = 
-  | 'overview' 
-  | 'quick_actions' 
-  | 'alerts' 
-  | 'progress' 
-  | 'recent_activity' 
+export type DashboardSection =
+  | 'overview'
+  | 'quick_actions'
+  | 'alerts'
+  | 'progress'
+  | 'recent_activity'
   | 'management';
 
 export const getDashboardSectionConfig = (section: DashboardSection) => {
@@ -244,15 +263,14 @@ export const getResponsiveClasses = (
   tablet?: string,
   desktop?: string
 ) => {
-  return cn(
-    mobile,
-    tablet && `md:${tablet}`,
-    desktop && `lg:${desktop}`
-  );
+  return cn(mobile, tablet && `md:${tablet}`, desktop && `lg:${desktop}`);
 };
 
 // Helper function to format numbers for display
-export const formatMetricValue = (value: number, type: 'currency' | 'number' | 'percentage') => {
+export const formatMetricValue = (
+  value: number,
+  type: 'currency' | 'number' | 'percentage'
+) => {
   switch (type) {
     case 'currency':
       return `₹${value.toLocaleString()}`;
@@ -265,10 +283,15 @@ export const formatMetricValue = (value: number, type: 'currency' | 'number' | '
 };
 
 // Helper function to format dates for dashboard
-export const formatDashboardDate = (date: Date | string, format: 'relative' | 'short' | 'long' = 'relative') => {
+export const formatDashboardDate = (
+  date: Date | string,
+  format: 'relative' | 'short' | 'long' = 'relative'
+) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diffInHours = Math.floor((now.getTime() - dateObj.getTime()) / (1000 * 60 * 60));
+  const diffInHours = Math.floor(
+    (now.getTime() - dateObj.getTime()) / (1000 * 60 * 60)
+  );
 
   if (format === 'relative') {
     if (diffInHours < 1) return 'Just now';
@@ -279,16 +302,16 @@ export const formatDashboardDate = (date: Date | string, format: 'relative' | 's
   }
 
   if (format === 'short') {
-    return dateObj.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
+    return dateObj.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
     });
   }
 
-  return dateObj.toLocaleDateString('en-US', { 
+  return dateObj.toLocaleDateString('en-US', {
     weekday: 'long',
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 };

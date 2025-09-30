@@ -14,15 +14,15 @@ export default function InventoryCategoriesPage() {
   return (
     <RoleGuard permissions={[Permission.VIEW_INVENTORY]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Categories"
-            description="Create and manage inventory categories."
+            title='Categories'
+            description='Create and manage inventory categories.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
             Categories management UI will be implemented in Phase 2.
           </div>
         </div>

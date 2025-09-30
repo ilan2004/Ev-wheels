@@ -18,4 +18,3 @@ export interface CreateCustomerInput {
 }
 
 export interface UpdateCustomerInput extends Partial<CreateCustomerInput> {}
-

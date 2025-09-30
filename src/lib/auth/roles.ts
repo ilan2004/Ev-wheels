@@ -1,7 +1,9 @@
 export enum UserRole {
   ADMIN = 'admin',
-  MANAGER = 'manager',
-  TECHNICIAN = 'technician'
+  FRONT_DESK_MANAGER = 'front_desk_manager',
+  TECHNICIAN = 'technician',
+  // @deprecated Use FRONT_DESK_MANAGER instead
+  MANAGER = 'manager'
 }
 
 export enum Permission {
@@ -10,37 +12,37 @@ export enum Permission {
   CREATE_BATTERY_RECORD = 'create_battery_record',
   UPDATE_BATTERY_STATUS = 'update_battery_status',
   DELETE_BATTERY_RECORD = 'delete_battery_record',
-  
+
   // Customer Management
   VIEW_CUSTOMERS = 'view_customers',
   CREATE_CUSTOMER = 'create_customer',
   UPDATE_CUSTOMER = 'update_customer',
   DELETE_CUSTOMER = 'delete_customer',
-  
+
   // Inventory Management
   VIEW_INVENTORY = 'view_inventory',
   UPDATE_INVENTORY = 'update_inventory',
   CREATE_INVENTORY_ITEM = 'create_inventory_item',
   DELETE_INVENTORY_ITEM = 'delete_inventory_item',
-  
+
   // Financial Management
   VIEW_PRICING = 'view_pricing',
   UPDATE_PRICING = 'update_pricing',
   GENERATE_INVOICE = 'generate_invoice',
   GENERATE_QUOTATION = 'generate_quotation',
   VIEW_FINANCIAL_REPORTS = 'view_financial_reports',
-  
+
   // User Management
   VIEW_USERS = 'view_users',
   CREATE_USER = 'create_user',
   UPDATE_USER_ROLES = 'update_user_roles',
   DELETE_USER = 'delete_user',
-  
+
   // System Management
   VIEW_SYSTEM_LOGS = 'view_system_logs',
   MANAGE_SETTINGS = 'manage_settings',
   EXPORT_DATA = 'export_data',
-  
+
   // QR Code and Printing
   PRINT_LABELS = 'print_labels',
   GENERATE_QR_CODES = 'generate_qr_codes'
@@ -77,8 +79,22 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.PRINT_LABELS,
     Permission.GENERATE_QR_CODES
   ],
+  [UserRole.FRONT_DESK_MANAGER]: [
+    // Front Desk Managers: customer-facing operations, ticket management
+    Permission.VIEW_BATTERIES,
+    Permission.CREATE_BATTERY_RECORD,
+    Permission.UPDATE_BATTERY_STATUS,
+    Permission.VIEW_CUSTOMERS,
+    Permission.CREATE_CUSTOMER,
+    Permission.UPDATE_CUSTOMER,
+    Permission.VIEW_INVENTORY,
+    Permission.VIEW_PRICING,
+    Permission.GENERATE_QUOTATION,
+    Permission.PRINT_LABELS,
+    Permission.GENERATE_QR_CODES
+  ],
+  // @deprecated Use FRONT_DESK_MANAGER instead
   [UserRole.MANAGER]: [
-    // Managers: full access within their location(s), inventory read-only
     Permission.VIEW_BATTERIES,
     Permission.CREATE_BATTERY_RECORD,
     Permission.UPDATE_BATTERY_STATUS,
@@ -106,16 +122,25 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 };
 
 // Helper functions for role and permission checking
-export function hasPermission(userRole: UserRole, permission: Permission): boolean {
+export function hasPermission(
+  userRole: UserRole,
+  permission: Permission
+): boolean {
   return ROLE_PERMISSIONS[userRole]?.includes(permission) || false;
 }
 
-export function hasAnyPermission(userRole: UserRole, permissions: Permission[]): boolean {
-  return permissions.some(permission => hasPermission(userRole, permission));
+export function hasAnyPermission(
+  userRole: UserRole,
+  permissions: Permission[]
+): boolean {
+  return permissions.some((permission) => hasPermission(userRole, permission));
 }
 
-export function hasAllPermissions(userRole: UserRole, permissions: Permission[]): boolean {
-  return permissions.every(permission => hasPermission(userRole, permission));
+export function hasAllPermissions(
+  userRole: UserRole,
+  permissions: Permission[]
+): boolean {
+  return permissions.every((permission) => hasPermission(userRole, permission));
 }
 
 export function isAdmin(userRole: UserRole): boolean {
@@ -126,8 +151,13 @@ export function isTechnician(userRole: UserRole): boolean {
   return userRole === UserRole.TECHNICIAN;
 }
 
+export function isFrontDeskManager(userRole: UserRole): boolean {
+  return userRole === UserRole.FRONT_DESK_MANAGER || userRole === UserRole.MANAGER;
+}
+
+// @deprecated Use isFrontDeskManager instead
 export function isManager(userRole: UserRole): boolean {
-  return userRole === UserRole.MANAGER;
+  return userRole === UserRole.MANAGER || userRole === UserRole.FRONT_DESK_MANAGER;
 }
 
 // Navigation permissions

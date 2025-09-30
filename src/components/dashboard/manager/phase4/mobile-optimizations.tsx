@@ -23,14 +23,14 @@ export const useIsTouchDevice = () => {
     const checkTouch = () => {
       setIsTouchDevice(
         'ontouchstart' in window ||
-        navigator.maxTouchPoints > 0 ||
-        /Mobi|Android/i.test(navigator.userAgent)
+          navigator.maxTouchPoints > 0 ||
+          /Mobi|Android/i.test(navigator.userAgent)
       );
     };
 
     checkTouch();
     window.addEventListener('resize', checkTouch);
-    
+
     return () => window.removeEventListener('resize', checkTouch);
   }, []);
 
@@ -39,7 +39,9 @@ export const useIsTouchDevice = () => {
 
 // Hook for responsive breakpoints
 export const useResponsiveBreakpoint = () => {
-  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>(
+    'desktop'
+  );
 
   useEffect(() => {
     const checkBreakpoint = () => {
@@ -55,7 +57,7 @@ export const useResponsiveBreakpoint = () => {
 
     checkBreakpoint();
     window.addEventListener('resize', checkBreakpoint);
-    
+
     return () => window.removeEventListener('resize', checkBreakpoint);
   }, []);
 
@@ -81,7 +83,7 @@ export function TouchButton({
   disabled = false
 }: TouchButtonProps) {
   const isTouchDevice = useIsTouchDevice();
-  
+
   const sizeClasses = {
     sm: 'min-h-[44px] px-4 py-2 text-sm',
     md: 'min-h-[48px] px-6 py-3 text-base',
@@ -147,89 +149,91 @@ export function SwipeableCard({
     setIsSwipeActionVisible(Math.abs(offset) > 80);
   }, []);
 
-  const handlePanEnd = useCallback((event: any, info: PanInfo) => {
-    const offset = info.offset.x;
-    const velocity = info.velocity.x;
-    
-    // Determine if swipe is significant enough
-    const threshold = 120;
-    const shouldTrigger = Math.abs(offset) > threshold || Math.abs(velocity) > 500;
-    
-    if (shouldTrigger) {
-      if (offset > 0 && onSwipeRight) {
-        onSwipeRight();
-      } else if (offset < 0 && onSwipeLeft) {
-        onSwipeLeft();
+  const handlePanEnd = useCallback(
+    (event: any, info: PanInfo) => {
+      const offset = info.offset.x;
+      const velocity = info.velocity.x;
+
+      // Determine if swipe is significant enough
+      const threshold = 120;
+      const shouldTrigger =
+        Math.abs(offset) > threshold || Math.abs(velocity) > 500;
+
+      if (shouldTrigger) {
+        if (offset > 0 && onSwipeRight) {
+          onSwipeRight();
+        } else if (offset < 0 && onSwipeLeft) {
+          onSwipeLeft();
+        }
       }
-    }
-    
-    // Reset position
-    setSwipeOffset(0);
-    setIsSwipeActionVisible(false);
-  }, [onSwipeLeft, onSwipeRight]);
+
+      // Reset position
+      setSwipeOffset(0);
+      setIsSwipeActionVisible(false);
+    },
+    [onSwipeLeft, onSwipeRight]
+  );
 
   const isTouchDevice = useIsTouchDevice();
 
   if (!isTouchDevice) {
     // Desktop version without swipe
-    return (
-      <Card className={className}>
-        {children}
-      </Card>
-    );
+    return <Card className={className}>{children}</Card>;
   }
 
   return (
-    <div ref={constraintsRef} className="relative overflow-hidden">
+    <div ref={constraintsRef} className='relative overflow-hidden'>
       {/* Left Action Background */}
       {rightAction && (
-        <div 
+        <div
           className={cn(
-            "absolute inset-y-0 left-0 flex items-center justify-start pl-6 transition-opacity",
+            'absolute inset-y-0 left-0 flex items-center justify-start pl-6 transition-opacity',
             rightAction.color,
-            isSwipeActionVisible && swipeOffset > 0 ? "opacity-100" : "opacity-0"
+            isSwipeActionVisible && swipeOffset > 0
+              ? 'opacity-100'
+              : 'opacity-0'
           )}
           style={{ width: Math.max(0, swipeOffset) }}
         >
-          <div className="flex items-center gap-2 text-white">
+          <div className='flex items-center gap-2 text-white'>
             {rightAction.icon}
-            <span className="font-medium">{rightAction.label}</span>
+            <span className='font-medium'>{rightAction.label}</span>
           </div>
         </div>
       )}
-      
+
       {/* Right Action Background */}
       {leftAction && (
-        <div 
+        <div
           className={cn(
-            "absolute inset-y-0 right-0 flex items-center justify-end pr-6 transition-opacity",
+            'absolute inset-y-0 right-0 flex items-center justify-end pr-6 transition-opacity',
             leftAction.color,
-            isSwipeActionVisible && swipeOffset < 0 ? "opacity-100" : "opacity-0"
+            isSwipeActionVisible && swipeOffset < 0
+              ? 'opacity-100'
+              : 'opacity-0'
           )}
           style={{ width: Math.max(0, -swipeOffset) }}
         >
-          <div className="flex items-center gap-2 text-white">
-            <span className="font-medium">{leftAction.label}</span>
+          <div className='flex items-center gap-2 text-white'>
+            <span className='font-medium'>{leftAction.label}</span>
             {leftAction.icon}
           </div>
         </div>
       )}
-      
+
       {/* Main Card */}
       <motion.div
         ref={cardRef}
-        drag="x"
+        drag='x'
         dragConstraints={constraintsRef}
         dragElastic={0.1}
         onPan={handlePan}
         onPanEnd={handlePanEnd}
         animate={{ x: 0 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="relative z-10"
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        className='relative z-10'
       >
-        <Card className={className}>
-          {children}
-        </Card>
+        <Card className={className}>{children}</Card>
       </motion.div>
     </div>
   );
@@ -254,16 +258,12 @@ export function ResponsiveGrid({
   className
 }: ResponsiveGridProps) {
   const breakpoint = useResponsiveBreakpoint();
-  
+
   const currentCols = cols[breakpoint] || cols.desktop || 3;
-  
+
   return (
-    <div 
-      className={cn(
-        `grid gap-${gap}`,
-        `grid-cols-${currentCols}`,
-        className
-      )}
+    <div
+      className={cn(`grid gap-${gap}`, `grid-cols-${currentCols}`, className)}
       style={{
         gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))`,
         gap: `${gap * 0.25}rem`
@@ -295,17 +295,18 @@ export function MobileTabs({
 }: MobileTabsProps) {
   const breakpoint = useResponsiveBreakpoint();
   const isMobile = breakpoint === 'mobile';
-  
+
   const [scrollPosition, setScrollPosition] = useState(0);
   const tabsRef = useRef<HTMLDivElement>(null);
-  
+
   const scrollTabs = (direction: 'left' | 'right') => {
     if (tabsRef.current) {
       const scrollAmount = 200;
-      const newPosition = direction === 'left' 
-        ? scrollPosition - scrollAmount 
-        : scrollPosition + scrollAmount;
-      
+      const newPosition =
+        direction === 'left'
+          ? scrollPosition - scrollAmount
+          : scrollPosition + scrollAmount;
+
       tabsRef.current.scrollTo({ left: newPosition, behavior: 'smooth' });
       setScrollPosition(newPosition);
     }
@@ -313,20 +314,20 @@ export function MobileTabs({
 
   if (isMobile) {
     return (
-      <div className={cn("relative", className)}>
-        <div className="flex items-center">
+      <div className={cn('relative', className)}>
+        <div className='flex items-center'>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={() => scrollTabs('left')}
-            className="flex-shrink-0"
+            className='flex-shrink-0'
           >
-            <IconChevronLeft className="h-4 w-4" />
+            <IconChevronLeft className='h-4 w-4' />
           </Button>
-          
+
           <div
             ref={tabsRef}
-            className="flex gap-1 overflow-x-auto scrollbar-hide flex-1 px-2"
+            className='scrollbar-hide flex flex-1 gap-1 overflow-x-auto px-2'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {tabs.map((tab) => (
@@ -334,31 +335,31 @@ export function MobileTabs({
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "flex-shrink-0 min-h-[48px] px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  "flex items-center gap-2 whitespace-nowrap",
+                  'min-h-[48px] flex-shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                  'flex items-center gap-2 whitespace-nowrap',
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted hover:bg-muted/80"
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted hover:bg-muted/80'
                 )}
               >
                 {tab.icon}
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant='secondary' className='text-xs'>
                     {tab.count}
                   </Badge>
                 )}
               </button>
             ))}
           </div>
-          
+
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={() => scrollTabs('right')}
-            className="flex-shrink-0"
+            className='flex-shrink-0'
           >
-            <IconChevronRight className="h-4 w-4" />
+            <IconChevronRight className='h-4 w-4' />
           </Button>
         </div>
       </div>
@@ -367,23 +368,23 @@ export function MobileTabs({
 
   // Desktop/Tablet version
   return (
-    <div className={cn("flex gap-2", className)}>
+    <div className={cn('flex gap-2', className)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            "min-h-[48px] px-6 py-3 rounded-lg text-sm font-medium transition-colors",
-            "flex items-center gap-2",
+            'min-h-[48px] rounded-lg px-6 py-3 text-sm font-medium transition-colors',
+            'flex items-center gap-2',
             activeTab === tab.id
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted hover:bg-muted/80"
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted hover:bg-muted/80'
           )}
         >
           {tab.icon}
           <span>{tab.label}</span>
           {tab.count !== undefined && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant='secondary' className='text-xs'>
               {tab.count}
             </Badge>
           )}
@@ -409,30 +410,28 @@ interface TouchMenuProps {
 export function TouchMenu({ trigger, items, className }: TouchMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const isTouchDevice = useIsTouchDevice();
-  
+
   return (
-    <div className="relative">
-      <div onClick={() => setIsOpen(!isOpen)}>
-        {trigger}
-      </div>
-      
+    <div className='relative'>
+      <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
+
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-40 bg-black/20"
+          <div
+            className='fixed inset-0 z-40 bg-black/20'
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Menu */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             className={cn(
-              "absolute right-0 top-full mt-2 z-50",
-              "bg-background border rounded-lg shadow-lg",
-              "py-2 min-w-[200px]",
+              'absolute top-full right-0 z-50 mt-2',
+              'bg-background rounded-lg border shadow-lg',
+              'min-w-[200px] py-2',
               className
             )}
           >
@@ -444,14 +443,14 @@ export function TouchMenu({ trigger, items, className }: TouchMenuProps) {
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "w-full px-4 py-3 text-left flex items-center gap-3",
-                  "hover:bg-muted transition-colors",
-                  isTouchDevice ? "min-h-[48px]" : "min-h-[40px]",
-                  item.destructive && "text-destructive hover:bg-destructive/10"
+                  'flex w-full items-center gap-3 px-4 py-3 text-left',
+                  'hover:bg-muted transition-colors',
+                  isTouchDevice ? 'min-h-[48px]' : 'min-h-[40px]',
+                  item.destructive && 'text-destructive hover:bg-destructive/10'
                 )}
               >
                 {item.icon}
-                <span className="font-medium">{item.label}</span>
+                <span className='font-medium'>{item.label}</span>
               </button>
             ))}
           </motion.div>
@@ -479,25 +478,25 @@ export function PullToRefresh({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [startY, setStartY] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (containerRef.current?.scrollTop === 0) {
       setStartY(e.touches[0].clientY);
     }
   };
-  
+
   const handleTouchMove = (e: React.TouchEvent) => {
     if (startY === 0) return;
-    
+
     const currentY = e.touches[0].clientY;
     const distance = currentY - startY;
-    
+
     if (distance > 0 && containerRef.current?.scrollTop === 0) {
       setPullDistance(Math.min(distance, threshold * 1.5));
       e.preventDefault();
     }
   };
-  
+
   const handleTouchEnd = async () => {
     if (pullDistance > threshold) {
       setIsRefreshing(true);
@@ -509,64 +508,66 @@ export function PullToRefresh({
         setIsRefreshing(false);
       }
     }
-    
+
     setPullDistance(0);
     setStartY(0);
   };
-  
+
   const isTouchDevice = useIsTouchDevice();
-  
+
   if (!isTouchDevice) {
     return <div className={className}>{children}</div>;
   }
-  
+
   return (
     <div
       ref={containerRef}
-      className={cn("relative overflow-auto", className)}
+      className={cn('relative overflow-auto', className)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Pull indicator */}
       {pullDistance > 0 && (
-        <div 
-          className="absolute top-0 left-0 right-0 flex items-center justify-center bg-muted/80 backdrop-blur-sm z-10"
+        <div
+          className='bg-muted/80 absolute top-0 right-0 left-0 z-10 flex items-center justify-center backdrop-blur-sm'
           style={{ height: Math.min(pullDistance, threshold) }}
         >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className='text-muted-foreground flex items-center gap-2 text-sm'>
             <motion.div
               animate={{ rotate: pullDistance > threshold ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <IconChevronLeft className="h-4 w-4 rotate-90" />
+              <IconChevronLeft className='h-4 w-4 rotate-90' />
             </motion.div>
             <span>
-              {pullDistance > threshold ? 'Release to refresh' : 'Pull to refresh'}
+              {pullDistance > threshold
+                ? 'Release to refresh'
+                : 'Pull to refresh'}
             </span>
           </div>
         </div>
       )}
-      
+
       {/* Content */}
       <motion.div
         animate={{
-          y: isRefreshing ? 40 : pullDistance * 0.5,
+          y: isRefreshing ? 40 : pullDistance * 0.5
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
         {children}
       </motion.div>
-      
+
       {/* Loading indicator */}
       {isRefreshing && (
-        <div className="absolute top-2 left-0 right-0 flex items-center justify-center">
-          <div className="bg-background rounded-full p-2 shadow-lg">
+        <div className='absolute top-2 right-0 left-0 flex items-center justify-center'>
+          <div className='bg-background rounded-full p-2 shadow-lg'>
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             >
-              <IconDots className="h-4 w-4" />
+              <IconDots className='h-4 w-4' />
             </motion.div>
           </div>
         </div>

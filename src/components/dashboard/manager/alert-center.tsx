@@ -83,17 +83,19 @@ function AlertCard({ alert }: { alert: Alert }) {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <Card 
-        className={`${style.cardClass} transition-all duration-200 cursor-pointer ${style.pulseClass}`}
+      <Card
+        className={`${style.cardClass} cursor-pointer transition-all duration-200 ${style.pulseClass}`}
         onClick={alert.action.onClick}
       >
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`${style.iconBg} ${style.iconClass} rounded-full p-2`}>
+        <CardContent className='p-4'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-3'>
+              <div
+                className={`${style.iconBg} ${style.iconClass} rounded-full p-2`}
+              >
                 {alert.icon}
               </div>
-              <div className="flex-1">
+              <div className='flex-1'>
                 <div className={`font-medium ${style.titleClass}`}>
                   {alert.title}
                 </div>
@@ -102,8 +104,8 @@ function AlertCard({ alert }: { alert: Alert }) {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={style.badge} className="font-medium">
+            <div className='flex items-center gap-2'>
+              <Badge variant={style.badge} className='font-medium'>
                 {alert.count}
               </Badge>
               <IconArrowRight className={`h-4 w-4 ${style.iconClass}`} />
@@ -117,21 +119,21 @@ function AlertCard({ alert }: { alert: Alert }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className='space-y-3'>
       {Array.from({ length: 3 }).map((_, i) => (
-        <Card key={i} className="animate-pulse">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-muted rounded-full"></div>
+        <Card key={i} className='animate-pulse'>
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='bg-muted h-10 w-10 rounded-full'></div>
                 <div>
-                  <div className="h-4 w-24 bg-muted rounded mb-1"></div>
-                  <div className="h-3 w-32 bg-muted rounded"></div>
+                  <div className='bg-muted mb-1 h-4 w-24 rounded'></div>
+                  <div className='bg-muted h-3 w-32 rounded'></div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-8 bg-muted rounded"></div>
-                <div className="h-4 w-4 bg-muted rounded"></div>
+              <div className='flex items-center gap-2'>
+                <div className='bg-muted h-6 w-8 rounded'></div>
+                <div className='bg-muted h-4 w-4 rounded'></div>
               </div>
             </div>
           </CardContent>
@@ -150,10 +152,10 @@ export function AlertCenter({
     {
       id: 'overdue',
       type: 'critical',
-      title: 'Overdue Tickets',
-      description: 'Tickets past due and still open',
+title: 'Overdue Job Cards',
+description: 'Job cards past due and still open',
       count: data.overdue,
-      icon: <IconAlertTriangle className="h-5 w-5" />,
+      icon: <IconAlertTriangle className='h-5 w-5' />,
       action: {
         label: `${data.overdue} overdue`,
         onClick: () => onFilterClick('overdue')
@@ -164,9 +166,9 @@ export function AlertCenter({
       id: 'due-today',
       type: 'warning',
       title: 'Due Today',
-      description: 'Tickets that need completion today',
+description: 'Job cards that need completion today',
       count: data.dueToday,
-      icon: <IconClock className="h-5 w-5" />,
+      icon: <IconClock className='h-5 w-5' />,
       action: {
         label: `${data.dueToday} due`,
         onClick: () => onFilterClick('due-today')
@@ -176,10 +178,10 @@ export function AlertCenter({
     {
       id: 'unassigned',
       type: 'info',
-      title: 'Unassigned Tickets',
+title: 'Unassigned Job Cards',
       description: 'Tickets waiting for technician assignment',
       count: data.unassigned,
-      icon: <IconUsers className="h-5 w-5" />,
+      icon: <IconUsers className='h-5 w-5' />,
       action: {
         label: `${data.unassigned} unassigned`,
         onClick: () => onFilterClick('unassigned')
@@ -188,15 +190,15 @@ export function AlertCenter({
     }
   ];
 
-  const visibleAlerts = alerts.filter(alert => alert.visible);
+  const visibleAlerts = alerts.filter((alert) => alert.visible);
   const totalIssues = data.overdue + data.dueToday + data.unassigned;
 
   if (loading) {
     return (
-      <div className="mb-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Alert Center</h2>
-          <p className="text-sm text-muted-foreground">
+      <div className='mb-6'>
+        <div className='mb-4'>
+          <h2 className='text-lg font-semibold'>Alert Center</h2>
+          <p className='text-muted-foreground text-sm'>
             Critical issues requiring attention
           </p>
         </div>
@@ -210,34 +212,33 @@ export function AlertCenter({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="mb-6"
+      className='mb-6'
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className='mb-4 flex items-center justify-between'>
         <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
+          <h2 className='flex items-center gap-2 text-lg font-semibold'>
             Alert Center
             {totalIssues > 0 && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant='destructive' className='text-xs'>
                 {totalIssues}
               </Badge>
             )}
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-muted-foreground text-sm'>
             {totalIssues > 0
               ? 'Critical issues requiring immediate attention'
-              : 'All clear - no urgent issues'
-            }
+              : 'All clear - no urgent issues'}
           </p>
         </div>
         {totalIssues === 0 && (
-          <div className="flex items-center gap-2 text-green-600">
-            <IconCheck className="h-5 w-5" />
-            <span className="text-sm font-medium">All Clear</span>
+          <div className='flex items-center gap-2 text-green-600'>
+            <IconCheck className='h-5 w-5' />
+            <span className='text-sm font-medium'>All Clear</span>
           </div>
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className='space-y-3'>
         {visibleAlerts.length > 0 ? (
           visibleAlerts.map((alert, index) => (
             <motion.div
@@ -255,18 +256,19 @@ export function AlertCenter({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="p-6 text-center">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="bg-green-100 text-green-600 rounded-full p-3">
-                    <IconCheck className="h-8 w-8" />
+            <Card className='border-green-200 bg-green-50'>
+              <CardContent className='p-6 text-center'>
+                <div className='flex flex-col items-center gap-3'>
+                  <div className='rounded-full bg-green-100 p-3 text-green-600'>
+                    <IconCheck className='h-8 w-8' />
                   </div>
                   <div>
-                    <div className="font-medium text-green-800">
+                    <div className='font-medium text-green-800'>
                       Excellent Work!
                     </div>
-                    <div className="text-sm text-green-600 mt-1">
-                      No overdue tickets or urgent issues. Keep up the great work!
+                    <div className='mt-1 text-sm text-green-600'>
+                      No overdue tickets or urgent issues. Keep up the great
+                      work!
                     </div>
                   </div>
                 </div>
@@ -282,21 +284,21 @@ export function AlertCenter({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-4 flex flex-wrap gap-2 justify-center"
+          className='mt-4 flex flex-wrap justify-center gap-2'
         >
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onFilterClick('all-critical')}
-            className="text-xs"
+            className='text-xs'
           >
             View All Critical
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onFilterClick('assign-bulk')}
-            className="text-xs"
+            className='text-xs'
           >
             Bulk Assign
           </Button>

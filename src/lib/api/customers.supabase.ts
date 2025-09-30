@@ -1,13 +1,25 @@
 import { supabase } from '@/lib/supabase/client';
-import type { CustomersApiContract, ApiResponse, ListCustomersParams } from './customers';
-import type { Customer, CreateCustomerInput, UpdateCustomerInput } from '@/lib/types/customers';
+import type {
+  CustomersApiContract,
+  ApiResponse,
+  ListCustomersParams
+} from './customers';
+import type {
+  Customer,
+  CreateCustomerInput,
+  UpdateCustomerInput
+} from '@/lib/types/customers';
 import { scopeQuery, withLocationId } from '@/lib/location/scope';
 
 class CustomersSupabaseRepository implements CustomersApiContract {
-  async list(params: ListCustomersParams = {}): Promise<ApiResponse<Customer[]>> {
+  async list(
+    params: ListCustomersParams = {}
+  ): Promise<ApiResponse<Customer[]>> {
     try {
-      const SELECT_WITH_GST = 'id, name, contact, email, address, gst_number, created_at, updated_at';
-      const SELECT_NO_GST = 'id, name, contact, email, address, created_at, updated_at';
+      const SELECT_WITH_GST =
+        'id, name, contact, email, address, gst_number, created_at, updated_at';
+      const SELECT_NO_GST =
+        'id, name, contact, email, address, created_at, updated_at';
 
       const buildQuery = (selectCols: string) => {
         let q = supabase
@@ -17,10 +29,15 @@ class CustomersSupabaseRepository implements CustomersApiContract {
         q = scopeQuery('customers', q);
         if (params.search && params.search.trim()) {
           const term = `%${params.search.trim()}%`;
-          q = q.or(`name.ilike.${term},contact.ilike.${term},email.ilike.${term}`);
+          q = q.or(
+            `name.ilike.${term},contact.ilike.${term},email.ilike.${term}`
+          );
         }
         if (typeof params.limit === 'number') q = q.limit(params.limit);
-        if (typeof params.offset === 'number' && typeof params.limit === 'number') {
+        if (
+          typeof params.offset === 'number' &&
+          typeof params.limit === 'number'
+        ) {
           q = q.range(params.offset, params.offset + params.limit - 1);
         }
         return q;
@@ -37,14 +54,20 @@ class CustomersSupabaseRepository implements CustomersApiContract {
       return { success: true, data: (data || []) as Customer[] };
     } catch (error) {
       console.error('customers.list error', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list customers' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to list customers'
+      };
     }
   }
 
   async getById(id: string): Promise<ApiResponse<Customer | null>> {
     try {
-      const SELECT_WITH_GST = 'id, name, contact, email, address, gst_number, created_at, updated_at';
-      const SELECT_NO_GST = 'id, name, contact, email, address, created_at, updated_at';
+      const SELECT_WITH_GST =
+        'id, name, contact, email, address, gst_number, created_at, updated_at';
+      const SELECT_NO_GST =
+        'id, name, contact, email, address, created_at, updated_at';
 
       const selectOnce = async (cols: string) =>
         await supabase.from('customers').select(cols).eq('id', id).single();
@@ -57,29 +80,36 @@ class CustomersSupabaseRepository implements CustomersApiContract {
       }
       return { success: true, data: (data as unknown as Customer) || null };
     } catch (error) {
-      if ((error as any)?.code === 'PGRST116') return { success: true, data: null };
+      if ((error as any)?.code === 'PGRST116')
+        return { success: true, data: null };
       console.error('customers.getById error', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch customer' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch customer'
+      };
     }
   }
 
   async create(input: CreateCustomerInput): Promise<ApiResponse<Customer>> {
     try {
-      const SELECT_WITH_GST = 'id, name, contact, email, address, gst_number, created_at, updated_at';
-      const SELECT_NO_GST = 'id, name, contact, email, address, created_at, updated_at';
+      const SELECT_WITH_GST =
+        'id, name, contact, email, address, gst_number, created_at, updated_at';
+      const SELECT_NO_GST =
+        'id, name, contact, email, address, created_at, updated_at';
 
       const payloadWithGst: any = {
         name: input.name,
         contact: input.contact ?? null,
         email: input.email ?? null,
         address: input.address ?? null,
-        gst_number: input.gst_number ?? null,
+        gst_number: input.gst_number ?? null
       };
       const payloadNoGst: any = {
         name: input.name,
         contact: input.contact ?? null,
         email: input.email ?? null,
-        address: input.address ?? null,
+        address: input.address ?? null
       };
 
       let { data, error } = await supabase
@@ -102,14 +132,23 @@ class CustomersSupabaseRepository implements CustomersApiContract {
       return { success: true, data: data as Customer };
     } catch (error) {
       console.error('customers.create error', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create customer' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to create customer'
+      };
     }
   }
 
-  async update(id: string, input: UpdateCustomerInput): Promise<ApiResponse<Customer>> {
+  async update(
+    id: string,
+    input: UpdateCustomerInput
+  ): Promise<ApiResponse<Customer>> {
     try {
-      const SELECT_WITH_GST = 'id, name, contact, email, address, gst_number, created_at, updated_at';
-      const SELECT_NO_GST = 'id, name, contact, email, address, created_at, updated_at';
+      const SELECT_WITH_GST =
+        'id, name, contact, email, address, gst_number, created_at, updated_at';
+      const SELECT_NO_GST =
+        'id, name, contact, email, address, created_at, updated_at';
 
       const payloadWithGst: any = {
         name: input.name,
@@ -117,14 +156,14 @@ class CustomersSupabaseRepository implements CustomersApiContract {
         email: input.email,
         address: input.address,
         gst_number: input.gst_number,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       const payloadNoGst: any = {
         name: input.name,
         contact: input.contact,
         email: input.email,
         address: input.address,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       let { data, error } = await supabase
@@ -148,31 +187,46 @@ class CustomersSupabaseRepository implements CustomersApiContract {
       return { success: true, data: data as Customer };
     } catch (error) {
       console.error('customers.update error', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to update customer' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to update customer'
+      };
     }
   }
 
   async remove(id: string): Promise<ApiResponse<boolean>> {
     try {
-      const { error } = await supabase
-        .from('customers')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('customers').delete().eq('id', id);
       if (error) throw error;
       return { success: true, data: true };
     } catch (error) {
       console.error('customers.remove error', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to delete customer' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to delete customer'
+      };
     }
   }
 
-  async merge(sourceId: string, targetId: string): Promise<ApiResponse<{ merged: boolean }>> {
+  async merge(
+    sourceId: string,
+    targetId: string
+  ): Promise<ApiResponse<{ merged: boolean }>> {
     try {
-      if (sourceId === targetId) return { success: true, data: { merged: true } };
+      if (sourceId === targetId)
+        return { success: true, data: { merged: true } };
       // Repoint references in known tables
       const updates = [
-        supabase.from('battery_records').update({ customer_id: targetId }).eq('customer_id', sourceId),
-        supabase.from('service_tickets').update({ customer_id: targetId }).eq('customer_id', sourceId),
+        supabase
+          .from('battery_records')
+          .update({ customer_id: targetId })
+          .eq('customer_id', sourceId),
+        supabase
+          .from('service_tickets')
+          .update({ customer_id: targetId })
+          .eq('customer_id', sourceId)
       ];
       const results = await Promise.all(updates);
       for (const r of results) if ((r as any).error) throw (r as any).error;
@@ -184,21 +238,28 @@ class CustomersSupabaseRepository implements CustomersApiContract {
           action: 'merged',
           previous_values: { merged_from: sourceId },
           new_values: { customer_id: targetId },
-          changed_at: new Date().toISOString(),
+          changed_at: new Date().toISOString()
         } as any);
       } catch {}
 
       // Delete source customer
-      const { error: delErr } = await supabase.from('customers').delete().eq('id', sourceId);
+      const { error: delErr } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', sourceId);
       if (delErr) throw delErr;
 
       return { success: true, data: { merged: true } };
     } catch (error) {
       console.error('customers.merge error', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to merge customers' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to merge customers'
+      };
     }
   }
 }
 
-export const customersSupabaseRepository: CustomersApiContract = new CustomersSupabaseRepository();
-
+export const customersSupabaseRepository: CustomersApiContract =
+  new CustomersSupabaseRepository();

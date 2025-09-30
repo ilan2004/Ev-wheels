@@ -8,7 +8,7 @@
  *  $env:NEW_USER_EMAIL="ilan@kochi.local";
  *  $env:NEW_USER_PASSWORD="Iluusman1234";
  *  $env:NEW_USER_USERNAME="ilan";
- *  $env:NEW_USER_ROLE="manager"; # or technician/admin
+| *  $env:NEW_USER_ROLE="front_desk_manager"; # or technician/admin
  *  $env:NEW_USER_LOCATION_CODE="KOCHI";
  *  node scripts/create_user.cjs
  */
@@ -44,20 +44,26 @@ function getArg(name, def) {
     const url = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !serviceKey) {
-      throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in env');
+      throw new Error(
+        'Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in env'
+      );
     }
 
     const email = getArg('email');
     const password = getArg('password');
     const username = getArg('username', 'user');
-    const role = getArg('role', 'technician');
+    const role = getArg('role', 'technician'); // Options: admin, front_desk_manager, technician
     const locationCode = getArg('location_code', 'KOCHI');
 
     if (!email || !password) {
-      throw new Error('Provide NEW_USER_EMAIL and NEW_USER_PASSWORD via env or CLI args');
+      throw new Error(
+        'Provide NEW_USER_EMAIL and NEW_USER_PASSWORD via env or CLI args'
+      );
     }
 
-    const admin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+    const admin = createClient(url, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
 
     // 1) Ensure location exists
     const { data: locRow, error: locErr } = await admin
@@ -79,22 +85,30 @@ function getArg(name, def) {
 
     // 2) Create auth user (or fetch if exists)
     let userId = null;
-    const { data: created, error: createErr } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { role }
-    });
+    const { data: created, error: createErr } =
+      await admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { role }
+      });
     if (createErr) {
       // If user exists, try to find by listing (no direct get by email in v2)
       // Narrow search via filter
-      const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      const { data: list, error: listErr } = await admin.auth.admin.listUsers({
+        page: 1,
+        perPage: 200
+      });
       if (listErr) throw listErr;
-      const found = list.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+      const found = list.users.find(
+        (u) => u.email?.toLowerCase() === email.toLowerCase()
+      );
       if (!found) throw createErr;
       userId = found.id;
       // Optionally update metadata role
-      await admin.auth.admin.updateUserById(userId, { user_metadata: { role } });
+      await admin.auth.admin.updateUserById(userId, {
+        user_metadata: { role }
+      });
     } else {
       userId = created.user?.id || null;
     }
@@ -111,7 +125,10 @@ function getArg(name, def) {
     if (locationId) {
       const { error: ulErr } = await admin
         .from('user_locations')
-        .upsert({ user_id: userId, location_id: locationId }, { onConflict: 'user_id,location_id' });
+        .upsert(
+          { user_id: userId, location_id: locationId },
+          { onConflict: 'user_id,location_id' }
+        );
       if (ulErr) throw ulErr;
     }
 
@@ -128,4 +145,3 @@ function getArg(name, def) {
     process.exit(1);
   }
 })();
-

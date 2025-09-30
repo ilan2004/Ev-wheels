@@ -14,15 +14,15 @@ export default function PurchaseOrdersPage() {
   return (
     <RoleGuard permissions={[Permission.VIEW_INVENTORY]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Purchase Orders"
-            description="Create, view, and receive purchase orders."
+            title='Purchase Orders'
+            description='Create, view, and receive purchase orders.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
             Purchase order workflow will be implemented in Phase 4.
           </div>
         </div>

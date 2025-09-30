@@ -200,7 +200,7 @@ export function ManagerQueue({ preset }: { preset?: QueuePreset }) {
         .select('id')) as any;
       if (error) throw error;
       toast.success(successMsg, {
-        description: `${ids.length} ticket(s) updated`
+        description: `${ids.length} job card(s) updated`
       });
       setSelected(new Set());
       refresh();
@@ -237,7 +237,7 @@ export function ManagerQueue({ preset }: { preset?: QueuePreset }) {
       {/* Filters */}
       <div className='flex flex-wrap items-center gap-2'>
         <Input
-          placeholder='Search ticket # or symptom'
+          placeholder='Search job card # or symptom'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className='max-w-xs'
@@ -403,7 +403,7 @@ export function ManagerQueue({ preset }: { preset?: QueuePreset }) {
                         aria-label='Select all'
                       />
                     </TableHead>
-                    <TableHead className='w-40'>Ticket</TableHead>
+                    <TableHead className='w-40'>Job Card</TableHead>
                     <TableHead>Summary</TableHead>
                     <TableHead className='w-16'>Pri</TableHead>
                     <TableHead className='w-28'>Due</TableHead>
@@ -421,8 +421,8 @@ export function ManagerQueue({ preset }: { preset?: QueuePreset }) {
                   )}
                   {!loading && rows.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className='text-muted-foreground'>
-                        No tickets
+                        <TableCell colSpan={7} className='text-muted-foreground'>
+                        No job cards
                       </TableCell>
                     </TableRow>
                   )}
@@ -440,7 +440,7 @@ export function ManagerQueue({ preset }: { preset?: QueuePreset }) {
                                 return next;
                               });
                             }}
-                            aria-label={`Select ticket ${t.ticket_number}`}
+                            aria-label={`Select job card ${t.ticket_number}`}
                           />
                         </TableCell>
                         <TableCell className='font-medium'>
@@ -472,7 +472,7 @@ export function ManagerQueue({ preset }: { preset?: QueuePreset }) {
                               Due
                             </Button>
                             <Button size='sm' variant='ghost' asChild>
-                              <Link href={`/dashboard/tickets/${t.id}`}>
+                          <Link href={`/dashboard/job-cards/${t.id}`}>
                                 Open
                               </Link>
                             </Button>

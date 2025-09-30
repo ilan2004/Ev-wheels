@@ -17,71 +17,74 @@ export function useVehicleFilters() {
     const customerId = searchParams.get('customerId');
 
     return {
-      status: status ? status.split(',') as VehicleStatus[] : [],
+      status: status ? (status.split(',') as VehicleStatus[]) : [],
       dateRange: {
         from: dateFrom ? new Date(dateFrom) : null,
-        to: dateTo ? new Date(dateTo) : null,
+        to: dateTo ? new Date(dateTo) : null
       },
       technicianId: technicianId || null,
-      customerId: customerId || null,
+      customerId: customerId || null
     };
   }, [searchParams]);
 
   // Update URL with new filters
-  const updateFilters = useCallback((newFilters: Partial<VehicleFilters>) => {
-    const params = new URLSearchParams(searchParams);
-    
-    // Merge with existing filters
-    const mergedFilters = { ...filters, ...newFilters };
+  const updateFilters = useCallback(
+    (newFilters: Partial<VehicleFilters>) => {
+      const params = new URLSearchParams(searchParams);
 
-    // Update status
-    if ('status' in newFilters) {
-      if (mergedFilters.status.length > 0) {
-        params.set('status', mergedFilters.status.join(','));
-      } else {
-        params.delete('status');
+      // Merge with existing filters
+      const mergedFilters = { ...filters, ...newFilters };
+
+      // Update status
+      if ('status' in newFilters) {
+        if (mergedFilters.status.length > 0) {
+          params.set('status', mergedFilters.status.join(','));
+        } else {
+          params.delete('status');
+        }
       }
-    }
 
-    // Update date range
-    if ('dateRange' in newFilters) {
-      if (mergedFilters.dateRange.from) {
-        params.set('dateFrom', mergedFilters.dateRange.from.toISOString());
-      } else {
-        params.delete('dateFrom');
+      // Update date range
+      if ('dateRange' in newFilters) {
+        if (mergedFilters.dateRange.from) {
+          params.set('dateFrom', mergedFilters.dateRange.from.toISOString());
+        } else {
+          params.delete('dateFrom');
+        }
+
+        if (mergedFilters.dateRange.to) {
+          params.set('dateTo', mergedFilters.dateRange.to.toISOString());
+        } else {
+          params.delete('dateTo');
+        }
       }
-      
-      if (mergedFilters.dateRange.to) {
-        params.set('dateTo', mergedFilters.dateRange.to.toISOString());
-      } else {
-        params.delete('dateTo');
+
+      // Update technician
+      if ('technicianId' in newFilters) {
+        if (mergedFilters.technicianId) {
+          params.set('technicianId', mergedFilters.technicianId);
+        } else {
+          params.delete('technicianId');
+        }
       }
-    }
 
-    // Update technician
-    if ('technicianId' in newFilters) {
-      if (mergedFilters.technicianId) {
-        params.set('technicianId', mergedFilters.technicianId);
-      } else {
-        params.delete('technicianId');
+      // Update customer
+      if ('customerId' in newFilters) {
+        if (mergedFilters.customerId) {
+          params.set('customerId', mergedFilters.customerId);
+        } else {
+          params.delete('customerId');
+        }
       }
-    }
 
-    // Update customer
-    if ('customerId' in newFilters) {
-      if (mergedFilters.customerId) {
-        params.set('customerId', mergedFilters.customerId);
-      } else {
-        params.delete('customerId');
-      }
-    }
+      // Always reset to page 1 when filters change
+      params.delete('page');
 
-    // Always reset to page 1 when filters change
-    params.delete('page');
-
-    // Update URL
-    router.push(`?${params.toString()}`);
-  }, [filters, searchParams, router]);
+      // Update URL
+      router.push(`?${params.toString()}`);
+    },
+    [filters, searchParams, router]
+  );
 
   // Clear all filters
   const clearFilters = useCallback(() => {
@@ -102,7 +105,7 @@ export function useVehicleFilters() {
       dateFrom: filters.dateRange.from?.toISOString(),
       dateTo: filters.dateRange.to?.toISOString(),
       technicianId: filters.technicianId || undefined,
-      customerId: filters.customerId || undefined,
+      customerId: filters.customerId || undefined
     };
   }, [filters]);
 
@@ -110,6 +113,6 @@ export function useVehicleFilters() {
     filters,
     updateFilters,
     clearFilters,
-    toApiParams,
+    toApiParams
   };
 }

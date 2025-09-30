@@ -16,7 +16,11 @@ import {
 } from '@tanstack/react-table';
 import { Invoice, InvoiceStatus, InvoiceFilters } from '@/types/billing';
 import { billingRepository } from '@/lib/billing/repository';
-import { formatCurrency, formatDueDateStatus, isOverdue } from '@/lib/billing/calculations';
+import {
+  formatCurrency,
+  formatDueDateStatus,
+  isOverdue
+} from '@/lib/billing/calculations';
 import PageContainer from '@/components/layout/page-container';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
@@ -28,21 +32,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  IconPlus, 
-  IconDotsVertical, 
-  IconEye, 
-  IconEdit, 
+import {
+  IconPlus,
+  IconDotsVertical,
+  IconEye,
+  IconEdit,
   IconTrash,
   IconCreditCard,
   IconPrinter,
@@ -61,11 +65,14 @@ function getStatusBadge(status: InvoiceStatus) {
     [InvoiceStatus.DRAFT]: 'bg-gray-100 text-gray-800 border-gray-200',
     [InvoiceStatus.SENT]: 'bg-blue-100 text-blue-800 border-blue-200',
     [InvoiceStatus.PAID]: 'bg-green-100 text-green-800 border-green-200',
-    [InvoiceStatus.VOID]: 'bg-red-100 text-red-800 border-red-200',
+    [InvoiceStatus.VOID]: 'bg-red-100 text-red-800 border-red-200'
   } as const;
 
   return (
-    <Badge variant="outline" className={cn('capitalize border', colorMap[status])}>
+    <Badge
+      variant='outline'
+      className={cn('border capitalize', colorMap[status])}
+    >
       {status}
     </Badge>
   );
@@ -78,34 +85,45 @@ function computeInvoicePriority(inv: Invoice): number {
   // Void near the bottom but above paid
   if (inv.status === InvoiceStatus.VOID) return 90;
 
-  const due = inv.dueDate instanceof Date && !isNaN(inv.dueDate.getTime()) ? inv.dueDate : undefined;
+  const due =
+    inv.dueDate instanceof Date && !isNaN(inv.dueDate.getTime())
+      ? inv.dueDate
+      : undefined;
   if (!due) return 50; // unknown due date in the middle
 
   const now = new Date();
   if (isOverdue(due, now as any)) return 0; // highest priority
   // days until due
-  const days = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const days = Math.ceil(
+    (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  );
   if (days <= 7) return 10; // due soon
   return 20; // due later
 }
 
-function InvoiceRowActions({ invoice, onQuickDownload }: { invoice: Invoice; onQuickDownload: (inv: Invoice) => void }) {
+function InvoiceRowActions({
+  invoice,
+  onQuickDownload
+}: {
+  invoice: Invoice;
+  onQuickDownload: (inv: Invoice) => void;
+}) {
   const router = useRouter();
-  const [working, setWorking] = React.useState<'markPaid' | 'delete' | null>(null);
-  
+  const [working, setWorking] = React.useState<'markPaid' | 'delete' | null>(
+    null
+  );
+
   const handleView = () => router.push(`/dashboard/invoices/${invoice.id}`);
-  const handleEdit = () => router.push(`/dashboard/invoices/${invoice.id}?mode=edit`);
+  const handleEdit = () =>
+    router.push(`/dashboard/invoices/${invoice.id}?mode=edit`);
   const handleDelete = async () => {
     try {
       setWorking('delete');
-      await toast.promise(
-        billingRepository.deleteInvoice(invoice.id),
-        {
-          loading: 'Deleting invoice…',
-          success: 'Invoice deleted',
-          error: 'Failed to delete invoice'
-        }
-      );
+      await toast.promise(billingRepository.deleteInvoice(invoice.id), {
+        loading: 'Deleting invoice…',
+        success: 'Invoice deleted',
+        error: 'Failed to delete invoice'
+      });
       window.location.reload(); // Simple refresh for now
     } catch (error) {
       // toast handled in promise
@@ -113,12 +131,14 @@ function InvoiceRowActions({ invoice, onQuickDownload }: { invoice: Invoice; onQ
       setWorking(null);
     }
   };
-  
+
   const handleMarkPaid = async () => {
     try {
       setWorking('markPaid');
       await toast.promise(
-        billingRepository.updateInvoice(invoice.id, { status: InvoiceStatus.PAID }),
+        billingRepository.updateInvoice(invoice.id, {
+          status: InvoiceStatus.PAID
+        }),
         {
           loading: 'Marking as paid…',
           success: 'Invoice marked as paid',
@@ -138,63 +158,119 @@ function InvoiceRowActions({ invoice, onQuickDownload }: { invoice: Invoice; onQ
   };
 
   return (
-    <div className="flex items-center gap-1">
+    <div className='flex items-center gap-1'>
       {/* Quick actions */}
       {invoice.status !== InvoiceStatus.PAID && (
-        <Button aria-label="Mark as Paid" onClick={(e) => { e.stopPropagation(); handleMarkPaid(); }} variant="ghost" size="sm" disabled={working === 'markPaid'} className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50">
+        <Button
+          aria-label='Mark as Paid'
+          onClick={(e) => {
+            e.stopPropagation();
+            handleMarkPaid();
+          }}
+          variant='ghost'
+          size='sm'
+          disabled={working === 'markPaid'}
+          className='h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700'
+        >
           {working === 'markPaid' ? (
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-r-transparent" />
+            <span className='inline-block h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-r-transparent' />
           ) : (
-            <IconCreditCard className="h-4 w-4" />
+            <IconCreditCard className='h-4 w-4' />
           )}
         </Button>
       )}
-      <Button aria-label="Download PDF" onClick={(e) => { e.stopPropagation(); onQuickDownload(invoice); }} variant="ghost" size="sm" className="h-8 w-8 p-0">
-        <IconDownload className="h-4 w-4" />
+      <Button
+        aria-label='Download PDF'
+        onClick={(e) => {
+          e.stopPropagation();
+          onQuickDownload(invoice);
+        }}
+        variant='ghost'
+        size='sm'
+        className='h-8 w-8 p-0'
+      >
+        <IconDownload className='h-4 w-4' />
       </Button>
 
       {/* More menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()} disabled={working !== null}>
+          <Button
+            variant='ghost'
+            size='sm'
+            className='h-8 w-8 p-0'
+            onClick={(e) => e.stopPropagation()}
+            disabled={working !== null}
+          >
             {working === 'delete' ? (
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+              <span className='inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent' />
             ) : (
-              <IconDotsVertical className="h-4 w-4" />
+              <IconDotsVertical className='h-4 w-4' />
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleView(); }}>
-            <IconEye className="mr-2 h-4 w-4" />
+        <DropdownMenuContent align='end' className='w-48'>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              handleView();
+            }}
+          >
+            <IconEye className='mr-2 h-4 w-4' />
             View Details
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(); }}>
-            <IconEdit className="mr-2 h-4 w-4" />
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit();
+            }}
+          >
+            <IconEdit className='mr-2 h-4 w-4' />
             Edit Invoice
           </DropdownMenuItem>
           {invoice.status !== InvoiceStatus.PAID && (
             <>
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleAddPayment(); }}>
-                <IconCreditCard className="mr-2 h-4 w-4" />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddPayment();
+                }}
+              >
+                <IconCreditCard className='mr-2 h-4 w-4' />
                 Add Payment
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleMarkPaid(); }}>
-                <IconCreditCard className="mr-2 h-4 w-4" />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMarkPaid();
+                }}
+              >
+                <IconCreditCard className='mr-2 h-4 w-4' />
                 Mark as Paid
               </DropdownMenuItem>
             </>
           )}
           <DropdownMenuItem>
-            <IconPrinter className="mr-2 h-4 w-4" />
+            <IconPrinter className='mr-2 h-4 w-4' />
             Print
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onQuickDownload(invoice); }}>
-            <IconDownload className="mr-2 h-4 w-4" />
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              onQuickDownload(invoice);
+            }}
+          >
+            <IconDownload className='mr-2 h-4 w-4' />
             Download PDF
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(); }} className="text-destructive">
-            <IconTrash className="mr-2 h-4 w-4" />
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+            className='text-destructive'
+          >
+            <IconTrash className='mr-2 h-4 w-4' />
             Delete Invoice
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -209,12 +285,12 @@ export function InvoicesListPage() {
   const [loading, setLoading] = useState(true);
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'priority', desc: false },
-    { id: 'dueDate', desc: false },
+    { id: 'dueDate', desc: false }
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 20,
+    pageSize: 20
   });
 
   // Preview modal state for quick download
@@ -225,167 +301,188 @@ export function InvoicesListPage() {
     setPreviewInvoice(inv);
     setPreviewOpen(true);
   };
-  
+
   // Filters
-  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all' | 'overdue'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    InvoiceStatus | 'all' | 'overdue'
+  >('all');
   const [searchFilter, setSearchFilter] = useState('');
 
-  const columns: ColumnDef<Invoice>[] = useMemo(() => [
-    // Hidden priority column used for sorting
-    {
-      id: 'priority',
-      accessorFn: (row) => computeInvoicePriority(row),
-      header: () => null,
-      cell: () => null,
-      enableHiding: false,
-      enableSorting: false,
-      enableResizing: false,
-      size: 1,
-      minSize: 1,
-      maxSize: 1,
-      meta: { label: 'Priority' },
-    },
-    {
-      accessorKey: 'number',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Invoice #" />
-      ),
-      cell: ({ row }) => {
-        const invoice = row.original;
-        if (!invoice) {
-          return <span className="text-muted-foreground">No invoice</span>;
-        }
-        
-        const overdue = invoice.dueDate ? isOverdue(invoice.dueDate) : false;
-        const createdAt = invoice.createdAt;
-        const hasValidCreatedAt = createdAt instanceof Date && !isNaN(createdAt.getTime());
+  const columns: ColumnDef<Invoice>[] = useMemo(
+    () => [
+      // Hidden priority column used for sorting
+      {
+        id: 'priority',
+        accessorFn: (row) => computeInvoicePriority(row),
+        header: () => null,
+        cell: () => null,
+        enableHiding: false,
+        enableSorting: false,
+        enableResizing: false,
+        size: 1,
+        minSize: 1,
+        maxSize: 1,
+        meta: { label: 'Priority' }
+      },
+      {
+        accessorKey: 'number',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Invoice #' />
+        ),
+        cell: ({ row }) => {
+          const invoice = row.original;
+          if (!invoice) {
+            return <span className='text-muted-foreground'>No invoice</span>;
+          }
 
-        return (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">{invoice.number || 'No number'}</span>
-              {overdue && invoice.status !== InvoiceStatus.PAID && (
-                <IconAlertTriangle className="h-4 w-4 text-destructive" />
+          const overdue = invoice.dueDate ? isOverdue(invoice.dueDate) : false;
+          const createdAt = invoice.createdAt;
+          const hasValidCreatedAt =
+            createdAt instanceof Date && !isNaN(createdAt.getTime());
+
+          return (
+            <div className='flex flex-col'>
+              <div className='flex items-center gap-2'>
+                <span className='font-medium'>
+                  {invoice.number || 'No number'}
+                </span>
+                {overdue && invoice.status !== InvoiceStatus.PAID && (
+                  <IconAlertTriangle className='text-destructive h-4 w-4' />
+                )}
+              </div>
+              <span className='text-muted-foreground text-xs'>
+                {hasValidCreatedAt
+                  ? format(createdAt, 'MMM dd, yyyy')
+                  : 'No date'}
+              </span>
+            </div>
+          );
+        },
+        meta: { label: 'Invoice Number' }
+      },
+      {
+        id: 'customer.name',
+        accessorFn: (row) => row.customer?.name ?? '',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Customer' />
+        ),
+        cell: ({ row }) => {
+          const customer = row.original.customer;
+          if (!customer) {
+            return <span className='text-muted-foreground'>No customer</span>;
+          }
+          return (
+            <div className='flex max-w-[200px] flex-col'>
+              <span className='truncate font-medium'>
+                {customer.name || 'Unknown'}
+              </span>
+            </div>
+          );
+        },
+        filterFn: (row, id, value) => {
+          if (!value) return true;
+          const name = row.original.customer?.name ?? '';
+          return String(name)
+            .toLowerCase()
+            .includes(String(value).toLowerCase());
+        },
+        meta: { label: 'Customer' }
+      },
+      {
+        accessorKey: 'status',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Status' />
+        ),
+        cell: ({ row }) => getStatusBadge(row.getValue('status')),
+        filterFn: (row, id, value) => {
+          if (!value || value === 'all') return true;
+          if (value === 'overdue') {
+            const invoice = row.original;
+            return (
+              isOverdue(invoice.dueDate) &&
+              invoice.status !== InvoiceStatus.PAID
+            );
+          }
+          const v = row.getValue(id);
+          return Array.isArray(value)
+            ? value.includes(v)
+            : String(value) === String(v);
+        },
+        meta: { label: 'Status' }
+      },
+      {
+        id: 'totals.grandTotal',
+        accessorFn: (row) => row.totals?.grandTotal ?? 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Amount' />
+        ),
+        cell: ({ row }) => {
+          const invoice = row.original;
+          const grandTotal = invoice.totals?.grandTotal ?? 0;
+          const balanceDue = invoice.balanceDue ?? 0;
+          return (
+            <div className='flex flex-col'>
+              <span className='font-medium'>{formatCurrency(grandTotal)}</span>
+              {balanceDue > 0 && balanceDue !== grandTotal && (
+                <span className='text-muted-foreground text-xs'>
+                  Due: {formatCurrency(balanceDue)}
+                </span>
               )}
             </div>
-            <span className="text-xs text-muted-foreground">
-              {hasValidCreatedAt ? format(createdAt, 'MMM dd, yyyy') : 'No date'}
-            </span>
-          </div>
-        );
+          );
+        },
+        meta: { label: 'Amount' }
       },
-      meta: { label: 'Invoice Number' }
-    },
-    {
-      id: 'customer.name',
-      accessorFn: (row) => row.customer?.name ?? '',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Customer" />
-      ),
-      cell: ({ row }) => {
-        const customer = row.original.customer;
-        if (!customer) {
-          return <span className="text-muted-foreground">No customer</span>;
-        }
-        return (
-          <div className="flex flex-col max-w-[200px]">
-            <span className="font-medium truncate">{customer.name || 'Unknown'}</span>
-          </div>
-        );
-      },
-      filterFn: (row, id, value) => {
-        if (!value) return true;
-        const name = row.original.customer?.name ?? '';
-        return String(name).toLowerCase().includes(String(value).toLowerCase());
-      },
-      meta: { label: 'Customer' }
-    },
-    {
-      accessorKey: 'status',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
-      cell: ({ row }) => getStatusBadge(row.getValue('status')),
-      filterFn: (row, id, value) => {
-        if (!value || value === 'all') return true;
-        if (value === 'overdue') {
+      {
+        accessorKey: 'dueDate',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Due Date' />
+        ),
+        cell: ({ row }) => {
           const invoice = row.original;
-          return isOverdue(invoice.dueDate) && invoice.status !== InvoiceStatus.PAID;
-        }
-        const v = row.getValue(id);
-        return Array.isArray(value)
-          ? value.includes(v)
-          : String(value) === String(v);
+          const dueDate = invoice.dueDate;
+
+          const hasValidDueDate =
+            dueDate instanceof Date && !isNaN(dueDate.getTime());
+          if (!hasValidDueDate) {
+            return <span className='text-muted-foreground'>No due date</span>;
+          }
+
+          const status = formatDueDateStatus(dueDate);
+
+          return (
+            <div className='flex flex-col'>
+              <span className='text-sm'>{format(dueDate, 'MMM dd, yyyy')}</span>
+              {invoice.status !== InvoiceStatus.PAID && (
+                <span
+                  className={cn(
+                    'text-xs',
+                    status.status === 'overdue' && 'text-destructive',
+                    status.status === 'due-soon' && 'text-warning',
+                    status.status === 'due-later' && 'text-muted-foreground'
+                  )}
+                >
+                  {status.message}
+                </span>
+              )}
+            </div>
+          );
+        },
+        meta: { label: 'Due Date' }
       },
-      meta: { label: 'Status' }
-    },
-    {
-      id: 'totals.grandTotal',
-      accessorFn: (row) => row.totals?.grandTotal ?? 0,
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Amount" />
-      ),
-      cell: ({ row }) => {
-        const invoice = row.original;
-        const grandTotal = invoice.totals?.grandTotal ?? 0;
-        const balanceDue = invoice.balanceDue ?? 0;
-        return (
-          <div className="flex flex-col">
-            <span className="font-medium">
-              {formatCurrency(grandTotal)}
-            </span>
-            {balanceDue > 0 && balanceDue !== grandTotal && (
-              <span className="text-xs text-muted-foreground">
-                Due: {formatCurrency(balanceDue)}
-              </span>
-            )}
-          </div>
-        );
-      },
-      meta: { label: 'Amount' }
-    },
-    {
-      accessorKey: 'dueDate',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Due Date" />
-      ),
-      cell: ({ row }) => {
-        const invoice = row.original;
-        const dueDate = invoice.dueDate;
-        
-        const hasValidDueDate = dueDate instanceof Date && !isNaN(dueDate.getTime());
-        if (!hasValidDueDate) {
-          return <span className="text-muted-foreground">No due date</span>;
-        }
-        
-        const status = formatDueDateStatus(dueDate);
-        
-        return (
-          <div className="flex flex-col">
-            <span className="text-sm">
-              {format(dueDate, 'MMM dd, yyyy')}
-            </span>
-            {invoice.status !== InvoiceStatus.PAID && (
-              <span className={cn(
-                "text-xs",
-                status.status === 'overdue' && "text-destructive",
-                status.status === 'due-soon' && "text-warning",
-                status.status === 'due-later' && "text-muted-foreground"
-              )}>
-                {status.message}
-              </span>
-            )}
-          </div>
-        );
-      },
-      meta: { label: 'Due Date' }
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => <InvoiceRowActions invoice={row.original} onQuickDownload={openQuickDownload} />,
-      meta: { label: 'Actions' }
-    }
-  ], []);
+      {
+        id: 'actions',
+        cell: ({ row }) => (
+          <InvoiceRowActions
+            invoice={row.original}
+            onQuickDownload={openQuickDownload}
+          />
+        ),
+        meta: { label: 'Actions' }
+      }
+    ],
+    []
+  );
 
   const table = useReactTable({
     data,
@@ -398,15 +495,14 @@ export function InvoicesListPage() {
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     initialState: {
-      columnVisibility: { priority: false },
+      columnVisibility: { priority: false }
     },
     state: {
       sorting,
       columnFilters,
-      pagination,
-    },
+      pagination
+    }
   });
-
 
   useEffect(() => {
     loadInvoices();
@@ -415,15 +511,15 @@ export function InvoicesListPage() {
   useEffect(() => {
     // Apply filters
     const filters: ColumnFiltersState = [];
-    
+
     if (statusFilter !== 'all') {
       filters.push({ id: 'status', value: statusFilter });
     }
-    
+
     if (searchFilter) {
       filters.push({ id: 'customer.name', value: searchFilter });
     }
-    
+
     setColumnFilters(filters);
   }, [statusFilter, searchFilter]);
 
@@ -449,25 +545,27 @@ export function InvoicesListPage() {
     setTimeout(() => setCreating(false), 2000);
   };
 
-
   // Calculate stats
   const stats = useMemo(() => {
-    const totalValue = data.reduce((sum, invoice) => sum + invoice.totals.grandTotal, 0);
+    const totalValue = data.reduce(
+      (sum, invoice) => sum + invoice.totals.grandTotal,
+      0
+    );
     const paidValue = data
-      .filter(inv => inv.status === InvoiceStatus.PAID)
+      .filter((inv) => inv.status === InvoiceStatus.PAID)
       .reduce((sum, invoice) => sum + invoice.totals.grandTotal, 0);
     const outstandingValue = data
-      .filter(inv => inv.status !== InvoiceStatus.PAID)
+      .filter((inv) => inv.status !== InvoiceStatus.PAID)
       .reduce((sum, invoice) => sum + invoice.balanceDue, 0);
-    const overdueCount = data.filter(inv => 
-      isOverdue(inv.dueDate) && inv.status !== InvoiceStatus.PAID
+    const overdueCount = data.filter(
+      (inv) => isOverdue(inv.dueDate) && inv.status !== InvoiceStatus.PAID
     ).length;
-    
+
     return {
       total: data.length,
-      draft: data.filter(inv => inv.status === InvoiceStatus.DRAFT).length,
-      sent: data.filter(inv => inv.status === InvoiceStatus.SENT).length,
-      paid: data.filter(inv => inv.status === InvoiceStatus.PAID).length,
+      draft: data.filter((inv) => inv.status === InvoiceStatus.DRAFT).length,
+      sent: data.filter((inv) => inv.status === InvoiceStatus.SENT).length,
+      paid: data.filter((inv) => inv.status === InvoiceStatus.PAID).length,
       overdue: overdueCount,
       totalValue,
       paidValue,
@@ -478,10 +576,10 @@ export function InvoicesListPage() {
   if (loading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading invoices...</p>
+        <div className='flex items-center justify-center py-8'>
+          <div className='text-center'>
+            <div className='border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2'></div>
+            <p className='text-muted-foreground'>Loading invoices...</p>
           </div>
         </div>
       </PageContainer>
@@ -490,24 +588,28 @@ export function InvoicesListPage() {
 
   return (
     <PageContainer>
-      <div className="flex flex-1 flex-col space-y-6">
+      <div className='flex flex-1 flex-col space-y-6'>
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
-            <p className="text-muted-foreground">
+            <h1 className='text-2xl font-semibold tracking-tight'>Invoices</h1>
+            <p className='text-muted-foreground'>
               Manage your invoices and track payments.
             </p>
           </div>
-          <Button onClick={handleCreateInvoice} className="w-full sm:w-auto" disabled={creating}>
+          <Button
+            onClick={handleCreateInvoice}
+            className='w-full sm:w-auto'
+            disabled={creating}
+          >
             {creating ? (
               <>
-                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+                <span className='mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent' />
                 Creating…
               </>
             ) : (
               <>
-                <IconPlus className="mr-2 h-4 w-4" />
+                <IconPlus className='mr-2 h-4 w-4' />
                 Create Invoice
               </>
             )}
@@ -515,46 +617,68 @@ export function InvoicesListPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <Card onClick={() => setStatusFilter('all')} className="cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-5'>
+          <Card
+            onClick={() => setStatusFilter('all')}
+            className='cursor-pointer'
+          >
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Invoices
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className='text-2xl font-bold'>{stats.total}</div>
             </CardContent>
           </Card>
-          <Card onClick={() => setStatusFilter(InvoiceStatus.PAID)} className="cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid</CardTitle>
+          <Card
+            onClick={() => setStatusFilter(InvoiceStatus.PAID)}
+            className='cursor-pointer'
+          >
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Paid</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
+              <div className='text-2xl font-bold text-green-600'>
+                {stats.paid}
+              </div>
             </CardContent>
           </Card>
-          <Card onClick={() => setStatusFilter(InvoiceStatus.DRAFT)} className="cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+          <Card
+            onClick={() => setStatusFilter(InvoiceStatus.DRAFT)}
+            className='cursor-pointer'
+          >
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Drafts</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.draft}</div>
+              <div className='text-2xl font-bold text-orange-600'>
+                {stats.draft}
+              </div>
             </CardContent>
           </Card>
-          <Card onClick={() => setStatusFilter('overdue')} className="cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Overdue</CardTitle>
+          <Card
+            onClick={() => setStatusFilter('overdue')}
+            className='cursor-pointer'
+          >
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Overdue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+              <div className='text-2xl font-bold text-red-600'>
+                {stats.overdue}
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Total Value</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
-              <div className="text-xs text-muted-foreground">
+              <div className='text-2xl font-bold'>
+                {formatCurrency(stats.totalValue)}
+              </div>
+              <div className='text-muted-foreground text-xs'>
                 Outstanding: {formatCurrency(stats.outstandingValue)}
               </div>
             </CardContent>
@@ -562,38 +686,49 @@ export function InvoicesListPage() {
         </div>
 
         {/* Data Table */}
-        <DataTable table={table} onRowClick={(row) => router.push(`/dashboard/invoices/${row.original.id}`)} bodyMinHeightClass="min-h-[600px]">
+        <DataTable
+          table={table}
+          onRowClick={(row) =>
+            router.push(`/dashboard/invoices/${row.original.id}`)
+          }
+          bodyMinHeightClass='min-h-[600px]'
+        >
           {/* Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2'>
               {/* Search */}
-              <div className="relative w-full sm:w-64">
-                <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <div className='relative w-full sm:w-64'>
+                <IconSearch className='text-muted-foreground absolute top-2.5 left-2 h-4 w-4' />
                 <Input
-                  placeholder="Search customers..."
+                  placeholder='Search customers...'
                   value={searchFilter}
                   onChange={(event) => setSearchFilter(event.target.value)}
-                  className="pl-8"
+                  className='pl-8'
                 />
               </div>
-              
+
               {/* Status Filter */}
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as InvoiceStatus | 'all' | 'overdue')}>
-                <SelectTrigger className="w-full sm:w-36">
-                  <IconFilter className="mr-2 h-4 w-4" />
+              <Select
+                value={statusFilter}
+                onValueChange={(value) =>
+                  setStatusFilter(value as InvoiceStatus | 'all' | 'overdue')
+                }
+              >
+                <SelectTrigger className='w-full sm:w-36'>
+                  <IconFilter className='mr-2 h-4 w-4' />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value='all'>All Status</SelectItem>
                   <SelectItem value={InvoiceStatus.DRAFT}>Draft</SelectItem>
                   <SelectItem value={InvoiceStatus.SENT}>Sent</SelectItem>
                   <SelectItem value={InvoiceStatus.PAID}>Paid</SelectItem>
-                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value='overdue'>Overdue</SelectItem>
                   <SelectItem value={InvoiceStatus.VOID}>Void</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <DataTableViewOptions table={table} />
           </div>
         </DataTable>
@@ -601,23 +736,32 @@ export function InvoicesListPage() {
         {/* Fallback basic list if all columns are hidden (debug/backup rendering) */}
         {table.getRowModel().rows.length > 0 &&
           table.getAllLeafColumns().every((c) => !c.getIsVisible()) && (
-            <div className="mt-4 rounded-md border p-4">
-              <p className="mb-2 text-sm text-muted-foreground">
+            <div className='mt-4 rounded-md border p-4'>
+              <p className='text-muted-foreground mb-2 text-sm'>
                 Columns are hidden. Showing a basic list view.
               </p>
-              <ul className="space-y-2">
+              <ul className='space-y-2'>
                 {data.map((inv) => (
-                  <li key={inv.id} className="flex items-center justify-between">
-                    <span className="font-medium">{inv.number || '(no number)'}</span>
+                  <li
+                    key={inv.id}
+                    className='flex items-center justify-between'
+                  >
+                    <span className='font-medium'>
+                      {inv.number || '(no number)'}
+                    </span>
                     <span>{formatCurrency(inv.totals?.grandTotal ?? 0)}</span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-        
+
         {/* Quick Download Preview Modal */}
-        <InvoicePreviewModal invoice={previewInvoice} open={previewOpen} onClose={() => setPreviewOpen(false)} />
+        <InvoicePreviewModal
+          invoice={previewInvoice}
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+        />
       </div>
     </PageContainer>
   );

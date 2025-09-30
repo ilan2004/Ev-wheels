@@ -41,20 +41,22 @@ export function CreateQuotePage() {
 
   return (
     <PageContainer>
-      <div className="flex flex-1 flex-col space-y-6">
+      <div className='flex flex-1 flex-col space-y-6'>
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className='flex items-center gap-4'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => router.back()}
-            className="h-8 w-8 p-0"
+            className='h-8 w-8 p-0'
           >
-            <IconArrowLeft className="h-4 w-4" />
+            <IconArrowLeft className='h-4 w-4' />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Create Quote</h1>
-            <p className="text-muted-foreground">
+            <h1 className='text-2xl font-semibold tracking-tight'>
+              Create Quote
+            </h1>
+            <p className='text-muted-foreground'>
               Create a new sales quote for your customer.
             </p>
           </div>
@@ -65,7 +67,7 @@ export function CreateQuotePage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           loading={loading}
-          mode="create"
+          mode='create'
         />
       </div>
     </PageContainer>

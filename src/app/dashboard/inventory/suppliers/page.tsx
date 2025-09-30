@@ -14,15 +14,15 @@ export default function InventorySuppliersPage() {
   return (
     <RoleGuard permissions={[Permission.VIEW_INVENTORY]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Suppliers"
-            description="Manage supplier records and contacts."
+            title='Suppliers'
+            description='Manage supplier records and contacts.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
             Suppliers management UI will be implemented in Phase 2.
           </div>
         </div>

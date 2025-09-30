@@ -19,4 +19,8 @@ export {
 // Types
 export type { EnhancedTicketCreationProps } from './enhanced-ticket-creation';
 export type { SmartMediaUploadProps, MediaFile } from './smart-media-upload';
-export type { QuickAssignmentProps, TicketSummary, Technician } from './quick-assignment';
+export type {
+  QuickAssignmentProps,
+  TicketSummary,
+  Technician
+} from './quick-assignment';

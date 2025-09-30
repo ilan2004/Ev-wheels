@@ -9,14 +9,18 @@ export function useRequireAuth(redirectTo: string = '/sign-in') {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
       if (!mounted) return;
       if (!session) router.replace(redirectTo);
     })();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) router.replace(redirectTo);
-    });
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) router.replace(redirectTo);
+      }
+    );
 
     return () => {
       mounted = false;

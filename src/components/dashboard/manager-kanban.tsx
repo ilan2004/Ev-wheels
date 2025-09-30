@@ -227,10 +227,10 @@ export function ManagerKanban() {
         .update(payload)
         .eq('id', activeId);
       if (error) throw error;
-      toast.success('Ticket updated');
+      toast.success('Job card updated');
     } catch (e: any) {
       console.error('update status/order failed', e);
-      toast.error('Failed to update ticket', {
+      toast.error('Failed to update job card', {
         description: e?.message || 'Please try again.'
       });
       load();
@@ -241,7 +241,7 @@ export function ManagerKanban() {
     <div className='space-y-4'>
       <div className='flex items-center gap-2'>
         <Input
-          placeholder='Search tickets (number or symptom)'
+          placeholder='Search job cards (number or symptom)'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className='max-w-md'
@@ -282,7 +282,7 @@ export function ManagerKanban() {
                   ))}
                   {buckets[col.id].length === 0 && (
                     <li className='text-muted-foreground text-sm'>
-                      No tickets
+                      No job cards
                     </li>
                   )}
                 </ul>
@@ -383,7 +383,7 @@ function SortableTicket({
           Due Date
         </Button>
         <Button variant='ghost' size='sm' asChild>
-          <Link href={`/dashboard/tickets/${ticket.id}`}>Open</Link>
+          <Link href={`/dashboard/job-cards/${ticket.id}`}>Open</Link>
         </Button>
       </div>
     </li>

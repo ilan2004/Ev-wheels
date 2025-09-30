@@ -12,7 +12,27 @@ const baseConfig: NextConfig = {
       }
     ]
   },
-  transpilePackages: ['geist']
+  transpilePackages: ['geist'],
+  async redirects() {
+    return [
+      // Legacy tickets routes to new job-cards routes
+      {
+        source: '/dashboard/tickets',
+        destination: '/dashboard/job-cards',
+        permanent: true
+      },
+      {
+        source: '/dashboard/tickets/new',
+        destination: '/dashboard/job-cards/new',
+        permanent: true
+      },
+      {
+        source: '/dashboard/tickets/:id',
+        destination: '/dashboard/job-cards/:id',
+        permanent: true
+      }
+    ];
+  }
 };
 
 let configWithPlugins = baseConfig;

@@ -49,14 +49,14 @@ function MetricCard({
       iconClass: 'text-red-600',
       valueClass: 'text-red-700',
       titleClass: 'text-red-600',
-      badge: value > 0 ? 'destructive' as const : undefined
+      badge: value > 0 ? ('destructive' as const) : undefined
     },
     warning: {
       cardClass: 'border-amber-200 bg-amber-50/50 hover:bg-amber-50',
       iconClass: 'text-amber-600',
       valueClass: 'text-amber-700',
       titleClass: 'text-amber-600',
-      badge: value > 0 ? 'secondary' as const : undefined
+      badge: value > 0 ? ('secondary' as const) : undefined
     },
     info: {
       cardClass: 'border-blue-200 bg-blue-50/50 hover:bg-blue-50',
@@ -87,29 +87,29 @@ function MetricCard({
         }`}
         onClick={onClick}
       >
-        <CardContent className="p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`${style.iconClass}`}>
-                {icon}
-              </div>
+        <CardContent className='p-4 sm:p-6'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-3'>
+              <div className={`${style.iconClass}`}>{icon}</div>
               <div>
                 <div className={`text-sm font-medium ${style.titleClass}`}>
                   {title}
                 </div>
                 {subtitle && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className='text-muted-foreground text-xs'>
                     {subtitle}
                   </div>
                 )}
               </div>
             </div>
-            <div className="text-right">
-              <div className={`text-2xl sm:text-3xl font-bold ${style.valueClass}`}>
+            <div className='text-right'>
+              <div
+                className={`text-2xl font-bold sm:text-3xl ${style.valueClass}`}
+              >
                 {loading ? '—' : value}
               </div>
               {style.badge && value > 0 && (
-                <Badge variant={style.badge} className="text-xs">
+                <Badge variant={style.badge} className='text-xs'>
                   Needs Action
                 </Badge>
               )}
@@ -123,19 +123,19 @@ function MetricCard({
 
 function LoadingSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
       {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className="animate-pulse">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-5 w-5 bg-muted rounded"></div>
+        <Card key={i} className='animate-pulse'>
+          <CardContent className='p-4 sm:p-6'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='bg-muted h-5 w-5 rounded'></div>
                 <div>
-                  <div className="h-4 w-20 bg-muted rounded"></div>
-                  <div className="h-3 w-16 bg-muted rounded mt-1"></div>
+                  <div className='bg-muted h-4 w-20 rounded'></div>
+                  <div className='bg-muted mt-1 h-3 w-16 rounded'></div>
                 </div>
               </div>
-              <div className="h-8 w-8 bg-muted rounded"></div>
+              <div className='bg-muted h-8 w-8 rounded'></div>
             </div>
           </CardContent>
         </Card>
@@ -158,7 +158,7 @@ export function EssentialKPIs({
       key: 'overdue' as const,
       title: 'Overdue',
       value: data.overdue,
-      icon: <IconAlertTriangle className="h-5 w-5" />,
+      icon: <IconAlertTriangle className='h-5 w-5' />,
       variant: 'critical' as const,
       subtitle: 'Immediate action'
     },
@@ -166,7 +166,7 @@ export function EssentialKPIs({
       key: 'dueToday' as const,
       title: 'Due Today',
       value: data.dueToday,
-      icon: <IconClipboardList className="h-5 w-5" />,
+      icon: <IconClipboardList className='h-5 w-5' />,
       variant: 'warning' as const,
       subtitle: 'Focus for today'
     },
@@ -174,7 +174,7 @@ export function EssentialKPIs({
       key: 'openTickets' as const,
       title: 'Open Tickets',
       value: data.openTickets,
-      icon: <IconBattery className="h-5 w-5" />,
+      icon: <IconBattery className='h-5 w-5' />,
       variant: 'info' as const,
       subtitle: 'Total workload'
     },
@@ -182,7 +182,7 @@ export function EssentialKPIs({
       key: 'weeklyCompleted' as const,
       title: 'Completed',
       value: data.weeklyCompleted,
-      icon: <IconTrendingUp className="h-5 w-5" />,
+      icon: <IconTrendingUp className='h-5 w-5' />,
       variant: 'success' as const,
       subtitle: 'This week'
     }
@@ -193,9 +193,9 @@ export function EssentialKPIs({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="mb-6"
+      className='mb-6'
     >
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {metrics.map((metric, index) => (
           <motion.div
             key={metric.key}
@@ -209,7 +209,9 @@ export function EssentialKPIs({
               icon={metric.icon}
               variant={metric.variant}
               subtitle={metric.subtitle}
-              onClick={onMetricClick ? () => onMetricClick(metric.key) : undefined}
+              onClick={
+                onMetricClick ? () => onMetricClick(metric.key) : undefined
+              }
             />
           </motion.div>
         ))}
@@ -220,19 +222,21 @@ export function EssentialKPIs({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-4 text-center"
+        className='mt-4 text-center'
       >
-        <div className="text-sm text-muted-foreground">
+        <div className='text-muted-foreground text-sm'>
           {data.overdue > 0 ? (
-            <span className="text-red-600 font-medium">
-              🚨 {data.overdue} overdue ticket{data.overdue !== 1 ? 's' : ''} need immediate attention
+            <span className='font-medium text-red-600'>
+              🚨 {data.overdue} overdue ticket{data.overdue !== 1 ? 's' : ''}{' '}
+              need immediate attention
             </span>
           ) : data.dueToday > 0 ? (
-            <span className="text-amber-600 font-medium">
-              📋 {data.dueToday} ticket{data.dueToday !== 1 ? 's' : ''} due today
+            <span className='font-medium text-amber-600'>
+              📋 {data.dueToday} ticket{data.dueToday !== 1 ? 's' : ''} due
+              today
             </span>
           ) : (
-            <span className="text-green-600 font-medium">
+            <span className='font-medium text-green-600'>
               ✅ No overdue tickets - great job!
             </span>
           )}

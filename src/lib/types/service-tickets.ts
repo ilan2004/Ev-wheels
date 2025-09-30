@@ -23,6 +23,12 @@ export type VehicleStatus =
 export type AttachmentType = 'photo' | 'audio' | 'document';
 export type CaseType = 'battery' | 'vehicle';
 
+export interface Location {
+  id: string;
+  name: string;
+  code?: string | null;
+}
+
 export interface ServiceTicket {
   id: string;
   ticket_number: string;
@@ -37,6 +43,8 @@ export interface ServiceTicket {
   priority: number | null;
   battery_case_id?: string | null;
   vehicle_case_id?: string | null;
+  location_id?: string | null;
+  location?: Location;
   created_at: string;
   updated_at: string;
   closed_at?: string | null;
@@ -89,6 +97,8 @@ export interface VehicleCase {
   vehicle_year?: number | null;
   vin_number?: string | null;
   customer_id: string;
+  location_id?: string | null;
+  location?: Location;
   received_date: string;
   delivered_date?: string | null;
   status: VehicleStatus;
@@ -119,4 +129,3 @@ export interface VehicleStatusHistory {
   changed_at: string;
   notes?: string | null;
 }
-

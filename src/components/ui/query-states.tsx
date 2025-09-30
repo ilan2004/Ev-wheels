@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  IconRefresh, 
-  IconAlertTriangle, 
-  IconWifi, 
+import {
+  IconRefresh,
+  IconAlertTriangle,
+  IconWifi,
   IconBattery,
   IconUsers,
   IconTrendingUp,
@@ -27,16 +27,16 @@ export interface SkeletonProps {
   animated?: boolean;
 }
 
-export function LoadingSkeleton({ 
-  lines = 3, 
-  height = 20, 
+export function LoadingSkeleton({
+  lines = 3,
+  height = 20,
   className = '',
-  animated = true 
+  animated = true
 }: SkeletonProps) {
   return (
     <div className={`space-y-3 ${className}`}>
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton 
+        <Skeleton
           key={i}
           className={`h-${height} w-full ${animated ? 'animate-pulse' : ''}`}
         />
@@ -50,16 +50,16 @@ export function LoadingSkeleton({
  */
 export function DashboardKpiSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
       {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className="p-6">
-          <div className="flex items-center justify-between space-y-0 pb-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-4 rounded" />
+        <Card key={i} className='p-6'>
+          <div className='flex items-center justify-between space-y-0 pb-2'>
+            <Skeleton className='h-4 w-24' />
+            <Skeleton className='h-4 w-4 rounded' />
           </div>
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-3 w-20" />
+          <div className='space-y-2'>
+            <Skeleton className='h-8 w-16' />
+            <Skeleton className='h-3 w-20' />
           </div>
         </Card>
       ))}
@@ -74,17 +74,17 @@ export function ChartSkeleton({ height = 300 }: { height?: number }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-16" />
+        <div className='flex items-center justify-between'>
+          <Skeleton className='h-6 w-32' />
+          <Skeleton className='h-4 w-16' />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className='space-y-2'>
           <Skeleton className={`h-${height} w-full`} />
-          <div className="flex justify-between">
+          <div className='flex justify-between'>
             {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton key={i} className="h-4 w-8" />
+              <Skeleton key={i} className='h-4 w-8' />
             ))}
           </div>
         </div>
@@ -98,20 +98,20 @@ export function ChartSkeleton({ height = 300 }: { height?: number }) {
  */
 export function BatteryListSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <div className="space-y-3">
+    <div className='space-y-3'>
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i} className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-3 w-32" />
+        <Card key={i} className='p-4'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center space-x-4'>
+              <Skeleton className='h-10 w-10 rounded-full' />
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-24' />
+                <Skeleton className='h-3 w-32' />
               </div>
             </div>
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-4 w-12" />
+            <div className='space-y-2'>
+              <Skeleton className='h-6 w-16' />
+              <Skeleton className='h-4 w-12' />
             </div>
           </div>
         </Card>
@@ -129,41 +129,37 @@ export interface LoadingSpinnerProps {
   fullScreen?: boolean;
 }
 
-export function LoadingSpinner({ 
-  message = 'Loading...', 
+export function LoadingSpinner({
+  message = 'Loading...',
   size = 'md',
-  fullScreen = false 
+  fullScreen = false
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8',
     lg: 'h-12 w-12'
   };
-  
+
   const content = (
-    <div className="flex flex-col items-center justify-center space-y-4">
-      <IconLoader2 className={`animate-spin ${sizeClasses[size]} text-primary`} />
+    <div className='flex flex-col items-center justify-center space-y-4'>
+      <IconLoader2
+        className={`animate-spin ${sizeClasses[size]} text-primary`}
+      />
       {message && (
-        <p className="text-sm text-muted-foreground animate-pulse">
-          {message}
-        </p>
+        <p className='text-muted-foreground animate-pulse text-sm'>{message}</p>
       )}
     </div>
   );
-  
+
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm'>
         {content}
       </div>
     );
   }
-  
-  return (
-    <div className="flex items-center justify-center p-8">
-      {content}
-    </div>
-  );
+
+  return <div className='flex items-center justify-center p-8'>{content}</div>;
 }
 
 /**
@@ -177,40 +173,43 @@ export interface ErrorDisplayProps {
   className?: string;
 }
 
-export function ErrorDisplay({ 
-  error, 
-  onRetry, 
+export function ErrorDisplay({
+  error,
+  onRetry,
   title = 'Something went wrong',
   showDetails = false,
   className = ''
 }: ErrorDisplayProps) {
-  const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-  
+  const errorMessage =
+    error instanceof Error ? error.message : 'An unexpected error occurred';
+
   return (
-    <Alert variant="destructive" className={className}>
-      <IconAlertTriangle className="h-4 w-4" />
+    <Alert variant='destructive' className={className}>
+      <IconAlertTriangle className='h-4 w-4' />
       <AlertTitle>{title}</AlertTitle>
-      <AlertDescription className="mt-2">
-        <div className="space-y-3">
+      <AlertDescription className='mt-2'>
+        <div className='space-y-3'>
           <p>{errorMessage}</p>
-          
+
           {showDetails && error instanceof Error && error.stack && (
-            <details className="text-xs">
-              <summary className="cursor-pointer">Show technical details</summary>
-              <pre className="mt-2 text-xs bg-muted p-2 rounded border overflow-auto">
+            <details className='text-xs'>
+              <summary className='cursor-pointer'>
+                Show technical details
+              </summary>
+              <pre className='bg-muted mt-2 overflow-auto rounded border p-2 text-xs'>
                 {error.stack}
               </pre>
             </details>
           )}
-          
+
           {onRetry && (
-            <Button 
-              onClick={onRetry} 
-              variant="outline" 
-              size="sm"
-              className="mt-3"
+            <Button
+              onClick={onRetry}
+              variant='outline'
+              size='sm'
+              className='mt-3'
             >
-              <IconRefresh className="h-4 w-4 mr-2" />
+              <IconRefresh className='mr-2 h-4 w-4' />
               Try Again
             </Button>
           )}
@@ -225,15 +224,15 @@ export function ErrorDisplay({
  */
 export function NetworkError({ onRetry }: { onRetry?: () => void }) {
   return (
-    <div className="text-center p-8">
-      <IconWifi className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-      <h3 className="text-lg font-semibold mb-2">Connection Problem</h3>
-      <p className="text-muted-foreground mb-4">
+    <div className='p-8 text-center'>
+      <IconWifi className='text-muted-foreground mx-auto mb-4 h-12 w-12' />
+      <h3 className='mb-2 text-lg font-semibold'>Connection Problem</h3>
+      <p className='text-muted-foreground mb-4'>
         Unable to connect to the server. Please check your internet connection.
       </p>
       {onRetry && (
-        <Button onClick={onRetry} variant="outline">
-          <IconRefresh className="h-4 w-4 mr-2" />
+        <Button onClick={onRetry} variant='outline'>
+          <IconRefresh className='mr-2 h-4 w-4' />
           Retry Connection
         </Button>
       )}
@@ -255,31 +254,27 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ 
-  icon, 
-  title, 
-  description, 
-  action, 
-  className = '' 
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  className = ''
 }: EmptyStateProps) {
   return (
-    <div className={`text-center p-8 ${className}`}>
+    <div className={`p-8 text-center ${className}`}>
       {icon && (
-        <div className="flex justify-center mb-4 text-muted-foreground">
+        <div className='text-muted-foreground mb-4 flex justify-center'>
           {icon}
         </div>
       )}
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <h3 className='mb-2 text-lg font-semibold'>{title}</h3>
       {description && (
-        <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+        <p className='text-muted-foreground mx-auto mb-4 max-w-md'>
           {description}
         </p>
       )}
-      {action && (
-        <Button onClick={action.onClick}>
-          {action.label}
-        </Button>
-      )}
+      {action && <Button onClick={action.onClick}>{action.label}</Button>}
     </div>
   );
 }
@@ -294,18 +289,18 @@ export interface LoadingWrapperProps {
   className?: string;
 }
 
-export function LoadingWrapper({ 
-  isLoading, 
-  skeleton, 
-  children, 
-  className = '' 
+export function LoadingWrapper({
+  isLoading,
+  skeleton,
+  children,
+  className = ''
 }: LoadingWrapperProps) {
   return (
     <div className={className}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode='wait'>
         {isLoading ? (
           <motion.div
-            key="loading"
+            key='loading'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -315,7 +310,7 @@ export function LoadingWrapper({
           </motion.div>
         ) : (
           <motion.div
-            key="content"
+            key='content'
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -346,36 +341,30 @@ export interface QueryStateWrapperProps<T> {
   className?: string;
 }
 
-export function QueryStateWrapper<T>({ 
-  query, 
-  loadingSkeleton, 
+export function QueryStateWrapper<T>({
+  query,
+  loadingSkeleton,
   errorTitle,
   emptyState,
-  children, 
-  className = '' 
+  children,
+  className = ''
 }: QueryStateWrapperProps<T>) {
   const { data, isLoading, isError, error, refetch } = query;
-  
+
   if (isLoading) {
     return (
-      <div className={className}>
-        {loadingSkeleton || <LoadingSkeleton />}
-      </div>
+      <div className={className}>{loadingSkeleton || <LoadingSkeleton />}</div>
     );
   }
-  
+
   if (isError) {
     return (
       <div className={className}>
-        <ErrorDisplay 
-          error={error} 
-          onRetry={refetch}
-          title={errorTitle}
-        />
+        <ErrorDisplay error={error} onRetry={refetch} title={errorTitle} />
       </div>
     );
   }
-  
+
   if (!data && emptyState) {
     return (
       <div className={className}>
@@ -383,33 +372,33 @@ export function QueryStateWrapper<T>({
       </div>
     );
   }
-  
+
   if (!data) {
     return null;
   }
-  
+
   return <div className={className}>{children(data)}</div>;
 }
 
 /**
  * Stale data indicator
  */
-export function StaleDataIndicator({ 
-  isStale, 
-  lastUpdated 
-}: { 
-  isStale: boolean; 
+export function StaleDataIndicator({
+  isStale,
+  lastUpdated
+}: {
+  isStale: boolean;
   lastUpdated?: number;
 }) {
   if (!isStale) return null;
-  
-  const timeAgo = lastUpdated 
+
+  const timeAgo = lastUpdated
     ? new Date(lastUpdated).toLocaleTimeString()
     : 'Unknown';
-  
+
   return (
-    <div className="flex items-center space-x-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
-      <IconAlertTriangle className="h-3 w-3" />
+    <div className='flex items-center space-x-2 rounded bg-amber-50 px-2 py-1 text-xs text-amber-600 dark:bg-amber-900/20'>
+      <IconAlertTriangle className='h-3 w-3' />
       <span>Data may be outdated (last updated: {timeAgo})</span>
     </div>
   );
@@ -420,12 +409,12 @@ export function StaleDataIndicator({
  */
 export function RefreshIndicator({ isFetching }: { isFetching: boolean }) {
   if (!isFetching) return null;
-  
+
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <div className="flex items-center space-x-2 bg-primary text-primary-foreground px-3 py-2 rounded-md shadow-lg">
-        <IconLoader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Updating...</span>
+    <div className='fixed top-4 right-4 z-50'>
+      <div className='bg-primary text-primary-foreground flex items-center space-x-2 rounded-md px-3 py-2 shadow-lg'>
+        <IconLoader2 className='h-4 w-4 animate-spin' />
+        <span className='text-sm'>Updating...</span>
       </div>
     </div>
   );

@@ -15,18 +15,31 @@ const lineItemInputSchema = z.object({
   description: z.string().min(1, 'Description is required').max(500),
   quantity: z.number().min(0.001, 'Quantity must be greater than 0').max(99999),
   unitPrice: z.number().min(0, 'Unit price cannot be negative').max(9999999),
-  discount: z.number().min(0, 'Discount cannot be negative').max(100, 'Discount cannot exceed 100%').optional(),
-  taxRate: z.number().min(0, 'Tax rate cannot be negative').max(100, 'Tax rate cannot exceed 100%').optional()
+  discount: z
+    .number()
+    .min(0, 'Discount cannot be negative')
+    .max(100, 'Discount cannot exceed 100%')
+    .optional(),
+  taxRate: z
+    .number()
+    .min(0, 'Tax rate cannot be negative')
+    .max(100, 'Tax rate cannot exceed 100%')
+    .optional()
 });
 
 // Quote schemas
 export const createQuoteSchema = z.object({
   customer: customerInfoSchema,
-  items: z.array(lineItemInputSchema).min(1, 'At least one line item is required'),
+  items: z
+    .array(lineItemInputSchema)
+    .min(1, 'At least one line item is required'),
   notes: z.string().optional(),
   terms: z.string().optional(),
   validUntil: z.date().optional(),
-  shippingAmount: z.number().min(0, 'Shipping amount cannot be negative').optional(),
+  shippingAmount: z
+    .number()
+    .min(0, 'Shipping amount cannot be negative')
+    .optional(),
   adjustmentAmount: z.number().optional(),
   linkedCustomerId: z.string().optional()
 });
@@ -38,7 +51,9 @@ export const updateQuoteSchema = createQuoteSchema.partial().extend({
 // Invoice schemas
 export const createInvoiceSchema = z.object({
   customer: customerInfoSchema,
-  items: z.array(lineItemInputSchema).min(1, 'At least one line item is required'),
+  items: z
+    .array(lineItemInputSchema)
+    .min(1, 'At least one line item is required'),
   dueDate: z.date().refine(
     (date) => {
       const today = new Date();
@@ -49,7 +64,10 @@ export const createInvoiceSchema = z.object({
   ),
   notes: z.string().optional(),
   terms: z.string().optional(),
-  shippingAmount: z.number().min(0, 'Shipping amount cannot be negative').optional(),
+  shippingAmount: z
+    .number()
+    .min(0, 'Shipping amount cannot be negative')
+    .optional(),
   adjustmentAmount: z.number().optional(),
   sourceQuoteId: z.string().optional(),
   linkedCustomerId: z.string().optional()
@@ -63,7 +81,10 @@ export const updateInvoiceSchema = createInvoiceSchema.partial().extend({
 // Payment schemas
 export const createPaymentSchema = z.object({
   invoiceId: z.string().min(1, 'Invoice ID is required'),
-  amount: z.number().min(0.01, 'Payment amount must be greater than 0').max(9999999),
+  amount: z
+    .number()
+    .min(0.01, 'Payment amount must be greater than 0')
+    .max(9999999),
   method: z.nativeEnum(PaymentMethod),
   reference: z.string().optional(),
   notes: z.string().optional(),
@@ -102,38 +123,46 @@ export type LineItemInputFormData = z.infer<typeof lineItemInputSchema>;
 export type CustomerInfoFormData = z.infer<typeof customerInfoSchema>;
 
 // Validation helpers
-export function validateLineItems(items: unknown[]): { valid: boolean; errors: string[] } {
+export function validateLineItems(items: unknown[]): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
-  
+
   if (items.length === 0) {
     errors.push('At least one line item is required');
     return { valid: false, errors };
   }
-  
+
   for (let i = 0; i < items.length; i++) {
     try {
       lineItemInputSchema.parse(items[i]);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        error.issues.forEach(err => {
+        error.issues.forEach((err) => {
           errors.push(`Line item ${i + 1}: ${err.message}`);
         });
       }
     }
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 
-export function validateCustomerInfo(customer: unknown): { valid: boolean; errors: string[] } {
+export function validateCustomerInfo(customer: unknown): {
+  valid: boolean;
+  errors: string[];
+} {
   try {
     customerInfoSchema.parse(customer);
     return { valid: true, errors: [] };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { 
-        valid: false, 
-        errors: error.issues.map(err => `${err.path.join('.')}: ${err.message}`)
+      return {
+        valid: false,
+        errors: error.issues.map(
+          (err) => `${err.path.join('.')}: ${err.message}`
+        )
       };
     }
     return { valid: false, errors: ['Invalid customer information'] };

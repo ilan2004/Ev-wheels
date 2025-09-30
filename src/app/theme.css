@@ -71,9 +71,9 @@ body {
 }
 
 /* Base Mono Styles - Shared monospaced theme characteristics */
-[class*="theme-mono"] {
+[class*='theme-mono'] {
   --font-sans: var(--font-mono);
-  
+
   .rounded-xs,
   .rounded-sm,
   .rounded-md,
@@ -115,7 +115,7 @@ body {
   --primary-foreground: var(--color-blue-50);
   --accent: var(--color-blue-100);
   --accent-foreground: var(--color-blue-900);
-  
+
   @variant dark {
     --primary: var(--color-blue-500);
     --primary-foreground: var(--color-blue-50);
@@ -130,7 +130,7 @@ body {
   --primary-foreground: var(--color-emerald-50);
   --accent: var(--color-emerald-100);
   --accent-foreground: var(--color-emerald-900);
-  
+
   @variant dark {
     --primary: var(--color-emerald-500);
     --primary-foreground: var(--color-emerald-50);
@@ -145,7 +145,7 @@ body {
   --primary-foreground: var(--color-red-50);
   --accent: var(--color-red-100);
   --accent-foreground: var(--color-red-900);
-  
+
   @variant dark {
     --primary: var(--color-red-500);
     --primary-foreground: var(--color-red-50);
@@ -160,7 +160,7 @@ body {
   --primary-foreground: var(--color-purple-50);
   --accent: var(--color-purple-100);
   --accent-foreground: var(--color-purple-900);
-  
+
   @variant dark {
     --primary: var(--color-purple-500);
     --primary-foreground: var(--color-purple-50);
@@ -175,7 +175,7 @@ body {
   --primary-foreground: var(--color-orange-50);
   --accent: var(--color-orange-100);
   --accent-foreground: var(--color-orange-900);
-  
+
   @variant dark {
     --primary: var(--color-orange-500);
     --primary-foreground: var(--color-orange-50);
@@ -190,7 +190,7 @@ body {
   --primary-foreground: var(--color-pink-50);
   --accent: var(--color-pink-100);
   --accent-foreground: var(--color-pink-900);
-  
+
   @variant dark {
     --primary: var(--color-pink-500);
     --primary-foreground: var(--color-pink-50);
@@ -205,7 +205,7 @@ body {
   --primary-foreground: var(--color-cyan-50);
   --accent: var(--color-cyan-100);
   --accent-foreground: var(--color-cyan-900);
-  
+
   @variant dark {
     --primary: var(--color-cyan-500);
     --primary-foreground: var(--color-cyan-50);
@@ -220,7 +220,7 @@ body {
   --primary-foreground: var(--color-lime-50);
   --accent: var(--color-lime-100);
   --accent-foreground: var(--color-lime-900);
-  
+
   @variant dark {
     --primary: var(--color-lime-500);
     --primary-foreground: var(--color-lime-50);
@@ -235,7 +235,7 @@ body {
   --primary-foreground: var(--color-amber-50);
   --accent: var(--color-amber-100);
   --accent-foreground: var(--color-amber-900);
-  
+
   @variant dark {
     --primary: var(--color-amber-500);
     --primary-foreground: var(--color-amber-50);

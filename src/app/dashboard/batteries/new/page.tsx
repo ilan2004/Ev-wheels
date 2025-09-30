@@ -12,13 +12,13 @@ export const metadata: Metadata = {
 export default function NewBatteryPage() {
   return (
     <PageContainer>
-      <div className="mb-4">
+      <div className='mb-4'>
         <Breadcrumbs />
       </div>
-      <div className="space-y-6">
+      <div className='space-y-6'>
         <SectionHeader
-          title="Add New Battery"
-          description="Register a new battery for repair and service tracking"
+          title='Add New Battery'
+          description='Register a new battery for repair and service tracking'
         />
         <BatteryForm />
       </div>

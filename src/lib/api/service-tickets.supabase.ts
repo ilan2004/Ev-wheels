@@ -1,40 +1,56 @@
 import { supabase } from '@/lib/supabase/client';
 import type { ApiResponse } from './service-tickets';
-import type { ServiceTicket, TicketAttachment } from '@/lib/types/service-tickets';
+import type {
+  ServiceTicket,
+  TicketAttachment
+} from '@/lib/types/service-tickets';
 import type { Customer } from '@/types/bms';
 import { scopeQuery, withLocationId } from '@/lib/location/scope';
+import { isCurrentUserAdmin, getCurrentUserRole } from '@/lib/location/admin-check';
 
 export class SupabaseServiceTicketsRepository {
   async listCustomers(): Promise<ApiResponse<Customer[]>> {
     try {
+      const isAdmin = await isCurrentUserAdmin();
+      const role = await getCurrentUserRole();
+      const isFrontDesk = role === 'front_desk_manager';
       let query = supabase
         .from('customers')
-        .select('id, name, contact, created_at, updated_at')
+        .select('id, name, contact, location_id, created_at, updated_at')
         .order('name', { ascending: true }) as any;
-      query = scopeQuery('customers', query).limit(200);
+      query = scopeQuery('customers', query, { isAdmin, isFrontDesk }).limit(200);
       const { data, error } = await query;
       if (error) throw error;
       return { success: true, data: data || [] };
     } catch (error) {
       console.error('Error listing customers:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list customers' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to list customers'
+      };
     }
   }
 
-  async listTickets(params: {
-    search?: string;
-    status?: ServiceTicket['status'];
-    from?: string;
-    to?: string;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<ApiResponse<(ServiceTicket & { customer?: Customer })[]>> {
+  async listTickets(
+    params: {
+      search?: string;
+      status?: ServiceTicket['status'];
+      from?: string;
+      to?: string;
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<ApiResponse<(ServiceTicket & { customer?: Customer })[]>> {
     try {
+      const isAdmin = await isCurrentUserAdmin();
+      const role = await getCurrentUserRole();
+      const isFrontDesk = role === 'front_desk_manager';
       let query = supabase
         .from('service_tickets')
-        .select('*, customer:customers(*)')
+        .select('*, customer:customers(*), location:locations(id,name,code)')
         .order('created_at', { ascending: false }) as any;
-      query = scopeQuery('service_tickets', query);
+      query = scopeQuery('service_tickets', query, { isAdmin, isFrontDesk });
 
       if (params.status) query = query.eq('status', params.status);
       if (params.from) query = query.gte('created_at', params.from);
@@ -47,33 +63,66 @@ export class SupabaseServiceTicketsRepository {
         );
       }
       if (params.limit) query = query.limit(params.limit);
-      if (params.offset) query = query.range(params.offset, (params.offset + (params.limit || 50)) - 1);
+      if (params.offset)
+        query = query.range(
+          params.offset,
+          params.offset + (params.limit || 50) - 1
+        );
 
       const { data, error } = await query;
       if (error) throw error;
       return { success: true, data: (data || []) as any };
     } catch (error) {
       console.error('Error listing tickets:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list tickets' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list tickets'
+      };
     }
   }
 
-  async fetchTicketWithRelations(id: string): Promise<ApiResponse<{ ticket: ServiceTicket & { customer?: Customer }, attachments: TicketAttachment[] }>> {
+  async fetchTicketWithRelations(
+    id: string
+  ): Promise<
+    ApiResponse<{
+      ticket: ServiceTicket & { customer?: Customer };
+      attachments: TicketAttachment[];
+    }>
+  > {
     try {
-      const [{ data: ticket, error: tErr }, { data: attachments, error: aErr }] = await Promise.all([
-        supabase.from('service_tickets').select('*, customer:customers(*)').eq('id', id).single(),
-        supabase.from('ticket_attachments').select('*').eq('ticket_id', id).order('uploaded_at', { ascending: false })
+      const [
+        { data: ticket, error: tErr },
+        { data: attachments, error: aErr }
+      ] = await Promise.all([
+        supabase
+          .from('service_tickets')
+          .select('*, customer:customers(*)')
+          .eq('id', id)
+          .single(),
+        supabase
+          .from('ticket_attachments')
+          .select('*')
+          .eq('ticket_id', id)
+          .order('uploaded_at', { ascending: false })
       ]);
       if (tErr) throw tErr;
       if (aErr) throw aErr;
-      return { success: true, data: { ticket: ticket as any, attachments: (attachments || []) as any } };
+      return {
+        success: true,
+        data: { ticket: ticket as any, attachments: (attachments || []) as any }
+      };
     } catch (error) {
       console.error('Error fetching ticket:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch ticket' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch ticket'
+      };
     }
   }
 
-  async listTicketAttachments(ticketId: string): Promise<ApiResponse<TicketAttachment[]>> {
+  async listTicketAttachments(
+    ticketId: string
+  ): Promise<ApiResponse<TicketAttachment[]>> {
     try {
       const { data, error } = await supabase
         .from('ticket_attachments')
@@ -84,7 +133,11 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: (data || []) as any };
     } catch (error) {
       console.error('Error listing attachments:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list attachments' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to list attachments'
+      };
     }
   }
 
@@ -139,7 +192,13 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: data as ServiceTicket };
     } catch (error) {
       console.error('Error creating service ticket:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create service ticket' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to create service ticket'
+      };
     }
   }
 
@@ -159,9 +218,10 @@ export class SupabaseServiceTicketsRepository {
 
       const bucket = type === 'audio' ? 'media-audio' : 'media-photos';
       const uploaded: TicketAttachment[] = [];
-      const rootFolder = params.caseType === 'vehicle' && params.caseId
-        ? `vehicles/${params.caseId}`
-        : `intakes/${ticketId}`;
+      const rootFolder =
+        params.caseType === 'vehicle' && params.caseId
+          ? `vehicles/${params.caseId}`
+          : `intakes/${ticketId}`;
 
       for (const file of files) {
         const ext = file.name.split('.').pop() || 'bin';
@@ -208,11 +268,23 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: uploaded };
     } catch (error) {
       console.error('Error uploading attachments:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to upload attachments' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to upload attachments'
+      };
     }
   }
 
-  async triageTicket(params: { ticketId: string; routeTo: 'vehicle' | 'battery' | 'both'; note?: string }): Promise<ApiResponse<{ vehicle_case_id?: string; battery_case_id?: string }>> {
+  async triageTicket(params: {
+    ticketId: string;
+    routeTo: 'vehicle' | 'battery' | 'both';
+    note?: string;
+  }): Promise<
+    ApiResponse<{ vehicle_case_id?: string; battery_case_id?: string }>
+  > {
     const { ticketId, routeTo, note } = params;
     try {
       let vehicle_case_id: string | undefined;
@@ -270,7 +342,10 @@ export class SupabaseServiceTicketsRepository {
         } as any;
 
         // Attach location_id to satisfy RLS on battery_records
-        const minimalBattery = withLocationId('battery_records', minimalBatteryBase);
+        const minimalBattery = withLocationId(
+          'battery_records',
+          minimalBatteryBase
+        );
 
         const { data: bInserted, error: bErr } = await supabase
           .from('battery_records')
@@ -303,18 +378,28 @@ export class SupabaseServiceTicketsRepository {
         await fetch('/api/notifications/slack', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: `Ticket ${ticket.ticket_number || ticketId} triaged. Vehicle case: ${vehicle_case_id ?? '-'} Battery case: ${battery_case_id ?? '-'}` })
+          body: JSON.stringify({
+            text: `Ticket ${ticket.ticket_number || ticketId} triaged. Vehicle case: ${vehicle_case_id ?? '-'} Battery case: ${battery_case_id ?? '-'}`
+          })
         });
       } catch {}
 
       return { success: true, data: { vehicle_case_id, battery_case_id } };
     } catch (error) {
       console.error('Error triaging ticket:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to triage ticket' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to triage ticket'
+      };
     }
   }
 
-  async updateTicketStatus(ticketId: string, newStatus: import('@/lib/types/service-tickets').ServiceTicketStatus, note?: string): Promise<ApiResponse<import('@/lib/types/service-tickets').ServiceTicket>> {
+  async updateTicketStatus(
+    ticketId: string,
+    newStatus: import('@/lib/types/service-tickets').ServiceTicketStatus,
+    note?: string
+  ): Promise<ApiResponse<import('@/lib/types/service-tickets').ServiceTicket>> {
     try {
       // Fetch current ticket to capture previous status and number
       const { data: current, error: currErr } = await supabase
@@ -329,7 +414,12 @@ export class SupabaseServiceTicketsRepository {
 
       const { data, error } = await supabase
         .from('service_tickets')
-        .update({ status: newStatus, updated_at: new Date().toISOString(), updated_by: uid ?? (current as any).updated_by, triage_notes: note ?? null })
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          updated_by: uid ?? (current as any).updated_by,
+          triage_notes: note ?? null
+        })
         .eq('id', ticketId)
         .select('*')
         .single();
@@ -356,10 +446,18 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: data as any };
     } catch (error) {
       console.error('Error updating ticket status:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to update ticket status' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update ticket status'
+      };
     }
   }
-  async findTicketByBatteryCaseId(batteryId: string): Promise<ApiResponse<{ id: string; ticket_number: string } | null>> {
+  async findTicketByBatteryCaseId(
+    batteryId: string
+  ): Promise<ApiResponse<{ id: string; ticket_number: string } | null>> {
     try {
       const { data, error } = await supabase
         .from('service_tickets')
@@ -375,10 +473,20 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: data as any };
     } catch (error) {
       console.error('Error finding ticket by battery case id:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch linked ticket' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch linked ticket'
+      };
     }
   }
-  async listTicketHistory(ticketId: string): Promise<ApiResponse<import('@/lib/types/service-tickets').ServiceTicketHistory[]>> {
+  async listTicketHistory(
+    ticketId: string
+  ): Promise<
+    ApiResponse<import('@/lib/types/service-tickets').ServiceTicketHistory[]>
+  > {
     try {
       const { data, error } = await supabase
         .from('service_ticket_history')
@@ -389,10 +497,19 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: (data || []) as any };
     } catch (error) {
       console.error('Error listing ticket history:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list ticket history' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to list ticket history'
+      };
     }
   }
-  async listVehicleAttachments(ticketId: string, vehicleCaseId: string): Promise<ApiResponse<TicketAttachment[]>> {
+  async listVehicleAttachments(
+    ticketId: string,
+    vehicleCaseId: string
+  ): Promise<ApiResponse<TicketAttachment[]>> {
     try {
       const { data, error } = await supabase
         .from('ticket_attachments')
@@ -405,10 +522,19 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: (data || []) as any };
     } catch (error) {
       console.error('Error listing vehicle attachments:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list vehicle attachments' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to list vehicle attachments'
+      };
     }
   }
-  async listBatteryAttachments(ticketId: string, batteryId: string): Promise<ApiResponse<TicketAttachment[]>> {
+  async listBatteryAttachments(
+    ticketId: string,
+    batteryId: string
+  ): Promise<ApiResponse<TicketAttachment[]>> {
     try {
       const { data, error } = await supabase
         .from('ticket_attachments')
@@ -421,11 +547,19 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: (data || []) as any };
     } catch (error) {
       console.error('Error listing battery attachments:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list battery attachments' };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to list battery attachments'
+      };
     }
   }
 
-  async deleteTicketAttachment(attachmentId: string): Promise<ApiResponse<boolean>> {
+  async deleteTicketAttachment(
+    attachmentId: string
+  ): Promise<ApiResponse<boolean>> {
     try {
       // Fetch attachment to determine bucket and path
       const { data: att, error: selErr } = await supabase
@@ -435,11 +569,16 @@ export class SupabaseServiceTicketsRepository {
         .single();
       if (selErr) throw selErr;
 
-      const bucket = (att as any).attachment_type === 'audio' ? 'media-audio' : 'media-photos';
+      const bucket =
+        (att as any).attachment_type === 'audio'
+          ? 'media-audio'
+          : 'media-photos';
       const path = (att as any).storage_path as string;
 
       // Remove from storage
-      const { error: remErr } = await supabase.storage.from(bucket).remove([path]);
+      const { error: remErr } = await supabase.storage
+        .from(bucket)
+        .remove([path]);
       if (remErr) throw remErr;
 
       // Delete DB row
@@ -452,10 +591,14 @@ export class SupabaseServiceTicketsRepository {
       return { success: true, data: true };
     } catch (error) {
       console.error('Error deleting attachment:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to delete attachment' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to delete attachment'
+      };
     }
   }
-
 }
 
-export const supabaseServiceTicketsRepository = new SupabaseServiceTicketsRepository();
+export const supabaseServiceTicketsRepository =
+  new SupabaseServiceTicketsRepository();

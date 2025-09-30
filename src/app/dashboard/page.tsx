@@ -12,7 +12,7 @@ export default function Dashboard() {
     lastName: (user as any).user_metadata?.lastName ?? null,
     emailAddresses: [{ id: '0', emailAddress: (user as any).email }],
     imageUrl: '',
-    publicMetadata: { role },
+    publicMetadata: { role }
   } as any;
   return <DashboardContent user={userData} role={role as any} />;
 }

@@ -7,19 +7,28 @@ interface SectionHeaderProps {
   className?: string;
 }
 
-export function SectionHeader({ title, description, actions, className = '' }: SectionHeaderProps) {
+export function SectionHeader({
+  title,
+  description,
+  actions,
+  className = ''
+}: SectionHeaderProps) {
   return (
-    <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 ${className}`}>
-      <div className="flex-1">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
+    <div
+      className={`flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center ${className}`}
+    >
+      <div className='flex-1'>
+        <h1 className='text-2xl font-bold tracking-tight sm:text-3xl'>
+          {title}
+        </h1>
         {description ? (
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">{description}</p>
+          <p className='text-muted-foreground mt-1 text-sm sm:text-base'>
+            {description}
+          </p>
         ) : null}
       </div>
       {actions ? (
-        <div className="flex flex-row gap-3 w-full sm:w-auto">
-          {actions}
-        </div>
+        <div className='flex w-full flex-row gap-3 sm:w-auto'>{actions}</div>
       ) : null}
     </div>
   );

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -30,7 +30,8 @@ export default function EditCustomerPage() {
     setSaving(true);
     try {
       const res = await customersApi.update(id, values);
-      if (!res.success || !res.data) throw new Error(res.error || 'Failed to update customer');
+      if (!res.success || !res.data)
+        throw new Error(res.error || 'Failed to update customer');
       toast.success('Customer updated');
       router.push(`/dashboard/customers/${id}`);
     } catch (e) {
@@ -41,23 +42,27 @@ export default function EditCustomerPage() {
     }
   }
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (!initial) return <div className="p-6">Customer not found</div>;
+  if (loading) return <div className='p-6'>Loading...</div>;
+  if (!initial) return <div className='p-6'>Customer not found</div>;
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold tracking-tight">Edit Customer</h1>
+      <div className='flex flex-col gap-6'>
+        <h1 className='text-2xl font-bold tracking-tight'>Edit Customer</h1>
         <Card>
           <CardHeader>
             <CardTitle>Customer Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <CustomerForm initial={initial} isEditing onSubmit={onSubmit} submitting={saving} />
+            <CustomerForm
+              initial={initial}
+              isEditing
+              onSubmit={onSubmit}
+              submitting={saving}
+            />
           </CardContent>
         </Card>
       </div>
     </PageContainer>
   );
 }
-

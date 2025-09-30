@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
@@ -27,7 +27,11 @@ export default function CustomersDuplicatesPage() {
     const load = async () => {
       setLoading(true);
       // Fetch a reasonable set for client-side grouping
-      const res = await customersApi.list({ search: debouncedSearch, limit: 500, offset: 0 });
+      const res = await customersApi.list({
+        search: debouncedSearch,
+        limit: 500,
+        offset: 0
+      });
       if (res.success && res.data) setRows(res.data);
       setLoading(false);
     };
@@ -45,7 +49,7 @@ export default function CustomersDuplicatesPage() {
       byKey[key] = byKey[key] || [];
       byKey[key].push(c);
     }
-    return Object.values(byKey).filter(g => g.length > 1);
+    return Object.values(byKey).filter((g) => g.length > 1);
   }, [rows]);
 
   async function mergeAllInto(target: Customer, sources: Customer[]) {
@@ -69,25 +73,28 @@ export default function CustomersDuplicatesPage() {
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Duplicate Customers</h1>
+      <div className='flex flex-col gap-6'>
+        <div className='flex items-center justify-between'>
+          <h1 className='text-2xl font-bold tracking-tight'>
+            Duplicate Customers
+          </h1>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Find Duplicates</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className='space-y-4'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <Input
-                placeholder="Filter by name/phone/email (optional)"
+                placeholder='Filter by name/phone/email (optional)'
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="text-sm text-muted-foreground">
-              Heuristic: groups by normalized phone/email/name; shows groups with 2+ entries. Review before merging.
+            <div className='text-muted-foreground text-sm'>
+              Heuristic: groups by normalized phone/email/name; shows groups
+              with 2+ entries. Review before merging.
             </div>
           </CardContent>
         </Card>
@@ -95,38 +102,59 @@ export default function CustomersDuplicatesPage() {
         {loading ? (
           <div>Loading...</div>
         ) : groups.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No duplicates found.</div>
+          <div className='text-muted-foreground text-sm'>
+            No duplicates found.
+          </div>
         ) : (
-          <div className="space-y-6">
+          <div className='space-y-6'>
             {groups.map((g, idx) => {
               const target = g[0];
               const sources = g.slice(1);
               return (
                 <Card key={`g-${idx}`}>
                   <CardHeader>
-                    <CardTitle className="text-base">Group {idx + 1}</CardTitle>
+                    <CardTitle className='text-base'>Group {idx + 1}</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="text-sm">Target (kept): <span className="font-medium">{target.name}</span> {target.contact ? `(${target.contact})` : ''}</div>
-                    <div className="text-sm">To merge into target:</div>
-                    <div className="border rounded divide-y">
-                      {sources.map(s => (
-                        <div key={s.id} className="p-2 text-sm flex items-center justify-between">
+                  <CardContent className='space-y-3'>
+                    <div className='text-sm'>
+                      Target (kept):{' '}
+                      <span className='font-medium'>{target.name}</span>{' '}
+                      {target.contact ? `(${target.contact})` : ''}
+                    </div>
+                    <div className='text-sm'>To merge into target:</div>
+                    <div className='divide-y rounded border'>
+                      {sources.map((s) => (
+                        <div
+                          key={s.id}
+                          className='flex items-center justify-between p-2 text-sm'
+                        >
                           <div>
-                            <div className="font-medium">{s.name}</div>
-                            <div className="text-muted-foreground text-xs">{s.contact || s.email || s.address || '-'}</div>
+                            <div className='font-medium'>{s.name}</div>
+                            <div className='text-muted-foreground text-xs'>
+                              {s.contact || s.email || s.address || '-'}
+                            </div>
                           </div>
                           <div>
-                            <Button size="sm" variant="outline" disabled={merging === target.id} onClick={async () => mergeAllInto(target, [s])}>
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              disabled={merging === target.id}
+                              onClick={async () => mergeAllInto(target, [s])}
+                            >
                               Merge
                             </Button>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-end">
-                      <Button onClick={() => mergeAllInto(target, sources)} disabled={merging === target.id}>
-                        {merging === target.id ? 'Merging...' : 'Merge All Into Target'}
+                    <div className='flex justify-end'>
+                      <Button
+                        onClick={() => mergeAllInto(target, sources)}
+                        disabled={merging === target.id}
+                      >
+                        {merging === target.id
+                          ? 'Merging...'
+                          : 'Merge All Into Target'}
                       </Button>
                     </div>
                   </CardContent>
@@ -139,4 +167,3 @@ export default function CustomersDuplicatesPage() {
     </PageContainer>
   );
 }
-

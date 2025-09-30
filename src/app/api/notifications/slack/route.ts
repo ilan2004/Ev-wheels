@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ success: true });
   } catch (e) {
-    return NextResponse.json({ success: false, error: e instanceof Error ? e.message : 'Unknown error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: e instanceof Error ? e.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
   }
 }

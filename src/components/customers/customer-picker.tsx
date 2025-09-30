@@ -1,9 +1,13 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover';
 import { customersApi } from '@/lib/api/customers';
 import type { Customer } from '@/lib/types/customers';
 import { IconPlus, IconSearch } from '@tabler/icons-react';
@@ -24,7 +28,7 @@ export function CustomerPicker({
   allowQuickAdd = true,
   placeholder = 'Search customer by name, phone, or email',
   disabled,
-  className,
+  className
 }: CustomerPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
@@ -60,40 +64,60 @@ export function CustomerPicker({
     <div className={className}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button type="button" variant="outline" disabled={disabled} className="justify-between w-full">
-            <span className="truncate">{selected?.name || (value ? results.find(r => r.id === value)?.name : '') || 'Select customer'}</span>
-            <IconSearch className="ml-2 h-4 w-4" />
+          <Button
+            type='button'
+            variant='outline'
+            disabled={disabled}
+            className='w-full justify-between'
+          >
+            <span className='truncate'>
+              {selected?.name ||
+                (value ? results.find((r) => r.id === value)?.name : '') ||
+                'Select customer'}
+            </span>
+            <IconSearch className='ml-2 h-4 w-4' />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-[320px] p-3 space-y-3">
+        <PopoverContent align='start' className='w-[320px] space-y-3 p-3'>
           <Input
             placeholder={placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
           />
-          <div className="max-h-64 overflow-auto border rounded">
+          <div className='max-h-64 overflow-auto rounded border'>
             {loading ? (
-              <div className="p-3 text-sm text-muted-foreground">Searching...</div>
+              <div className='text-muted-foreground p-3 text-sm'>
+                Searching...
+              </div>
             ) : results.length === 0 ? (
-              <div className="p-3 text-sm text-muted-foreground">No customers found</div>
+              <div className='text-muted-foreground p-3 text-sm'>
+                No customers found
+              </div>
             ) : (
               results.map((c) => (
                 <button
                   key={c.id}
-                  type="button"
-                  className="w-full text-left p-3 border-b hover:bg-muted/50 focus:bg-muted/50 focus:outline-none"
+                  type='button'
+                  className='hover:bg-muted/50 focus:bg-muted/50 w-full border-b p-3 text-left focus:outline-none'
                   onClick={() => handlePick(c)}
                 >
-                  <div className="font-medium">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">{c.contact || c.email || c.address || ''}</div>
+                  <div className='font-medium'>{c.name}</div>
+                  <div className='text-muted-foreground text-xs'>
+                    {c.contact || c.email || c.address || ''}
+                  </div>
                 </button>
               ))
             )}
           </div>
           {allowQuickAdd && (
-            <Button type="button" variant="secondary" className="w-full" onClick={() => setQuickAddOpen(true)}>
-              <IconPlus className="h-4 w-4 mr-2" />
+            <Button
+              type='button'
+              variant='secondary'
+              className='w-full'
+              onClick={() => setQuickAddOpen(true)}
+            >
+              <IconPlus className='mr-2 h-4 w-4' />
               Add new customer
             </Button>
           )}
@@ -113,4 +137,3 @@ export function CustomerPicker({
     </div>
   );
 }
-

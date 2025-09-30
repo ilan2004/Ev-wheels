@@ -64,13 +64,22 @@ const MOCK_TECHNICIANS: Technician[] = [
     id: 'tech1',
     name: 'Ravi Kumar',
     avatar: '/avatars/ravi.jpg',
-    skills: ['charging_systems', 'battery_diagnostics', 'electrical_diagnostics'],
+    skills: [
+      'charging_systems',
+      'battery_diagnostics',
+      'electrical_diagnostics'
+    ],
     specializations: ['High Voltage Systems', 'Battery Pack Repair'],
     current_workload: 3,
     max_capacity: 8,
     availability: 'available',
     current_tickets: [
-      { id: 't1', ticket_number: 'TKT-001', priority: 2, estimated_completion: '2024-01-15T17:00:00Z' },
+      {
+        id: 't1',
+        ticket_number: 'TKT-001',
+        priority: 2,
+        estimated_completion: '2024-01-15T17:00:00Z'
+      },
       { id: 't2', ticket_number: 'TKT-003', priority: 3 },
       { id: 't3', ticket_number: 'TKT-007', priority: 1 }
     ],
@@ -111,9 +120,7 @@ const MOCK_TECHNICIANS: Technician[] = [
     current_workload: 1,
     max_capacity: 6,
     availability: 'available',
-    current_tickets: [
-      { id: 't10', ticket_number: 'TKT-013', priority: 2 }
-    ],
+    current_tickets: [{ id: 't10', ticket_number: 'TKT-013', priority: 2 }],
     performance: {
       completion_rate: 96,
       avg_resolution_time: 1.9,
@@ -123,7 +130,11 @@ const MOCK_TECHNICIANS: Technician[] = [
   {
     id: 'tech4',
     name: 'Sarah Johnson',
-    skills: ['comprehensive_diagnostics', 'troubleshooting', 'customer_service'],
+    skills: [
+      'comprehensive_diagnostics',
+      'troubleshooting',
+      'customer_service'
+    ],
     specializations: ['System Integration', 'Customer Relations'],
     current_workload: 8,
     max_capacity: 8,
@@ -148,7 +159,7 @@ const MOCK_UNASSIGNED_TICKETS: TicketSummary[] = [
     estimated_hours: 2
   },
   {
-    id: 'ticket2', 
+    id: 'ticket2',
     ticket_number: 'TKT-016',
     symptom: 'Reduced range performance',
     priority: 2,
@@ -164,75 +175,98 @@ export function QuickAssignment({
   onAssignment,
   className = ''
 }: QuickAssignmentProps) {
-  const [selectedTicket, setSelectedTicket] = useState<TicketSummary | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<TicketSummary | null>(
+    null
+  );
   const [isAssigning, setIsAssigning] = useState(false);
-  const [draggedTicket, setDraggedTicket] = useState<TicketSummary | null>(null);
+  const [draggedTicket, setDraggedTicket] = useState<TicketSummary | null>(
+    null
+  );
 
   // Calculate technician suitability for a ticket
-  const calculateSuitability = useCallback((tech: Technician, ticket: TicketSummary) => {
-    let score = 0;
-    let reasons: string[] = [];
+  const calculateSuitability = useCallback(
+    (tech: Technician, ticket: TicketSummary) => {
+      let score = 0;
+      let reasons: string[] = [];
 
-    // Skill match (40% weight)
-    if (ticket.required_skills) {
-      const matchedSkills = tech.skills.filter(skill => 
-        ticket.required_skills!.includes(skill)
-      ).length;
-      const skillScore = (matchedSkills / ticket.required_skills.length) * 40;
-      score += skillScore;
-      if (matchedSkills > 0) {
-        reasons.push(`${matchedSkills}/${ticket.required_skills.length} required skills`);
+      // Skill match (40% weight)
+      if (ticket.required_skills) {
+        const matchedSkills = tech.skills.filter((skill) =>
+          ticket.required_skills!.includes(skill)
+        ).length;
+        const skillScore = (matchedSkills / ticket.required_skills.length) * 40;
+        score += skillScore;
+        if (matchedSkills > 0) {
+          reasons.push(
+            `${matchedSkills}/${ticket.required_skills.length} required skills`
+          );
+        }
       }
-    }
 
-    // Workload (30% weight) - lower workload is better
-    const workloadScore = ((tech.max_capacity - tech.current_workload) / tech.max_capacity) * 30;
-    score += workloadScore;
+      // Workload (30% weight) - lower workload is better
+      const workloadScore =
+        ((tech.max_capacity - tech.current_workload) / tech.max_capacity) * 30;
+      score += workloadScore;
 
-    // Availability (20% weight)
-    const availabilityScore = tech.availability === 'available' ? 20 : 
-                            tech.availability === 'busy' ? 10 : 0;
-    score += availabilityScore;
+      // Availability (20% weight)
+      const availabilityScore =
+        tech.availability === 'available'
+          ? 20
+          : tech.availability === 'busy'
+            ? 10
+            : 0;
+      score += availabilityScore;
 
-    // Performance (10% weight)
-    const performanceScore = (tech.performance.completion_rate / 100) * 10;
-    score += performanceScore;
+      // Performance (10% weight)
+      const performanceScore = (tech.performance.completion_rate / 100) * 10;
+      score += performanceScore;
 
-    // Priority matching - high priority tickets need available techs
-    if (ticket.priority === 1 && tech.availability !== 'available') {
-      score *= 0.7; // Penalty for assigning high priority to busy techs
-      reasons.push('High priority needs immediate attention');
-    }
+      // Priority matching - high priority tickets need available techs
+      if (ticket.priority === 1 && tech.availability !== 'available') {
+        score *= 0.7; // Penalty for assigning high priority to busy techs
+        reasons.push('High priority needs immediate attention');
+      }
 
-    return {
-      score: Math.round(score),
-      reasons,
-      recommendation: score >= 60 ? 'excellent' : score >= 40 ? 'good' : score >= 20 ? 'fair' : 'poor'
-    };
-  }, []);
+      return {
+        score: Math.round(score),
+        reasons,
+        recommendation:
+          score >= 60
+            ? 'excellent'
+            : score >= 40
+              ? 'good'
+              : score >= 20
+                ? 'fair'
+                : 'poor'
+      };
+    },
+    []
+  );
 
   // Handle assignment
-  const handleAssign = useCallback(async (ticketId: string, technicianId: string) => {
-    setIsAssigning(true);
-    try {
-      const success = await onAssignment(ticketId, technicianId);
-      if (success) {
-        const ticket = tickets.find(t => t.id === ticketId);
-        const tech = technicians.find(t => t.id === technicianId);
-        toast.success(
-          `Assigned ${ticket?.ticket_number} to ${tech?.name}`,
-          { description: 'Technician will be notified automatically' }
-        );
-        setSelectedTicket(null);
-      } else {
-        toast.error('Failed to assign ticket');
+  const handleAssign = useCallback(
+    async (ticketId: string, technicianId: string) => {
+      setIsAssigning(true);
+      try {
+        const success = await onAssignment(ticketId, technicianId);
+        if (success) {
+          const ticket = tickets.find((t) => t.id === ticketId);
+          const tech = technicians.find((t) => t.id === technicianId);
+          toast.success(`Assigned ${ticket?.ticket_number} to ${tech?.name}`, {
+            description: 'Technician will be notified automatically'
+          });
+          setSelectedTicket(null);
+        } else {
+          toast.error('Failed to assign job card');
+        }
+      } catch (error) {
+        toast.error('Assignment failed');
+      } finally {
+        setIsAssigning(false);
       }
-    } catch (error) {
-      toast.error('Assignment failed');
-    } finally {
-      setIsAssigning(false);
-    }
-  }, [onAssignment, tickets, technicians]);
+    },
+    [onAssignment, tickets, technicians]
+  );
 
   // Drag and drop handlers
   const handleDragStart = useCallback((ticket: TicketSummary) => {
@@ -243,28 +277,30 @@ export function QuickAssignment({
     setDraggedTicket(null);
   }, []);
 
-  const handleDrop = useCallback(async (technicianId: string) => {
-    if (draggedTicket) {
-      await handleAssign(draggedTicket.id, technicianId);
-    }
-  }, [draggedTicket, handleAssign]);
+  const handleDrop = useCallback(
+    async (technicianId: string) => {
+      if (draggedTicket) {
+        await handleAssign(draggedTicket.id, technicianId);
+      }
+    },
+    [draggedTicket, handleAssign]
+  );
 
   return (
     <div className={`space-y-6 ${className}`}>
-      
-      {/* Unassigned Tickets */}
+      {/* Unassigned Job Cards */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className='mb-4 flex items-center justify-between'>
           <div>
-            <h3 className="text-lg font-semibold">Unassigned Tickets</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className='text-lg font-semibold'>Unassigned Job Cards</h3>
+            <p className='text-muted-foreground text-sm'>
               Drag tickets to technician cards or click to assign
             </p>
           </div>
-          <Badge variant="destructive">{tickets.length} unassigned</Badge>
+          <Badge variant='destructive'>{tickets.length} unassigned</Badge>
         </div>
-        
-        <div className="grid gap-3">
+
+        <div className='grid gap-3'>
           {tickets.map((ticket) => (
             <motion.div
               key={ticket.id}
@@ -275,45 +311,53 @@ export function QuickAssignment({
             >
               <Card
                 className={`cursor-grab border-l-4 transition-all ${
-                  ticket.priority === 1 ? 'border-l-red-500' :
-                  ticket.priority === 2 ? 'border-l-amber-500' : 'border-l-blue-500'
-                } ${selectedTicket?.id === ticket.id ? 'ring-2 ring-primary' : ''}`}
+                  ticket.priority === 1
+                    ? 'border-l-red-500'
+                    : ticket.priority === 2
+                      ? 'border-l-amber-500'
+                      : 'border-l-blue-500'
+                } ${selectedTicket?.id === ticket.id ? 'ring-primary ring-2' : ''}`}
                 draggable
                 onDragStart={() => handleDragStart(ticket)}
                 onDragEnd={handleDragEnd}
                 onClick={() => setSelectedTicket(ticket)}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{ticket.ticket_number}</span>
+                <CardContent className='p-4'>
+                  <div className='flex items-center justify-between'>
+                    <div className='flex-1'>
+                      <div className='mb-1 flex items-center gap-2'>
+                        <span className='font-medium'>
+                          {ticket.ticket_number}
+                        </span>
                         <Badge
                           variant={
-                            ticket.priority === 1 ? 'destructive' :
-                            ticket.priority === 2 ? 'secondary' : 'outline'
+                            ticket.priority === 1
+                              ? 'destructive'
+                              : ticket.priority === 2
+                                ? 'secondary'
+                                : 'outline'
                           }
-                          className="text-xs"
+                          className='text-xs'
                         >
                           P{ticket.priority}
                         </Badge>
                         {ticket.estimated_hours && (
-                          <Badge variant="outline" className="text-xs">
-                            <IconClock className="h-3 w-3 mr-1" />
+                          <Badge variant='outline' className='text-xs'>
+                            <IconClock className='mr-1 h-3 w-3' />
                             {ticket.estimated_hours}h
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className='text-muted-foreground truncate text-sm'>
                         {ticket.symptom}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-muted-foreground text-xs'>
                         Customer: {ticket.customer_name}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className='flex items-center gap-2'>
                       {ticket.required_skills && (
-                        <IconTool className="h-4 w-4 text-muted-foreground" />
+                        <IconTool className='text-muted-foreground h-4 w-4' />
                       )}
                     </div>
                   </div>
@@ -326,20 +370,23 @@ export function QuickAssignment({
 
       {/* Technician Cards */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Available Technicians</h3>
-          <div className="text-sm text-muted-foreground">
-            Click technician or drop ticket to assign
+        <div className='mb-4 flex items-center justify-between'>
+          <h3 className='text-lg font-semibold'>Available Technicians</h3>
+          <div className='text-muted-foreground text-sm'>
+            Click technician or drop job card to assign
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
           {technicians.map((tech) => {
-            const suitability = selectedTicket ? calculateSuitability(tech, selectedTicket) : null;
-            const workloadPercentage = (tech.current_workload / tech.max_capacity) * 100;
+            const suitability = selectedTicket
+              ? calculateSuitability(tech, selectedTicket)
+              : null;
+            const workloadPercentage =
+              (tech.current_workload / tech.max_capacity) * 100;
             const isOverloaded = workloadPercentage > 75;
             const isAtCapacity = tech.current_workload >= tech.max_capacity;
-            
+
             return (
               <motion.div
                 key={tech.id}
@@ -349,74 +396,101 @@ export function QuickAssignment({
               >
                 <Card
                   className={`h-full transition-all duration-200 ${
-                    tech.availability === 'available' ? 'border-green-200 bg-green-50/20' :
-                    tech.availability === 'busy' ? 'border-amber-200 bg-amber-50/20' :
-                    tech.availability === 'break' ? 'border-blue-200 bg-blue-50/20' :
-                    'border-gray-200 bg-gray-50/20'
+                    tech.availability === 'available'
+                      ? 'border-green-200 bg-green-50/20'
+                      : tech.availability === 'busy'
+                        ? 'border-amber-200 bg-amber-50/20'
+                        : tech.availability === 'break'
+                          ? 'border-blue-200 bg-blue-50/20'
+                          : 'border-gray-200 bg-gray-50/20'
                   } ${
-                    suitability?.recommendation === 'excellent' ? 'ring-2 ring-green-200' :
-                    suitability?.recommendation === 'good' ? 'ring-1 ring-blue-200' : ''
+                    suitability?.recommendation === 'excellent'
+                      ? 'ring-2 ring-green-200'
+                      : suitability?.recommendation === 'good'
+                        ? 'ring-1 ring-blue-200'
+                        : ''
                   } ${
-                    draggedTicket ? 'cursor-pointer hover:border-primary' : ''
+                    draggedTicket ? 'hover:border-primary cursor-pointer' : ''
                   }`}
-                  onClick={() => selectedTicket && handleAssign(selectedTicket.id, tech.id)}
+                  onClick={() =>
+                    selectedTicket && handleAssign(selectedTicket.id, tech.id)
+                  }
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={() => handleDrop(tech.id)}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
+                  <CardHeader className='pb-3'>
+                    <div className='flex items-center gap-3'>
+                      <Avatar className='h-10 w-10'>
                         <AvatarImage src={tech.avatar} alt={tech.name} />
                         <AvatarFallback>
-                          {tech.name.split(' ').map(n => n[0]).join('')}
+                          {tech.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">{tech.name}</div>
-                        <div className="flex items-center gap-1">
+                      <div className='flex-1'>
+                        <div className='font-medium'>{tech.name}</div>
+                        <div className='flex items-center gap-1'>
                           <Badge
                             variant={
-                              tech.availability === 'available' ? 'secondary' :
-                              tech.availability === 'busy' ? 'destructive' :
-                              tech.availability === 'break' ? 'outline' : 'secondary'
+                              tech.availability === 'available'
+                                ? 'secondary'
+                                : tech.availability === 'busy'
+                                  ? 'destructive'
+                                  : tech.availability === 'break'
+                                    ? 'outline'
+                                    : 'secondary'
                             }
-                            className="text-xs"
+                            className='text-xs'
                           >
                             {tech.availability}
                           </Badge>
                           {isAtCapacity && (
-                            <IconAlertTriangle className="h-3 w-3 text-red-500" />
+                            <IconAlertTriangle className='h-3 w-3 text-red-500' />
                           )}
                         </div>
                       </div>
                     </div>
                   </CardHeader>
-                  
-                  <CardContent className="space-y-3">
+
+                  <CardContent className='space-y-3'>
                     {/* Workload */}
                     <div>
-                      <div className="flex items-center justify-between text-sm mb-1">
+                      <div className='mb-1 flex items-center justify-between text-sm'>
                         <span>Workload</span>
-                        <span className={isOverloaded ? 'text-red-600 font-medium' : ''}>
+                        <span
+                          className={
+                            isOverloaded ? 'font-medium text-red-600' : ''
+                          }
+                        >
                           {tech.current_workload}/{tech.max_capacity}
                         </span>
                       </div>
                       <Progress
                         value={workloadPercentage}
                         className={`h-2 ${
-                          isAtCapacity ? '[&>div]:bg-red-500' :
-                          isOverloaded ? '[&>div]:bg-amber-500' :
-                          '[&>div]:bg-green-500'
+                          isAtCapacity
+                            ? '[&>div]:bg-red-500'
+                            : isOverloaded
+                              ? '[&>div]:bg-amber-500'
+                              : '[&>div]:bg-green-500'
                         }`}
                       />
                     </div>
 
                     {/* Skills */}
                     <div>
-                      <div className="text-sm font-medium mb-1">Specializations</div>
-                      <div className="flex flex-wrap gap-1">
+                      <div className='mb-1 text-sm font-medium'>
+                        Specializations
+                      </div>
+                      <div className='flex flex-wrap gap-1'>
                         {tech.specializations.slice(0, 2).map((spec) => (
-                          <Badge key={spec} variant="outline" className="text-xs">
+                          <Badge
+                            key={spec}
+                            variant='outline'
+                            className='text-xs'
+                          >
                             {spec}
                           </Badge>
                         ))}
@@ -425,19 +499,27 @@ export function QuickAssignment({
 
                     {/* Performance */}
                     <div>
-                      <div className="text-sm font-medium mb-1">Performance</div>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="text-center">
-                          <div className="font-medium">{tech.performance.completion_rate}%</div>
-                          <div className="text-muted-foreground">Complete</div>
+                      <div className='mb-1 text-sm font-medium'>
+                        Performance
+                      </div>
+                      <div className='grid grid-cols-3 gap-2 text-xs'>
+                        <div className='text-center'>
+                          <div className='font-medium'>
+                            {tech.performance.completion_rate}%
+                          </div>
+                          <div className='text-muted-foreground'>Complete</div>
                         </div>
-                        <div className="text-center">
-                          <div className="font-medium">{tech.performance.avg_resolution_time}h</div>
-                          <div className="text-muted-foreground">Avg Time</div>
+                        <div className='text-center'>
+                          <div className='font-medium'>
+                            {tech.performance.avg_resolution_time}h
+                          </div>
+                          <div className='text-muted-foreground'>Avg Time</div>
                         </div>
-                        <div className="text-center">
-                          <div className="font-medium">{tech.performance.quality_score}/5</div>
-                          <div className="text-muted-foreground">Quality</div>
+                        <div className='text-center'>
+                          <div className='font-medium'>
+                            {tech.performance.quality_score}/5
+                          </div>
+                          <div className='text-muted-foreground'>Quality</div>
                         </div>
                       </div>
                     </div>
@@ -445,24 +527,32 @@ export function QuickAssignment({
                     {/* Current Tickets */}
                     {tech.current_tickets.length > 0 && (
                       <div>
-                        <div className="text-sm font-medium mb-1">Current Work</div>
-                        <div className="space-y-1">
+                        <div className='mb-1 text-sm font-medium'>
+                          Current Work
+                        </div>
+                        <div className='space-y-1'>
                           {tech.current_tickets.slice(0, 2).map((ticket) => (
-                            <div key={ticket.id} className="flex items-center justify-between text-xs">
+                            <div
+                              key={ticket.id}
+                              className='flex items-center justify-between text-xs'
+                            >
                               <span>{ticket.ticket_number}</span>
                               <Badge
                                 variant={
-                                  ticket.priority === 1 ? 'destructive' :
-                                  ticket.priority === 2 ? 'secondary' : 'outline'
+                                  ticket.priority === 1
+                                    ? 'destructive'
+                                    : ticket.priority === 2
+                                      ? 'secondary'
+                                      : 'outline'
                                 }
-                                className="text-xs"
+                                className='text-xs'
                               >
                                 P{ticket.priority}
                               </Badge>
                             </div>
                           ))}
                           {tech.current_tickets.length > 2 && (
-                            <div className="text-xs text-muted-foreground">
+                            <div className='text-muted-foreground text-xs'>
                               +{tech.current_tickets.length - 2} more
                             </div>
                           )}
@@ -472,24 +562,32 @@ export function QuickAssignment({
 
                     {/* Suitability Score */}
                     {suitability && (
-                      <div className="border-t pt-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">Match Score</span>
+                      <div className='border-t pt-3'>
+                        <div className='mb-2 flex items-center justify-between'>
+                          <span className='text-sm font-medium'>
+                            Match Score
+                          </span>
                           <Badge
                             variant={
-                              suitability.recommendation === 'excellent' ? 'default' :
-                              suitability.recommendation === 'good' ? 'secondary' :
-                              suitability.recommendation === 'fair' ? 'outline' : 'destructive'
+                              suitability.recommendation === 'excellent'
+                                ? 'default'
+                                : suitability.recommendation === 'good'
+                                  ? 'secondary'
+                                  : suitability.recommendation === 'fair'
+                                    ? 'outline'
+                                    : 'destructive'
                             }
                           >
                             {suitability.score}/100
                           </Badge>
                         </div>
                         {suitability.reasons.length > 0 && (
-                          <div className="text-xs text-muted-foreground">
-                            {suitability.reasons.slice(0, 2).map((reason, i) => (
-                              <div key={i}>• {reason}</div>
-                            ))}
+                          <div className='text-muted-foreground text-xs'>
+                            {suitability.reasons
+                              .slice(0, 2)
+                              .map((reason, i) => (
+                                <div key={i}>• {reason}</div>
+                              ))}
                           </div>
                         )}
                       </div>
@@ -498,16 +596,19 @@ export function QuickAssignment({
                     {/* Assignment Button */}
                     {selectedTicket && (
                       <Button
-                        className="w-full"
-                        size="sm"
+                        className='w-full'
+                        size='sm'
                         disabled={isAssigning || isAtCapacity}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleAssign(selectedTicket.id, tech.id);
                         }}
                         variant={
-                          suitability?.recommendation === 'excellent' ? 'default' :
-                          suitability?.recommendation === 'good' ? 'secondary' : 'outline'
+                          suitability?.recommendation === 'excellent'
+                            ? 'default'
+                            : suitability?.recommendation === 'good'
+                              ? 'secondary'
+                              : 'outline'
                         }
                       >
                         {isAssigning ? 'Assigning...' : 'Assign Here'}
@@ -528,46 +629,52 @@ export function QuickAssignment({
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-4 right-4 w-80 z-50"
+            className='fixed right-4 bottom-4 z-50 w-80'
           >
-            <Card className="border-2 border-primary">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Assign Ticket</CardTitle>
+            <Card className='border-primary border-2'>
+              <CardHeader className='pb-3'>
+                <div className='flex items-center justify-between'>
+                  <CardTitle className='text-lg'>Assign Job Card</CardTitle>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={() => setSelectedTicket(null)}
                   >
-                    <IconX className="h-4 w-4" />
+                    <IconX className='h-4 w-4' />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className='space-y-3'>
                   <div>
-                    <div className="font-medium">{selectedTicket.ticket_number}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className='font-medium'>
+                      {selectedTicket.ticket_number}
+                    </div>
+                    <div className='text-muted-foreground text-sm'>
                       {selectedTicket.symptom}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='text-muted-foreground text-xs'>
                       Customer: {selectedTicket.customer_name}
                     </div>
                   </div>
-                  <div className="text-sm">
-                    Click on a technician card above to assign this ticket, or drag this panel to a technician.
+                  <div className='text-sm'>
+                    Click on a technician card above to assign this job card, or
+                    drag this panel to a technician.
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className='flex items-center gap-2'>
                     <Badge
                       variant={
-                        selectedTicket.priority === 1 ? 'destructive' :
-                        selectedTicket.priority === 2 ? 'secondary' : 'outline'
+                        selectedTicket.priority === 1
+                          ? 'destructive'
+                          : selectedTicket.priority === 2
+                            ? 'secondary'
+                            : 'outline'
                       }
                     >
                       Priority {selectedTicket.priority}
                     </Badge>
                     {selectedTicket.estimated_hours && (
-                      <Badge variant="outline">
+                      <Badge variant='outline'>
                         {selectedTicket.estimated_hours}h estimated
                       </Badge>
                     )}

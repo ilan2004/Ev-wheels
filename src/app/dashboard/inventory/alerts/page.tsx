@@ -14,16 +14,17 @@ export default function InventoryAlertsPage() {
   return (
     <RoleGuard permissions={[Permission.VIEW_INVENTORY]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Low Stock Alerts"
-            description="Items under their minimum stock threshold will appear here."
+            title='Low Stock Alerts'
+            description='Items under their minimum stock threshold will appear here.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
-            Alerts list coming soon. You will see items that require replenishment once the data layer is wired in.
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
+            Alerts list coming soon. You will see items that require
+            replenishment once the data layer is wired in.
           </div>
         </div>
       </PageContainer>

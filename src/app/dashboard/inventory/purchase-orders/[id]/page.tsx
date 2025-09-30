@@ -14,15 +14,15 @@ export default function PurchaseOrderDetailPage() {
   return (
     <RoleGuard permissions={[Permission.VIEW_INVENTORY]} showError>
       <PageContainer>
-        <div className="mb-4">
+        <div className='mb-4'>
           <Breadcrumbs />
         </div>
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <SectionHeader
-            title="Purchase Order"
-            description="Details and receiving coming soon."
+            title='Purchase Order'
+            description='Details and receiving coming soon.'
           />
-          <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+          <div className='text-muted-foreground rounded-xl border p-6 text-sm'>
             PO details UI will be implemented in Phase 4.
           </div>
         </div>

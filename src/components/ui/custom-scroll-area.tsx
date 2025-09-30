@@ -40,9 +40,13 @@ export function CustomScrollArea({
 
     setIsScrolling(true);
     const currentScrollTop = container.scrollTop;
-    const targetScrollTop = direction === 'up' 
-      ? Math.max(0, currentScrollTop - scrollStep)
-      : Math.min(container.scrollHeight - container.clientHeight, currentScrollTop + scrollStep);
+    const targetScrollTop =
+      direction === 'up'
+        ? Math.max(0, currentScrollTop - scrollStep)
+        : Math.min(
+            container.scrollHeight - container.clientHeight,
+            currentScrollTop + scrollStep
+          );
 
     // Smooth scroll animation
     const startTime = performance.now();
@@ -51,11 +55,12 @@ export function CustomScrollArea({
     const animateScroll = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       // Easing function (ease-out)
       const easeOut = 1 - Math.pow(1 - progress, 3);
-      
-      const scrollValue = currentScrollTop + (targetScrollTop - currentScrollTop) * easeOut;
+
+      const scrollValue =
+        currentScrollTop + (targetScrollTop - currentScrollTop) * easeOut;
       container.scrollTop = scrollValue;
 
       if (progress < 1) {
@@ -103,18 +108,18 @@ export function CustomScrollArea({
   }, []);
 
   return (
-    <div className={cn("relative flex min-h-0 flex-col", className)} {...props}>
+    <div className={cn('relative flex min-h-0 flex-col', className)} {...props}>
       {/* Scroll Up Button */}
       {showScrollButtons && canScrollUp && (
-        <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-sidebar to-transparent p-1">
+        <div className='from-sidebar pointer-events-none absolute top-0 right-0 left-0 z-10 bg-gradient-to-b to-transparent p-1'>
           <Button
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto w-full h-6 text-xs opacity-70 hover:opacity-100 transition-opacity"
+            variant='ghost'
+            size='sm'
+            className='pointer-events-auto h-6 w-full text-xs opacity-70 transition-opacity hover:opacity-100'
             onClick={() => scrollTo('up')}
             disabled={isScrolling}
           >
-            <ChevronUp className="h-3 w-3" />
+            <ChevronUp className='h-3 w-3' />
           </Button>
         </div>
       )}
@@ -123,7 +128,7 @@ export function CustomScrollArea({
       <div
         ref={scrollContainerRef}
         className={cn(
-          "flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-sidebar scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent pt-8 pb-8",
+          'scrollbar-thin scrollbar-track-sidebar scrollbar-thumb-sidebar-border hover:scrollbar-thumb-sidebar-accent min-h-0 flex-1 overflow-x-hidden overflow-y-auto pt-8 pb-8'
         )}
         onScroll={scheduleCheckScroll}
         style={{
@@ -137,27 +142,27 @@ export function CustomScrollArea({
 
       {/* Scroll Down Button */}
       {showScrollButtons && canScrollDown && (
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-sidebar to-transparent p-1">
+        <div className='from-sidebar pointer-events-none absolute right-0 bottom-0 left-0 z-10 bg-gradient-to-t to-transparent p-1'>
           <Button
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto w-full h-6 text-xs opacity-70 hover:opacity-100 transition-opacity"
+            variant='ghost'
+            size='sm'
+            className='pointer-events-auto h-6 w-full text-xs opacity-70 transition-opacity hover:opacity-100'
             onClick={() => scrollTo('down')}
             disabled={isScrolling}
           >
-            <ChevronDown className="h-3 w-3" />
+            <ChevronDown className='h-3 w-3' />
           </Button>
         </div>
       )}
 
       {/* Scroll Indicators */}
       {(canScrollUp || canScrollDown) && (
-        <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex flex-col gap-1">
+        <div className='absolute top-1/2 right-1 flex -translate-y-1/2 transform flex-col gap-1'>
           {canScrollUp && (
-            <div className="w-1 h-2 bg-sidebar-accent rounded-full opacity-50" />
+            <div className='bg-sidebar-accent h-2 w-1 rounded-full opacity-50' />
           )}
           {canScrollDown && (
-            <div className="w-1 h-2 bg-sidebar-accent rounded-full opacity-50" />
+            <div className='bg-sidebar-accent h-2 w-1 rounded-full opacity-50' />
           )}
         </div>
       )}

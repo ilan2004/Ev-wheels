@@ -1,21 +1,39 @@
 // Real Supabase Battery Repository Implementation
 import { supabase } from '@/lib/supabase/client';
-import { BatteryRecord, BatteryStatusHistory, TechnicalDiagnostics, DiagnosticsFormData, BatteryStatus } from '@/types/bms';
+import {
+  BatteryRecord,
+  BatteryStatusHistory,
+  TechnicalDiagnostics,
+  DiagnosticsFormData,
+  BatteryStatus
+} from '@/types/bms';
 import { BatteryApiContract, ApiResponse } from './batteries';
 import { scopeQuery, withLocationId } from '@/lib/location/scope';
+import { isCurrentUserAdmin } from '@/lib/location/admin-check';
 
 export class SupabaseBatteryRepository implements BatteryApiContract {
-  
-  async listBatteries(params: { search?: string; status?: string; brand?: string; limit?: number; offset?: number } = {}): Promise<ApiResponse<BatteryRecord[]>> {
+  async listBatteries(
+    params: {
+      search?: string;
+      status?: string;
+      brand?: string;
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<ApiResponse<BatteryRecord[]>> {
     try {
+      const isAdmin = await isCurrentUserAdmin();
       let query = supabase
         .from('battery_records')
-        .select(`
+        .select(
+          `
           *,
-          customer:customers(*)
-        `)
+          customer:customers(*),
+          location:locations(id,name,code)
+        `
+        )
         .order('received_date', { ascending: false }) as any;
-      query = scopeQuery('battery_records', query);
+      query = scopeQuery('battery_records', query, { isAdmin });
 
       if (params.status) {
         query = query.eq('status', params.status);
@@ -29,77 +47,111 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         query = query.or(`serial_number.ilike.${term},brand.ilike.${term}`);
       }
       if (params.limit) query = query.limit(params.limit);
-      if (params.offset) query = query.range(params.offset, (params.offset + (params.limit || 50)) - 1);
+      if (params.offset)
+        query = query.range(
+          params.offset,
+          params.offset + (params.limit || 50) - 1
+        );
 
       const { data, error } = await query;
       if (error) throw error;
 
-      const mapped = (data || []).map((battery: any): BatteryRecord => ({
-        id: battery.id,
-        serial_number: battery.serial_number,
-        brand: battery.brand,
-        model: battery.model,
-        battery_type: battery.battery_type,
-        voltage: parseFloat(battery.voltage),
-        capacity: parseFloat(battery.capacity),
-        cell_type: battery.cell_type,
-        cell_count: battery.cell_count,
-        customer_id: battery.customer_id,
-        customer: battery.customer ? {
-          id: battery.customer.id,
-          name: battery.customer.name,
-          contact: battery.customer.contact,
-          email: battery.customer.email,
-          address: battery.customer.address,
-          created_at: battery.customer.created_at,
-          updated_at: battery.customer.updated_at
-        } : undefined,
-        received_date: battery.received_date,
-        delivered_date: battery.delivered_date,
-        status: battery.status,
-        initial_voltage: battery.initial_voltage ? parseFloat(battery.initial_voltage) : undefined,
-        load_test_result: battery.load_test_result ? parseFloat(battery.load_test_result) : undefined,
-        ir_values: battery.ir_values,
-        cell_voltages: battery.cell_voltages,
-        bms_status: battery.bms_status,
-        repair_type: battery.repair_type,
-        cells_replaced: battery.cells_replaced,
-        rows_replaced: battery.rows_replaced,
-        repair_notes: battery.repair_notes,
-        technician_notes: battery.technician_notes,
-        estimated_cost: battery.estimated_cost ? parseFloat(battery.estimated_cost) : undefined,
-        final_cost: battery.final_cost ? parseFloat(battery.final_cost) : undefined,
-        parts_cost: battery.parts_cost ? parseFloat(battery.parts_cost) : undefined,
-        labor_cost: battery.labor_cost ? parseFloat(battery.labor_cost) : undefined,
-        created_at: battery.created_at,
-        updated_at: battery.updated_at,
-        created_by: battery.created_by,
-        updated_by: battery.updated_by
-      }));
+      const mapped = (data || []).map(
+        (battery: any): BatteryRecord => ({
+          id: battery.id,
+          serial_number: battery.serial_number,
+          brand: battery.brand,
+          model: battery.model,
+          battery_type: battery.battery_type,
+          voltage: parseFloat(battery.voltage),
+          capacity: parseFloat(battery.capacity),
+          cell_type: battery.cell_type,
+          cell_count: battery.cell_count,
+          customer_id: battery.customer_id,
+          customer: battery.customer
+            ? {
+                id: battery.customer.id,
+                name: battery.customer.name,
+                contact: battery.customer.contact,
+                email: battery.customer.email,
+                address: battery.customer.address,
+                created_at: battery.customer.created_at,
+                updated_at: battery.customer.updated_at
+              }
+            : undefined,
+          received_date: battery.received_date,
+          delivered_date: battery.delivered_date,
+          status: battery.status,
+          initial_voltage: battery.initial_voltage
+            ? parseFloat(battery.initial_voltage)
+            : undefined,
+          load_test_result: battery.load_test_result
+            ? parseFloat(battery.load_test_result)
+            : undefined,
+          ir_values: battery.ir_values,
+          cell_voltages: battery.cell_voltages,
+          bms_status: battery.bms_status,
+          repair_type: battery.repair_type,
+          cells_replaced: battery.cells_replaced,
+          rows_replaced: battery.rows_replaced,
+          repair_notes: battery.repair_notes,
+          technician_notes: battery.technician_notes,
+          estimated_cost: battery.estimated_cost
+            ? parseFloat(battery.estimated_cost)
+            : undefined,
+          final_cost: battery.final_cost
+            ? parseFloat(battery.final_cost)
+            : undefined,
+          parts_cost: battery.parts_cost
+            ? parseFloat(battery.parts_cost)
+            : undefined,
+          labor_cost: battery.labor_cost
+            ? parseFloat(battery.labor_cost)
+            : undefined,
+          created_at: battery.created_at,
+          updated_at: battery.updated_at,
+          created_by: battery.created_by,
+          updated_by: battery.updated_by
+        })
+      );
 
       return { success: true, data: mapped };
     } catch (error) {
       console.error('Error listing batteries:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list batteries' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to list batteries'
+      };
     }
   }
 
-  async listCustomers(): Promise<ApiResponse<import('@/types/bms').Customer[]>> {
+  async listCustomers(): Promise<
+    ApiResponse<import('@/types/bms').Customer[]>
+  > {
     try {
-      const { data, error } = await supabase
+      const isAdmin = await isCurrentUserAdmin();
+      let query = supabase
         .from('customers')
-        .select('id, name, contact, created_at, updated_at')
-        .order('name', { ascending: true })
-        .limit(200);
+        .select('id, name, contact, location_id, created_at, updated_at')
+        .order('name', { ascending: true }) as any;
+      query = scopeQuery('customers', query, { isAdmin }).limit(200);
+      const { data, error } = await query;
       if (error) throw error;
       return { success: true, data: data || [] };
     } catch (error) {
       console.error('Error listing customers:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list customers' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to list customers'
+      };
     }
   }
 
-  async createBattery(data: import('@/types/bms').BatteryFormData): Promise<ApiResponse<BatteryRecord>> {
+  async createBattery(
+    data: import('@/types/bms').BatteryFormData
+  ): Promise<ApiResponse<BatteryRecord>> {
     try {
       const payload: any = {
         serial_number: data.serial_number,
@@ -122,10 +174,12 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       const { data: inserted, error } = await supabase
         .from('battery_records')
         .insert(payloadWithLoc)
-        .select(`
+        .select(
+          `
           *,
           customer:customers(*)
-        `)
+        `
+        )
         .single();
 
       if (error) throw error;
@@ -141,20 +195,26 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         cell_type: inserted.cell_type,
         cell_count: inserted.cell_count,
         customer_id: inserted.customer_id,
-        customer: inserted.customer ? {
-          id: inserted.customer.id,
-          name: inserted.customer.name,
-          contact: inserted.customer.contact,
-          email: inserted.customer.email,
-          address: inserted.customer.address,
-          created_at: inserted.customer.created_at,
-          updated_at: inserted.customer.updated_at
-        } : undefined,
+        customer: inserted.customer
+          ? {
+              id: inserted.customer.id,
+              name: inserted.customer.name,
+              contact: inserted.customer.contact,
+              email: inserted.customer.email,
+              address: inserted.customer.address,
+              created_at: inserted.customer.created_at,
+              updated_at: inserted.customer.updated_at
+            }
+          : undefined,
         received_date: inserted.received_date,
         delivered_date: inserted.delivered_date,
         status: inserted.status,
-        initial_voltage: inserted.initial_voltage ? parseFloat(inserted.initial_voltage) : undefined,
-        load_test_result: inserted.load_test_result ? parseFloat(inserted.load_test_result) : undefined,
+        initial_voltage: inserted.initial_voltage
+          ? parseFloat(inserted.initial_voltage)
+          : undefined,
+        load_test_result: inserted.load_test_result
+          ? parseFloat(inserted.load_test_result)
+          : undefined,
         ir_values: inserted.ir_values,
         cell_voltages: inserted.cell_voltages,
         bms_status: inserted.bms_status,
@@ -163,10 +223,18 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         rows_replaced: inserted.rows_replaced,
         repair_notes: inserted.repair_notes,
         technician_notes: inserted.technician_notes,
-        estimated_cost: inserted.estimated_cost ? parseFloat(inserted.estimated_cost) : undefined,
-        final_cost: inserted.final_cost ? parseFloat(inserted.final_cost) : undefined,
-        parts_cost: inserted.parts_cost ? parseFloat(inserted.parts_cost) : undefined,
-        labor_cost: inserted.labor_cost ? parseFloat(inserted.labor_cost) : undefined,
+        estimated_cost: inserted.estimated_cost
+          ? parseFloat(inserted.estimated_cost)
+          : undefined,
+        final_cost: inserted.final_cost
+          ? parseFloat(inserted.final_cost)
+          : undefined,
+        parts_cost: inserted.parts_cost
+          ? parseFloat(inserted.parts_cost)
+          : undefined,
+        labor_cost: inserted.labor_cost
+          ? parseFloat(inserted.labor_cost)
+          : undefined,
         created_at: inserted.created_at,
         updated_at: inserted.updated_at,
         created_by: inserted.created_by,
@@ -176,7 +244,11 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       return { success: true, data: mapped };
     } catch (error) {
       console.error('Error creating battery:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create battery' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to create battery'
+      };
     }
   }
 
@@ -185,10 +257,12 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       // Fetch battery with joined customer data
       const { data: battery, error } = await supabase
         .from('battery_records')
-        .select(`
+        .select(
+          `
           *,
           customer:customers(*)
-        `)
+        `
+        )
         .eq('id', batteryId)
         .single();
 
@@ -214,20 +288,26 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         cell_type: battery.cell_type,
         cell_count: battery.cell_count,
         customer_id: battery.customer_id,
-        customer: battery.customer ? {
-          id: battery.customer.id,
-          name: battery.customer.name,
-          contact: battery.customer.contact,
-          email: battery.customer.email,
-          address: battery.customer.address,
-          created_at: battery.customer.created_at,
-          updated_at: battery.customer.updated_at
-        } : undefined,
+        customer: battery.customer
+          ? {
+              id: battery.customer.id,
+              name: battery.customer.name,
+              contact: battery.customer.contact,
+              email: battery.customer.email,
+              address: battery.customer.address,
+              created_at: battery.customer.created_at,
+              updated_at: battery.customer.updated_at
+            }
+          : undefined,
         received_date: battery.received_date,
         delivered_date: battery.delivered_date,
         status: battery.status,
-        initial_voltage: battery.initial_voltage ? parseFloat(battery.initial_voltage) : undefined,
-        load_test_result: battery.load_test_result ? parseFloat(battery.load_test_result) : undefined,
+        initial_voltage: battery.initial_voltage
+          ? parseFloat(battery.initial_voltage)
+          : undefined,
+        load_test_result: battery.load_test_result
+          ? parseFloat(battery.load_test_result)
+          : undefined,
         ir_values: battery.ir_values,
         cell_voltages: battery.cell_voltages,
         bms_status: battery.bms_status,
@@ -236,10 +316,18 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         rows_replaced: battery.rows_replaced,
         repair_notes: battery.repair_notes,
         technician_notes: battery.technician_notes,
-        estimated_cost: battery.estimated_cost ? parseFloat(battery.estimated_cost) : undefined,
-        final_cost: battery.final_cost ? parseFloat(battery.final_cost) : undefined,
-        parts_cost: battery.parts_cost ? parseFloat(battery.parts_cost) : undefined,
-        labor_cost: battery.labor_cost ? parseFloat(battery.labor_cost) : undefined,
+        estimated_cost: battery.estimated_cost
+          ? parseFloat(battery.estimated_cost)
+          : undefined,
+        final_cost: battery.final_cost
+          ? parseFloat(battery.final_cost)
+          : undefined,
+        parts_cost: battery.parts_cost
+          ? parseFloat(battery.parts_cost)
+          : undefined,
+        labor_cost: battery.labor_cost
+          ? parseFloat(battery.labor_cost)
+          : undefined,
         created_at: battery.created_at,
         updated_at: battery.updated_at,
         created_by: battery.created_by,
@@ -254,12 +342,15 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       console.error('Error fetching battery:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch battery'
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch battery'
       };
     }
   }
 
-  async fetchStatusHistory(batteryId: string): Promise<ApiResponse<BatteryStatusHistory[]>> {
+  async fetchStatusHistory(
+    batteryId: string
+  ): Promise<ApiResponse<BatteryStatusHistory[]>> {
     try {
       const { data: history, error } = await supabase
         .from('battery_status_history')
@@ -269,15 +360,17 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
 
       if (error) throw error;
 
-      const mappedHistory: BatteryStatusHistory[] = (history || []).map(entry => ({
-        id: entry.id,
-        battery_id: entry.battery_id,
-        previous_status: entry.previous_status,
-        new_status: entry.new_status,
-        changed_by: entry.changed_by,
-        changed_at: entry.changed_at,
-        notes: entry.notes
-      }));
+      const mappedHistory: BatteryStatusHistory[] = (history || []).map(
+        (entry) => ({
+          id: entry.id,
+          battery_id: entry.battery_id,
+          previous_status: entry.previous_status,
+          new_status: entry.new_status,
+          changed_by: entry.changed_by,
+          changed_at: entry.changed_at,
+          notes: entry.notes
+        })
+      );
 
       return {
         success: true,
@@ -287,12 +380,17 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       console.error('Error fetching status history:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch status history'
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch status history'
       };
     }
   }
 
-  async fetchDiagnostics(batteryId: string): Promise<ApiResponse<TechnicalDiagnostics>> {
+  async fetchDiagnostics(
+    batteryId: string
+  ): Promise<ApiResponse<TechnicalDiagnostics>> {
     try {
       const { data: diagnostics, error } = await supabase
         .from('technical_diagnostics')
@@ -321,16 +419,34 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         dead_cells: diagnostics.dead_cells,
         cells_above_threshold: diagnostics.cells_above_threshold,
         ir_threshold: parseFloat(diagnostics.ir_threshold ?? '0'),
-        current_capacity: diagnostics.current_capacity != null ? parseFloat(diagnostics.current_capacity) : 0,
-        capacity_retention: diagnostics.capacity_retention != null ? parseFloat(diagnostics.capacity_retention) : 0,
-        load_test_current: diagnostics.load_test_current != null ? parseFloat(diagnostics.load_test_current) : 0,
+        current_capacity:
+          diagnostics.current_capacity != null
+            ? parseFloat(diagnostics.current_capacity)
+            : 0,
+        capacity_retention:
+          diagnostics.capacity_retention != null
+            ? parseFloat(diagnostics.capacity_retention)
+            : 0,
+        load_test_current:
+          diagnostics.load_test_current != null
+            ? parseFloat(diagnostics.load_test_current)
+            : 0,
         load_test_duration: diagnostics.load_test_duration,
-        efficiency_rating: diagnostics.efficiency_rating != null ? parseFloat(diagnostics.efficiency_rating) : 0,
+        efficiency_rating:
+          diagnostics.efficiency_rating != null
+            ? parseFloat(diagnostics.efficiency_rating)
+            : 0,
         bms_firmware_version: diagnostics.bms_firmware_version,
         bms_error_codes: diagnostics.bms_error_codes || [],
         balancing_status: diagnostics.balancing_status,
-        test_temperature: diagnostics.test_temperature != null ? parseFloat(diagnostics.test_temperature) : 0,
-        humidity: diagnostics.humidity != null ? parseFloat(diagnostics.humidity) : undefined,
+        test_temperature:
+          diagnostics.test_temperature != null
+            ? parseFloat(diagnostics.test_temperature)
+            : 0,
+        humidity:
+          diagnostics.humidity != null
+            ? parseFloat(diagnostics.humidity)
+            : undefined,
         diagnosed_at: diagnostics.diagnosed_at,
         diagnosed_by: diagnostics.diagnosed_by
       };
@@ -343,7 +459,8 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       console.error('Error fetching diagnostics:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch diagnostics'
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch diagnostics'
       };
     }
   }
@@ -405,19 +522,21 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
           .eq('battery_case_id', batteryId)
           .single();
         if (linkedTicket && (linkedTicket as any).id) {
-          await supabase
-            .from('service_ticket_history')
-            .insert({
-              ticket_id: (linkedTicket as any).id,
-              action: 'updated',
-              previous_values: null,
-              new_values: null,
-              changed_by: updatedBattery?.updated_by || currentBattery.data.updated_by,
-              notes: `Battery status changed to ${newStatus}`,
-            });
+          await supabase.from('service_ticket_history').insert({
+            ticket_id: (linkedTicket as any).id,
+            action: 'updated',
+            previous_values: null,
+            new_values: null,
+            changed_by:
+              updatedBattery?.updated_by || currentBattery.data.updated_by,
+            notes: `Battery status changed to ${newStatus}`
+          });
         }
       } catch (err) {
-        console.error('Error reflecting battery status in ticket history:', err);
+        console.error(
+          'Error reflecting battery status in ticket history:',
+          err
+        );
       }
 
       // Return updated battery data
@@ -426,7 +545,10 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       console.error('Error updating battery status:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update battery status'
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update battery status'
       };
     }
   }
@@ -455,7 +577,9 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         load_test_current: diagnostics.load_test_current,
         load_test_duration: diagnostics.load_test_duration,
         efficiency_rating: diagnostics.efficiency_rating,
-        bms_error_codes: diagnostics.bms_error_codes ? [diagnostics.bms_error_codes] : [],
+        bms_error_codes: diagnostics.bms_error_codes
+          ? [diagnostics.bms_error_codes]
+          : [],
         balancing_status: diagnostics.balancing_status,
         test_temperature: diagnostics.test_temperature,
         diagnosed_at: new Date().toISOString(),
@@ -472,7 +596,7 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
           .eq('id', existing.id)
           .select()
           .single();
-        
+
         if (error) throw error;
         result = data;
       } else {
@@ -482,7 +606,7 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
           .insert(diagnosticsData)
           .select()
           .single();
-        
+
         if (error) throw error;
         result = data;
       }
@@ -505,16 +629,32 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
         dead_cells: result.dead_cells,
         cells_above_threshold: result.cells_above_threshold,
         ir_threshold: parseFloat(result.ir_threshold ?? '0'),
-        current_capacity: result.current_capacity != null ? parseFloat(result.current_capacity) : 0,
-        capacity_retention: result.capacity_retention != null ? parseFloat(result.capacity_retention) : 0,
-        load_test_current: result.load_test_current != null ? parseFloat(result.load_test_current) : 0,
+        current_capacity:
+          result.current_capacity != null
+            ? parseFloat(result.current_capacity)
+            : 0,
+        capacity_retention:
+          result.capacity_retention != null
+            ? parseFloat(result.capacity_retention)
+            : 0,
+        load_test_current:
+          result.load_test_current != null
+            ? parseFloat(result.load_test_current)
+            : 0,
         load_test_duration: result.load_test_duration,
-        efficiency_rating: result.efficiency_rating != null ? parseFloat(result.efficiency_rating) : 0,
+        efficiency_rating:
+          result.efficiency_rating != null
+            ? parseFloat(result.efficiency_rating)
+            : 0,
         bms_firmware_version: result.bms_firmware_version,
         bms_error_codes: result.bms_error_codes || [],
         balancing_status: result.balancing_status,
-        test_temperature: result.test_temperature != null ? parseFloat(result.test_temperature) : 0,
-        humidity: result.humidity != null ? parseFloat(result.humidity) : undefined,
+        test_temperature:
+          result.test_temperature != null
+            ? parseFloat(result.test_temperature)
+            : 0,
+        humidity:
+          result.humidity != null ? parseFloat(result.humidity) : undefined,
         diagnosed_at: result.diagnosed_at,
         diagnosed_by: result.diagnosed_by
       };
@@ -527,7 +667,8 @@ export class SupabaseBatteryRepository implements BatteryApiContract {
       console.error('Error saving diagnostics:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to save diagnostics'
+        error:
+          error instanceof Error ? error.message : 'Failed to save diagnostics'
       };
     }
   }

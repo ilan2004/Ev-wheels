@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { vehiclesApi, type VehicleCase } from '@/lib/api/vehicles';
 import { VehicleDataTable } from '@/components/vehicles/vehicle-data-table';
+import { VehicleMobileList } from '@/components/vehicles/vehicle-mobile-list';
 import { VehicleGridView } from '@/components/vehicles/vehicle-grid-view';
 import {
   ViewModeToggle,
@@ -124,12 +125,14 @@ export default function VehiclesListPage() {
   return (
     <PageContainer>
       <div className='flex flex-col gap-6'>
-        <div className='flex items-center justify-between'>
-          <SectionHeader
-            title='Vehicle Cases'
-            description='Manage vehicle service and repair cases'
-          />
-          <div className='flex gap-2'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='min-w-0'>
+            <SectionHeader
+              title='Vehicle Cases'
+              description='Manage vehicle service and repair cases'
+            />
+          </div>
+          <div className='flex w-full flex-wrap gap-2 sm:w-auto'>
             <Button variant='outline' asChild>
               <Link href='/dashboard/vehicles/kanban'>
                 <LayoutGrid className='mr-2 h-4 w-4' />
@@ -146,9 +149,9 @@ export default function VehiclesListPage() {
               </Link>
             </Button>
             <Button asChild>
-              <Link href='/dashboard/tickets/new'>
+              <Link href='/dashboard/job-cards/new'>
                 <Plus className='mr-2 h-4 w-4' />
-                New Service Ticket
+                New Job Card
               </Link>
             </Button>
           </div>
@@ -167,7 +170,7 @@ export default function VehiclesListPage() {
                   className='pl-9'
                 />
               </div>
-              <div className='flex gap-2'>
+              <div className='flex flex-wrap justify-start gap-2'>
                 <VehicleFilters
                   filters={filters}
                   onFiltersChange={updateFilters}
@@ -181,28 +184,39 @@ export default function VehiclesListPage() {
             </div>
 
             {/* Quick Filters */}
-            <QuickFilterChips
-              onFilterSelect={handleQuickFilterSelect}
-              activeFilterId={activeQuickFilter}
-              userId={user?.id}
-            />
+            <div className='-mx-4 overflow-x-auto px-4'>
+              <QuickFilterChips
+                onFilterSelect={handleQuickFilterSelect}
+                activeFilterId={activeQuickFilter}
+                userId={user?.id}
+              />
+            </div>
           </CardContent>
         </Card>
 
         {/* Main Content Area */}
         {viewMode === 'table' ? (
-          <VehicleDataTable
-            vehicles={vehicles}
-            loading={loading}
-            totalCount={totalCount}
-            pageSize={pageSize}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={handlePageSizeChange}
-            onSort={handleSort}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-          />
+          <>
+            {/* Mobile: card list */}
+            <div className='md:hidden'>
+              <VehicleMobileList vehicles={vehicles as any} loading={loading} />
+            </div>
+            {/* Desktop/Tablet: data table */}
+            <div className='hidden md:block'>
+              <VehicleDataTable
+                vehicles={vehicles as any}
+                loading={loading}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+                onSort={handleSort}
+                sortColumn={sortColumn}
+                sortDirection={sortDirection}
+              />
+            </div>
+          </>
         ) : (
           <>
             <VehicleGridView vehicles={vehicles} loading={loading} />

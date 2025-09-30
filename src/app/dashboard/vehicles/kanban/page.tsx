@@ -92,9 +92,9 @@ export default function VehiclesKanbanPage() {
             description='Drag and drop to update vehicle status'
           />
           <Button asChild>
-            <Link href='/dashboard/tickets/new'>
+            <Link href='/dashboard/job-cards/new'>
               <Plus className='mr-2 h-4 w-4' />
-              New Service Ticket
+              New Job Card
             </Link>
           </Button>
         </div>
