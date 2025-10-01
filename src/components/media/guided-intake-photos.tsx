@@ -138,7 +138,9 @@ export function GuidedIntakePhotos({
                   </>
                 )}
                 <input
-                  ref={(el) => (inputRefs.current[slot.key] = el)}
+                  ref={(el) => {
+                    inputRefs.current[slot.key] = el;
+                  }}
                   type='file'
                   accept='image/*'
                   className='hidden'
