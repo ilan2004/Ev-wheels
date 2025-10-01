@@ -46,3 +46,8 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Temporary SQL diagnostic files
+debug_user_permissions.sql
+emergency_fix.sql
+fix_rls.sql
