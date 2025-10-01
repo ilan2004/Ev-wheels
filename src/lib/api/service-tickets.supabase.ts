@@ -6,7 +6,10 @@ import type {
 } from '@/lib/types/service-tickets';
 import type { Customer } from '@/types/bms';
 import { scopeQuery, withLocationId } from '@/lib/location/scope';
-import { isCurrentUserAdmin, getCurrentUserRole } from '@/lib/location/admin-check';
+import {
+  isCurrentUserAdmin,
+  getCurrentUserRole
+} from '@/lib/location/admin-check';
 
 export class SupabaseServiceTicketsRepository {
   async listCustomers(): Promise<ApiResponse<Customer[]>> {
@@ -18,7 +21,9 @@ export class SupabaseServiceTicketsRepository {
         .from('customers')
         .select('id, name, contact, location_id, created_at, updated_at')
         .order('name', { ascending: true }) as any;
-      query = scopeQuery('customers', query, { isAdmin, isFrontDesk }).limit(200);
+      query = scopeQuery('customers', query, { isAdmin, isFrontDesk }).limit(
+        200
+      );
       const { data, error } = await query;
       if (error) throw error;
       return { success: true, data: data || [] };
@@ -81,9 +86,7 @@ export class SupabaseServiceTicketsRepository {
     }
   }
 
-  async fetchTicketWithRelations(
-    id: string
-  ): Promise<
+  async fetchTicketWithRelations(id: string): Promise<
     ApiResponse<{
       ticket: ServiceTicket & { customer?: Customer };
       attachments: TicketAttachment[];
@@ -302,7 +305,7 @@ export class SupabaseServiceTicketsRepository {
       const uid = userData?.user?.id;
 
       if (routeTo === 'vehicle' || routeTo === 'both') {
-        const vehiclePayload: any = {
+        const vehiclePayloadBase: any = {
           service_ticket_id: ticketId,
           vehicle_make: ticket.vehicle_make || 'Unknown',
           vehicle_model: ticket.vehicle_model || 'Unknown',
@@ -314,6 +317,13 @@ export class SupabaseServiceTicketsRepository {
           created_by: uid ?? ticket.updated_by,
           updated_by: uid ?? ticket.updated_by
         };
+
+        // Add location_id to satisfy RLS on vehicle_cases
+        const vehiclePayload = withLocationId(
+          'vehicle_cases',
+          vehiclePayloadBase
+        );
+
         const { data: vcase, error: vErr } = await supabase
           .from('vehicle_cases')
           .insert(vehiclePayload)
