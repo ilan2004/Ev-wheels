@@ -29,8 +29,10 @@ import { CustomerPicker } from '@/components/customers/customer-picker';
 import { toast } from 'sonner';
 import PageContainer from '@/components/layout/page-container';
 import { useRequireAuth } from '@/lib/auth/use-require-auth';
+import { GuidedIntakePhotos } from '@/components/media/guided-intake-photos';
 
 const schema = z.object({
+  intake_type: z.enum(['vehicle', 'battery']).default('vehicle'),
   customer_id: z.string().min(1, 'Please select a customer'),
   symptom: z.string().min(1, 'Symptom is required'),
   description: z.string().optional(),
@@ -75,6 +77,7 @@ export default function NewServiceTicketPage() {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      intake_type: 'vehicle',
       customer_id: '',
       symptom: '',
       description: '',
@@ -110,6 +113,7 @@ export default function NewServiceTicketPage() {
   );
 
   const createdTicketId = React.useRef<string | null>(null);
+  const [guidedPhotos, setGuidedPhotos] = useState<File[]>([]);
 
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
@@ -130,7 +134,10 @@ export default function NewServiceTicketPage() {
       toast.success(`Job card ${res.data.ticket_number || ''} created`);
 
       // If user added files in the form, upload them now before navigating
-      const photos = (values.photos as unknown as File[]) || [];
+      const photos = [
+        ...guidedPhotos,
+        ...((values.photos as unknown as File[]) || [])
+      ];
       const audio = (values.audio as unknown as File[]) || [];
 
       if (photos.length > 0) {
@@ -279,7 +286,71 @@ export default function NewServiceTicketPage() {
                     <CardTitle>Media Attachments</CardTitle>
                   </CardHeader>
                   <CardContent className='space-y-6'>
+                    {/* Intake Type */}
+                    <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+                      <FormField
+                        control={form.control}
+                        name={'intake_type' as any}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Intake Type</FormLabel>
+                            <FormControl>
+                              <div className='flex gap-2'>
+                                <Button
+                                  type='button'
+                                  variant={
+                                    field.value === 'vehicle'
+                                      ? 'default'
+                                      : 'outline'
+                                  }
+                                  size='sm'
+                                  onClick={() => field.onChange('vehicle')}
+                                >
+                                  Vehicle
+                                </Button>
+                                <Button
+                                  type='button'
+                                  variant={
+                                    field.value === 'battery'
+                                      ? 'default'
+                                      : 'outline'
+                                  }
+                                  size='sm'
+                                  onClick={() => field.onChange('battery')}
+                                >
+                                  Battery
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Guided Required Photos */}
+                    <div>
+                      <div className='mb-2 text-sm font-medium'>
+                        Required Photos
+                      </div>
+                      <GuidedIntakePhotos
+                        mode={
+                          form.getValues('intake_type') as 'vehicle' | 'battery'
+                        }
+                        onFilesChange={(files) => setGuidedPhotos(files)}
+                      />
+                      <div className='text-muted-foreground mt-1 text-xs'>
+                        {guidedPhotos.length} of{' '}
+                        {(form.getValues('intake_type') as any) === 'vehicle'
+                          ? 4
+                          : 2}{' '}
+                        required
+                      </div>
+                    </div>
                     <div className='space-y-2'>
+                      <div className='text-muted-foreground text-xs'>
+                        Optional additional photos (beyond required)
+                      </div>
                       <FormFileUpload
                         control={form.control}
                         name={'photos' as any}
@@ -330,7 +401,16 @@ export default function NewServiceTicketPage() {
                   >
                     Cancel
                   </Button>
-                  <Button type='submit' disabled={isSubmitting}>
+                  <Button
+                    type='submit'
+                    disabled={(() => {
+                      const type = form.getValues('intake_type') as
+                        | 'vehicle'
+                        | 'battery';
+                      const required = type === 'vehicle' ? 4 : 2;
+                      return isSubmitting || guidedPhotos.length < required;
+                    })()}
+                  >
                     {isSubmitting ? 'Saving...' : 'Save Ticket'}
                   </Button>
                 </div>
