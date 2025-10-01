@@ -4,6 +4,7 @@ import Header from '@/components/layout/header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import RequireAuth from '@/components/auth/require-auth';
 
 export const metadata: Metadata = {
   title: 'Dashboard | EV Wheels, Custom Software',
@@ -21,6 +22,8 @@ export default async function DashboardLayout({
   return (
     <KBar>
       <SidebarProvider defaultOpen={defaultOpen}>
+        {/* Guard: redirect to login if not authenticated */}
+        <RequireAuth redirectTo='/auth/sign-in' />
         <AppSidebar />
         <SidebarInset>
           <Header />
