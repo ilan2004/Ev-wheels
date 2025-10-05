@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client';
-import { scopeQuery } from '@/lib/location/scope';
-import { isCurrentUserAdmin, getCurrentUserRole } from '@/lib/location/admin-check';
+import { scopeQueryServer } from '@/lib/location/scope.server';
+import {
+  isCurrentUserAdmin,
+  getCurrentUserRole
+} from '@/lib/location/admin-check';
 
 export interface ActivityItem {
   id: string;
-  type: 'ticket_status' | 'customer_created' | 'payment_received' | 'ticket_created';
+  type:
+    | 'ticket_status'
+    | 'customer_created'
+    | 'payment_received'
+    | 'ticket_created';
   title: string;
   description: string;
   timestamp: string;
@@ -16,7 +23,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '20');
-    
+
     const isAdmin = await isCurrentUserAdmin();
     const role = await getCurrentUserRole();
     const isFrontDesk = role === 'front_desk_manager';
@@ -24,7 +31,8 @@ export async function GET(request: Request) {
     // Fetch recent ticket status changes from history
     let ticketHistoryQuery = supabase
       .from('service_ticket_history')
-      .select(`
+      .select(
+        `
         id,
         ticket_id,
         action,
@@ -32,16 +40,22 @@ export async function GET(request: Request) {
         new_values,
         previous_values,
         service_tickets!inner(ticket_number, location_id)
-      `)
+      `
+      )
       .order('changed_at', { ascending: false })
       .limit(limit) as any;
 
-    ticketHistoryQuery = scopeQuery('service_ticket_history', ticketHistoryQuery, {
-      isAdmin,
-      isFrontDesk
-    });
+    ticketHistoryQuery = scopeQueryServer(
+      'service_ticket_history',
+      ticketHistoryQuery,
+      {
+        isAdmin,
+        isFrontDesk
+      }
+    );
 
-    const { data: ticketHistory, error: historyError } = await ticketHistoryQuery;
+    const { data: ticketHistory, error: historyError } =
+      await ticketHistoryQuery;
 
     // Fetch recent customers
     let customersQuery = supabase
@@ -50,7 +64,10 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .limit(10) as any;
 
-    customersQuery = scopeQuery('customers', customersQuery, { isAdmin, isFrontDesk });
+    customersQuery = scopeQueryServer('customers', customersQuery, {
+      isAdmin,
+      isFrontDesk
+    });
 
     const { data: customers, error: customersError } = await customersQuery;
 
@@ -61,7 +78,10 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .limit(10) as any;
 
-    ticketsQuery = scopeQuery('service_tickets', ticketsQuery, { isAdmin, isFrontDesk });
+    ticketsQuery = scopeQueryServer('service_tickets', ticketsQuery, {
+      isAdmin,
+      isFrontDesk
+    });
 
     const { data: tickets, error: ticketsError } = await ticketsQuery;
 
@@ -130,8 +150,9 @@ export async function GET(request: Request) {
     }
 
     // Sort by timestamp and limit
-    activities.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    activities.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
 
     return NextResponse.json({
@@ -143,7 +164,8 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch activity'
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch activity'
       },
       { status: 500 }
     );

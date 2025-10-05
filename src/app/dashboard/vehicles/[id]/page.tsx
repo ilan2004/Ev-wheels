@@ -18,15 +18,10 @@ import type {
   VehicleStatusHistory,
   TicketAttachment
 } from '@/lib/types/service-tickets';
-import {
-  FormFileUpload,
-  type FileUploadConfig
-} from '@/components/forms/form-file-upload';
+import { EnhancedMediaUploader } from '@/components/job-cards/enhanced-media-uploader';
 import { EnhancedStatusWorkflow } from '@/components/vehicles/enhanced-status-workflow';
 import { supabase } from '@/lib/supabase/client';
 import PageContainer from '@/components/layout/page-container';
-import { Form } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 const STATUSES: VehicleStatus[] = [
@@ -51,16 +46,11 @@ export default function VehicleDetailPage() {
   const [history, setHistory] = useState<VehicleStatusHistory[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
-  const [photoProgresses, setPhotoProgresses] = useState<
-    Record<string, number>
-  >({});
-  const [audioProgresses, setAudioProgresses] = useState<
-    Record<string, number>
-  >({});
-
-  const form = useForm<{ photos: File[]; audio: File[] }>({
-    defaultValues: { photos: [], audio: [] }
-  });
+  const [linkedBatteryCase, setLinkedBatteryCase] = useState<{
+    id: string;
+    serial_number: string;
+    status: string;
+  } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -77,16 +67,65 @@ export default function VehicleDetailPage() {
   useEffect(() => {
     const loadAttachments = async () => {
       if (!vehicleId || !vehicle) return;
+      console.log('[Vehicle Attachments] Loading for:', {
+        vehicleId: vehicle.id,
+        ticketId: vehicle.service_ticket_id
+      });
       const res = await (
         await import('@/lib/api/service-tickets')
       ).serviceTicketsApi.listVehicleAttachments(
         vehicle.service_ticket_id,
         vehicle.id
       );
-      if (res.success && res.data) setAttachments(res.data);
+      console.log('[Vehicle Attachments] Response:', res);
+      if (res.success && res.data) {
+        console.log(
+          '[Vehicle Attachments] Found:',
+          res.data.length,
+          'attachments'
+        );
+        setAttachments(res.data);
+      }
     };
     loadAttachments();
   }, [vehicleId, vehicle]);
+
+  useEffect(() => {
+    const loadLinkedBatteryCase = async () => {
+      if (!vehicle?.service_ticket_id) return;
+      try {
+        // Fetch the ticket to check if it has a battery_case_id
+        const ticketRes = await (
+          await import('@/lib/api/service-tickets')
+        ).serviceTicketsApi.fetchTicketWithRelations(vehicle.service_ticket_id);
+
+        if (
+          ticketRes.success &&
+          ticketRes.data &&
+          ticketRes.data.ticket.battery_case_id
+        ) {
+          // Fetch battery case details
+          const batteryRes = await (
+            await import('@/lib/api/batteries')
+          ).batteryApi.fetchBattery(ticketRes.data.ticket.battery_case_id);
+
+          if (batteryRes.success && batteryRes.data) {
+            setLinkedBatteryCase({
+              id: batteryRes.data.id,
+              serial_number: batteryRes.data.serial_number,
+              status: batteryRes.data.status
+            });
+          }
+        }
+      } catch (error) {
+        console.error(
+          '[Vehicle Detail] Error loading linked battery case:',
+          error
+        );
+      }
+    };
+    loadLinkedBatteryCase();
+  }, [vehicle?.service_ticket_id]);
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -99,64 +138,35 @@ export default function VehicleDetailPage() {
     loadHistory();
   }, [vehicleId]);
 
-  const photoUploadConfig: FileUploadConfig = {
-    acceptedTypes: ['image/*'],
-    multiple: true,
-    maxFiles: 8,
-    maxSize: 10 * 1024 * 1024,
-    progresses: photoProgresses,
-    onUpload: async (files) => {
-      if (!vehicle) throw new Error('Vehicle not loaded');
-      const res = await (
-        await import('@/lib/api/service-tickets')
-      ).serviceTicketsApi.uploadAttachments({
-        ticketId: vehicle.service_ticket_id,
-        files,
-        type: 'photo',
-        caseType: 'vehicle',
-        caseId: vehicle.id,
-        onProgress: (file, progress) =>
-          setPhotoProgresses((p) => ({ ...p, [file.name]: progress }))
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to upload photos');
-      const listed = await (
-        await import('@/lib/api/service-tickets')
-      ).serviceTicketsApi.listVehicleAttachments(
-        vehicle.service_ticket_id,
-        vehicle.id
-      );
-      if (listed.success && listed.data) setAttachments(listed.data);
-    }
-  };
+  const handleMediaUpload = async (files: File[], category: string) => {
+    if (!vehicle) throw new Error('Vehicle not loaded');
 
-  const audioUploadConfig: FileUploadConfig = {
-    acceptedTypes: ['audio/*'],
-    multiple: true,
-    maxFiles: 3,
-    maxSize: 15 * 1024 * 1024,
-    progresses: audioProgresses,
-    onUpload: async (files) => {
-      if (!vehicle) throw new Error('Vehicle not loaded');
-      const res = await (
-        await import('@/lib/api/service-tickets')
-      ).serviceTicketsApi.uploadAttachments({
-        ticketId: vehicle.service_ticket_id,
-        files,
-        type: 'audio',
-        caseType: 'vehicle',
-        caseId: vehicle.id,
-        onProgress: (file, progress) =>
-          setAudioProgresses((p) => ({ ...p, [file.name]: progress }))
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to upload audio');
-      const listed = await (
-        await import('@/lib/api/service-tickets')
-      ).serviceTicketsApi.listVehicleAttachments(
-        vehicle.service_ticket_id,
-        vehicle.id
-      );
-      if (listed.success && listed.data) setAttachments(listed.data);
+    // Determine attachment type based on category
+    let attachmentType: 'photo' | 'audio' = 'photo';
+    if (category === 'voice-notes') {
+      attachmentType = 'audio';
     }
+
+    const res = await (
+      await import('@/lib/api/service-tickets')
+    ).serviceTicketsApi.uploadAttachments({
+      ticketId: vehicle.service_ticket_id,
+      files,
+      type: attachmentType,
+      caseType: 'vehicle',
+      caseId: vehicle.id
+    });
+
+    if (!res.success) throw new Error(res.error || 'Failed to upload files');
+
+    // Refresh attachments list
+    const listed = await (
+      await import('@/lib/api/service-tickets')
+    ).serviceTicketsApi.listVehicleAttachments(
+      vehicle.service_ticket_id,
+      vehicle.id
+    );
+    if (listed.success && listed.data) setAttachments(listed.data);
   };
 
   const onChangeStatus = async (
@@ -209,6 +219,42 @@ export default function VehicleDetailPage() {
           description='Diagnosis and repair status'
         />
 
+        {/* Custom breadcrumb with connectivity */}
+        {vehicle && (
+          <div className='text-muted-foreground flex items-center gap-2 text-sm'>
+            <Link href='/dashboard' className='hover:underline'>
+              Dashboard
+            </Link>
+            <span>/</span>
+            <Link href='/dashboard/job-cards' className='hover:underline'>
+              Job Cards
+            </Link>
+            <span>/</span>
+            <Link
+              href={`/dashboard/job-cards/${vehicle.service_ticket_id}`}
+              className='hover:underline'
+            >
+              {vehicle.service_ticket_id.slice(-8)}
+            </Link>
+            <span>/</span>
+            <span className='font-medium'>Vehicle</span>
+            {linkedBatteryCase && (
+              <>
+                <span className='mx-2'>•</span>
+                <Link
+                  href={`/dashboard/batteries/${linkedBatteryCase.id}`}
+                  className='flex items-center gap-1 hover:underline'
+                >
+                  <span className='text-xs'>Also:</span>
+                  <Badge variant='outline' className='text-xs'>
+                    Battery
+                  </Badge>
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+
         <div className='flex items-center gap-3'>
           <Button
             variant='outline'
@@ -217,14 +263,40 @@ export default function VehicleDetailPage() {
           >
             Back
           </Button>
-          <div className='text-muted-foreground text-sm'>
-            Linked Ticket:{' '}
-            <Link
-              className='underline'
-              href={`/dashboard/tickets/${vehicle.service_ticket_id}`}
-            >
-              {vehicle.service_ticket_id}
-            </Link>
+          <div className='text-muted-foreground flex items-center gap-4 text-sm'>
+            <div>
+              Linked Ticket:{' '}
+              <Link
+                className='underline'
+                href={`/dashboard/tickets/${vehicle.service_ticket_id}`}
+              >
+                {vehicle.service_ticket_id}
+              </Link>
+            </div>
+            {linkedBatteryCase && (
+              <div className='flex items-center gap-2'>
+                <span>•</span>
+                <Link
+                  className='flex items-center gap-1 underline'
+                  href={`/dashboard/batteries/${linkedBatteryCase.id}`}
+                >
+                  <span>Battery Case:</span>
+                  <Badge variant='outline' className='text-xs'>
+                    {linkedBatteryCase.serial_number}
+                  </Badge>
+                  <Badge
+                    variant={
+                      linkedBatteryCase.status === 'completed'
+                        ? 'default'
+                        : 'secondary'
+                    }
+                    className='text-xs'
+                  >
+                    {linkedBatteryCase.status.replace('_', ' ')}
+                  </Badge>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -314,32 +386,24 @@ export default function VehicleDetailPage() {
           </TabsContent>
 
           <TabsContent value='attachments' className='space-y-6'>
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-6'>
-                <Form {...form}>
-                  <form
-                    className='space-y-6'
-                    onSubmit={(e) => e.preventDefault()}
+            <div className='mb-4 flex items-center justify-between'>
+              <div className='text-muted-foreground text-sm'>
+                Vehicle-specific attachments
+              </div>
+              {vehicle && (
+                <Button variant='outline' size='sm' asChild>
+                  <Link
+                    href={`/dashboard/tickets/${vehicle.service_ticket_id}`}
                   >
-                    <FormFileUpload
-                      control={form.control}
-                      name={'photos'}
-                      label='Photos'
-                      config={photoUploadConfig}
-                    />
-                    <FormFileUpload
-                      control={form.control}
-                      name={'audio'}
-                      label='Voice Notes'
-                      config={audioUploadConfig}
-                    />
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+                    View Linked Ticket →
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <EnhancedMediaUploader
+              onUpload={handleMediaUpload}
+              maxFileSize={10}
+            />
             <Card>
               <CardHeader>
                 <CardTitle>Existing</CardTitle>

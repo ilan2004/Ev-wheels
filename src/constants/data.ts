@@ -116,6 +116,12 @@ export const navItems: NavItem[] = [
         url: '/dashboard/job-cards/new',
         icon: 'filePlus',
         permissions: [Permission.VIEW_CUSTOMERS]
+      },
+      {
+        title: 'Connected Cases',
+        url: '/dashboard/connected-cases',
+        icon: 'link',
+        permissions: [Permission.VIEW_BATTERIES, Permission.VIEW_CUSTOMERS]
       }
     ],
     permissions: [Permission.VIEW_CUSTOMERS]

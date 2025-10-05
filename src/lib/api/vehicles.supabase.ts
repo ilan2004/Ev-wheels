@@ -131,10 +131,41 @@ class SupabaseVehiclesRepository implements VehiclesApiContract {
       const { data, error } = await query;
       if (error) throw error;
 
+      // Fetch thumbnails for vehicles
+      const vehiclesWithThumbnails = await Promise.all(
+        (data || []).map(async (vehicle: any) => {
+          // Get the first photo attachment for this vehicle
+          const { data: attachments } = await supabase
+            .from('ticket_attachments')
+            .select('storage_path')
+            .eq('ticket_id', vehicle.service_ticket_id)
+            .eq('case_type', 'vehicle')
+            .eq('case_id', vehicle.id)
+            .eq('attachment_type', 'photo')
+            .order('uploaded_at', { ascending: true })
+            .limit(1);
+
+          let thumbnail_url = null;
+          if (attachments && attachments.length > 0) {
+            // Generate signed URL for the thumbnail
+            const { data: urlData } = await supabase.storage
+              .from('media-photos')
+              .createSignedUrl(attachments[0].storage_path, 3600); // 1 hour expiry
+
+            thumbnail_url = urlData?.signedUrl || null;
+          }
+
+          return {
+            ...vehicle,
+            thumbnail_url
+          };
+        })
+      );
+
       return {
         success: true,
         data: {
-          vehicles: (data || []) as any,
+          vehicles: vehiclesWithThumbnails as any,
           totalCount: count || 0
         }
       };

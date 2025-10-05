@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { SectionHeader } from '@/components/layout/section-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CaseManagement } from '@/components/tickets/CaseManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,22 +18,7 @@ import type {
   TicketAttachment
 } from '@/lib/types/service-tickets';
 import type { Customer } from '@/types/bms';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  FormFileUpload,
-  type FileUploadConfig
-} from '@/components/forms/form-file-upload';
-import CaptureControls from '@/components/media/capture-controls';
+import { EnhancedMediaUploader } from '@/components/job-cards/enhanced-media-uploader';
 import { MediaViewerModal } from '@/components/media/media-viewer-modal';
 import { toast } from 'sonner';
 import type { ServiceTicketHistory } from '@/lib/types/service-tickets';
@@ -48,7 +34,11 @@ export default function JobCardDetailPage() {
   const { isAdmin, isTechnician } = useAuth();
   const canEdit = isAdmin || isTechnician;
   const [ticket, setTicket] = useState<
-    (ServiceTicket & { customer?: Customer }) | null
+    | (ServiceTicket & {
+        customer?: Customer;
+        creator?: { username: string; email: string };
+      })
+    | null
   >(null);
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +46,31 @@ export default function JobCardDetailPage() {
   const [historyLoading, setHistoryLoading] = useState(false);
   // Phase 2 state: attachments filter/sort/selection and viewer
   const [attFilter, setAttFilter] = useState<'all' | 'photo' | 'audio'>('all');
+  const [attScopeFilter, setAttScopeFilter] = useState<
+    'all' | 'vehicle' | 'battery'
+  >('all');
+
+  // Read scope from URL params on load
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const scopeParam = urlParams.get('scope');
+      if (scopeParam === 'vehicle' || scopeParam === 'battery') {
+        setAttScopeFilter(scopeParam);
+        // Also switch to attachments tab if scope is specified
+        const tabParam = urlParams.get('tab');
+        if (tabParam === 'attachments') {
+          // Focus the attachments tab
+          setTimeout(() => {
+            const attachmentsTab = document.querySelector(
+              '[value="attachments"]'
+            ) as HTMLElement;
+            attachmentsTab?.click();
+          }, 100);
+        }
+      }
+    }
+  }, []);
   const [attSort, setAttSort] = useState<'newest' | 'oldest' | 'size'>(
     'newest'
   );
@@ -66,6 +81,21 @@ export default function JobCardDetailPage() {
   const [activityFilter, setActivityFilter] = useState<
     'all' | 'created' | 'triaged' | 'status_changed' | 'updated'
   >('all');
+  const [linkedCasesDetails, setLinkedCasesDetails] = useState<{
+    vehicleCase?: {
+      id: string;
+      vehicle_reg_no: string;
+      vehicle_make: string;
+      vehicle_model: string;
+      status: string;
+    };
+    batteryCase?: {
+      id: string;
+      serial_number: string;
+      brand: string;
+      status: string;
+    };
+  }>({});
 
   useEffect(() => {
     const load = async () => {
@@ -73,6 +103,50 @@ export default function JobCardDetailPage() {
       if (res.success && res.data) {
         setTicket(res.data.ticket);
         setAttachments(res.data.attachments);
+
+        // Load linked cases details
+        const casesDetails: any = {};
+
+        if (res.data.ticket.vehicle_case_id) {
+          try {
+            const vehicleRes = await (
+              await import('@/lib/api/vehicles')
+            ).vehiclesApi.fetchVehicle(res.data.ticket.vehicle_case_id);
+
+            if (vehicleRes.success && vehicleRes.data) {
+              casesDetails.vehicleCase = {
+                id: vehicleRes.data.id,
+                vehicle_reg_no: vehicleRes.data.vehicle_reg_no,
+                vehicle_make: vehicleRes.data.vehicle_make,
+                vehicle_model: vehicleRes.data.vehicle_model,
+                status: vehicleRes.data.status
+              };
+            }
+          } catch (error) {
+            console.error('Error loading vehicle case details:', error);
+          }
+        }
+
+        if (res.data.ticket.battery_case_id) {
+          try {
+            const batteryRes = await (
+              await import('@/lib/api/batteries')
+            ).batteryApi.fetchBattery(res.data.ticket.battery_case_id);
+
+            if (batteryRes.success && batteryRes.data) {
+              casesDetails.batteryCase = {
+                id: batteryRes.data.id,
+                serial_number: batteryRes.data.serial_number,
+                brand: batteryRes.data.brand,
+                status: batteryRes.data.status
+              };
+            }
+          } catch (error) {
+            console.error('Error loading battery case details:', error);
+          }
+        }
+
+        setLinkedCasesDetails(casesDetails);
       }
       setLoading(false);
     };
@@ -112,87 +186,25 @@ export default function JobCardDetailPage() {
     loadHistory();
   }, [ticketId]);
 
-  const photoConfig: FileUploadConfig = useMemo(
-    () => ({
-      acceptedTypes: ['image/*'],
-      multiple: true,
-      maxFiles: 8,
-      maxSize: 10 * 1024 * 1024, // 10MB per file
-      onUpload: async (files) => {
-        const res = await serviceTicketsApi.uploadAttachments({
-          ticketId,
-          files,
-          type: 'photo'
-        });
-        if (!res.success)
-          throw new Error(res.error || 'Failed to upload photos');
-        const listed = await serviceTicketsApi.listTicketAttachments(ticketId);
-        if (listed.success && listed.data) setAttachments(listed.data);
-      }
-    }),
-    [ticketId]
-  );
+  const handleMediaUpload = async (files: File[], category: string) => {
+    // Determine attachment type based on category
+    let attachmentType: 'photo' | 'audio' = 'photo';
+    if (category === 'voice-notes') {
+      attachmentType = 'audio';
+    }
 
-  const audioConfig: FileUploadConfig = useMemo(
-    () => ({
-      acceptedTypes: ['audio/*'],
-      multiple: true,
-      maxFiles: 3,
-      maxSize: 15 * 1024 * 1024, // 15MB per file
-      onUpload: async (files) => {
-        const res = await serviceTicketsApi.uploadAttachments({
-          ticketId,
-          files,
-          type: 'audio'
-        });
-        if (!res.success)
-          throw new Error(res.error || 'Failed to upload audio');
-        const listed = await serviceTicketsApi.listTicketAttachments(ticketId);
-        if (listed.success && listed.data) setAttachments(listed.data);
-      }
-    }),
-    [ticketId]
-  );
-
-  const triageSchema = z.object({
-    routeTo: z.enum(['vehicle', 'battery', 'both']),
-    note: z.string().optional()
-  });
-  const triageForm = useForm<{
-    routeTo: 'vehicle' | 'battery' | 'both';
-    note?: string;
-  }>({
-    resolver: zodResolver(triageSchema),
-    defaultValues: { routeTo: 'vehicle', note: '' }
-  });
-
-  const triageTemplates = [
-    'Initial inspection started',
-    'Customer contacted for more details',
-    'Awaiting parts',
-    'Requesting consent for repair'
-  ];
-
-  // Local form context for attachments tab to satisfy FormField and Controller
-  const uploadsForm = useForm<{ photos: File[]; audio: File[] }>({
-    defaultValues: { photos: [], audio: [] }
-  });
-
-  async function onTriageSubmit(values: {
-    routeTo: 'vehicle' | 'battery' | 'both';
-    note?: string;
-  }) {
-    const res = await serviceTicketsApi.triageTicket({
+    const res = await serviceTicketsApi.uploadAttachments({
       ticketId,
-      routeTo: values.routeTo,
-      note: values.note
+      files,
+      type: attachmentType
     });
-    if (!res.success) return toast.error(res.error || 'Failed to triage');
-    toast.success('Job card triaged');
-    // Reload ticket
-    const updated = await serviceTicketsApi.fetchTicketWithRelations(ticketId);
-    if (updated.success && updated.data) setTicket(updated.data.ticket);
-  }
+
+    if (!res.success) throw new Error(res.error || 'Failed to upload files');
+
+    // Refresh attachments list
+    const listed = await serviceTicketsApi.listTicketAttachments(ticketId);
+    if (listed.success && listed.data) setAttachments(listed.data);
+  };
 
   if (loading)
     return (
@@ -275,6 +287,16 @@ export default function JobCardDetailPage() {
                     {ticket.vehicle_reg_no ? `(${ticket.vehicle_reg_no})` : ''}
                   </div>
                 </div>
+                <div>
+                  <div className='text-muted-foreground'>Created By</div>
+                  <div>
+                    {ticket.creator?.username || ticket.creator?.email || '-'}
+                  </div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>Created At</div>
+                  <div>{new Date(ticket.created_at).toLocaleString()}</div>
+                </div>
                 <div className='md:col-span-3'>
                   <div className='text-muted-foreground'>Description</div>
                   <div>{ticket.description || '-'}</div>
@@ -313,186 +335,196 @@ export default function JobCardDetailPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Linked Cases</CardTitle>
+                <CardTitle>Intake Media</CardTitle>
               </CardHeader>
               <CardContent>
-                {!ticket.battery_case_id && !ticket.vehicle_case_id && (
+                {attachments.length === 0 ? (
                   <div className='text-muted-foreground text-sm'>
-                    No linked cases yet.
+                    No media uploaded yet.
                   </div>
-                )}
-                <div className='flex flex-wrap gap-3'>
-                  {ticket.battery_case_id && (
-                    <Button variant='outline' asChild>
-                      <Link
-                        href={`/dashboard/batteries/${ticket.battery_case_id}`}
+                ) : (
+                  <div>
+                    <div className='mb-3 flex items-center justify-between'>
+                      <div className='text-sm'>
+                        <span className='font-medium'>
+                          {
+                            attachments.filter(
+                              (a) => a.attachment_type === 'photo'
+                            ).length
+                          }
+                        </span>{' '}
+                        photos,{' '}
+                        <span className='font-medium'>
+                          {
+                            attachments.filter(
+                              (a) => a.attachment_type === 'audio'
+                            ).length
+                          }
+                        </span>{' '}
+                        audio files
+                        {(ticket.vehicle_case_id || ticket.battery_case_id) && (
+                          <div className='text-muted-foreground mt-1 text-xs'>
+                            {ticket.vehicle_case_id && (
+                              <span>
+                                Vehicle:{' '}
+                                {
+                                  attachments.filter(
+                                    (a) => a.case_type === 'vehicle'
+                                  ).length
+                                }
+                              </span>
+                            )}
+                            {ticket.vehicle_case_id &&
+                              ticket.battery_case_id && (
+                                <span className='mx-1'>•</span>
+                              )}
+                            {ticket.battery_case_id && (
+                              <span>
+                                Battery:{' '}
+                                {
+                                  attachments.filter(
+                                    (a) => a.case_type === 'battery'
+                                  ).length
+                                }
+                              </span>
+                            )}
+                            {attachments.filter(
+                              (a) => !a.case_type || a.case_type === null
+                            ).length > 0 && (
+                              <span>
+                                {ticket.vehicle_case_id ||
+                                ticket.battery_case_id
+                                  ? ' • '
+                                  : ''}
+                                General:{' '}
+                                {
+                                  attachments.filter(
+                                    (a) => !a.case_type || a.case_type === null
+                                  ).length
+                                }
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant='link'
+                        size='sm'
+                        onClick={() => {
+                          const tabsList =
+                            document.querySelector('[role="tablist"]');
+                          const attachmentsTab = tabsList?.querySelector(
+                            '[value="attachments"]'
+                          ) as HTMLElement;
+                          attachmentsTab?.click();
+                        }}
                       >
-                        Battery Case
-                      </Link>
-                    </Button>
-                  )}
-                  {ticket.vehicle_case_id && (
-                    <Button variant='outline'>Vehicle Case</Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Triage & Actions</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-6'>
-                {/* Triage templates */}
-                <div className='flex flex-wrap gap-2'>
-                  {triageTemplates.map((tmpl) => (
-                    <button
-                      key={tmpl}
-                      type='button'
-                      className='bg-muted hover:bg-secondary rounded px-2 py-1 text-xs'
-                      onClick={() => {
-                        const curr = triageForm.getValues('note') || '';
-                        const sep = curr ? '\n' : '';
-                        triageForm.setValue('note', `${curr}${sep}${tmpl}`);
-                      }}
-                    >
-                      {tmpl}
-                    </button>
-                  ))}
-                </div>
-
-                <Form {...triageForm}>
-                  <form
-                    onSubmit={triageForm.handleSubmit(onTriageSubmit)}
-                    className='grid grid-cols-1 gap-4 md:grid-cols-3'
-                  >
-                    <FormField
-                      name='routeTo'
-                      control={triageForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Route To</FormLabel>
-                          <FormControl>
-                            <select
-                              className='rounded border px-2 py-2'
-                              {...field}
-                            >
-                              <option value='vehicle'>Vehicle</option>
-                              <option value='battery'>Battery</option>
-                              <option value='both'>Both</option>
-                            </select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name='note'
-                      control={triageForm.control}
-                      render={({ field }) => (
-                        <FormItem className='md:col-span-2'>
-                          <FormLabel>Note</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder='Optional triage note'
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className='flex justify-end gap-2 md:col-span-3'>
-                      <Button type='submit'>Apply Triage</Button>
+                        View All →
+                      </Button>
                     </div>
-                  </form>
-                </Form>
-
-                <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-                  <div className='md:col-span-2'>
-                    <Textarea
-                      id='approval-note'
-                      placeholder='Approval note (optional)'
-                      className='w-full'
-                    />
-                    {ticket.status === 'waiting_approval' && (
-                      <div className='mt-2 flex flex-wrap gap-2 text-xs'>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          onClick={async () => {
-                            try {
-                              await fetch('/api/notifications/slack', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                  text: `Reminder: approval pending for Job Card ${ticket.ticket_number}`
-                                })
-                              });
-                              toast.success('Reminder sent');
-                            } catch {
-                              toast.error('Failed to send reminder');
-                            }
-                          }}
-                        >
-                          Send reminder
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='secondary'
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(
-                                window.location.href
-                              );
-                              toast.success('Link copied');
-                            } catch {
-                              toast.error('Copy failed');
-                            }
-                          }}
-                        >
-                          Copy link
-                        </Button>
+                    <div className='grid grid-cols-4 gap-2 md:grid-cols-6'>
+                      {attachments
+                        .filter((a) => a.attachment_type === 'photo')
+                        .slice(0, 6)
+                        .map((a) => (
+                          <div key={a.id} className='relative aspect-square'>
+                            <img
+                              src={attUrls[a.id] || a.storage_path}
+                              alt={a.original_name}
+                              className='h-full w-full rounded object-cover'
+                            />
+                          </div>
+                        ))}
+                    </div>
+                    {attachments.filter((a) => a.attachment_type === 'photo')
+                      .length > 6 && (
+                      <div className='text-muted-foreground mt-2 text-xs'>
+                        +
+                        {attachments.filter(
+                          (a) => a.attachment_type === 'photo'
+                        ).length - 6}{' '}
+                        more
                       </div>
                     )}
                   </div>
-                  <div className='flex items-start md:justify-end'>
-                    <Button
-                      onClick={async () => {
-                        const note =
-                          (
-                            document.getElementById(
-                              'approval-note'
-                            ) as HTMLTextAreaElement
-                          )?.value || '';
-                        const res = await serviceTicketsApi.updateTicketStatus(
-                          ticketId,
-                          'waiting_approval',
-                          note
-                        );
-                        if (!res.success)
-                          return toast.error(res.error || 'Failed');
-                        toast.success('Approval requested');
-                        // refresh history
-                        const h =
-                          await serviceTicketsApi.listTicketHistory(ticketId);
-                        if (h.success && h.data) setHistory(h.data);
-                        // refresh ticket to reflect new status and note
-                        const updated =
-                          await serviceTicketsApi.fetchTicketWithRelations(
-                            ticketId
-                          );
-                        if (updated.success && updated.data)
-                          setTicket(updated.data.ticket);
-                      }}
-                      variant='outline'
-                    >
-                      Request Customer Approval
-                    </Button>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
+
+            <CaseManagement
+              ticket={ticket}
+              linkedCasesDetails={linkedCasesDetails}
+              ticketId={ticketId}
+              onRefresh={async () => {
+                // refresh ticket data
+                const res =
+                  await serviceTicketsApi.fetchTicketWithRelations(ticketId);
+                if (res.success && res.data) {
+                  setTicket(res.data.ticket);
+
+                  // Load linked cases details
+                  const casesDetails: any = {};
+
+                  if (res.data.ticket.vehicle_case_id) {
+                    try {
+                      const vehicleRes = await (
+                        await import('@/lib/api/vehicles')
+                      ).vehiclesApi.fetchVehicle(
+                        res.data.ticket.vehicle_case_id
+                      );
+
+                      if (vehicleRes.success && vehicleRes.data) {
+                        casesDetails.vehicleCase = {
+                          id: vehicleRes.data.id,
+                          vehicle_reg_no: vehicleRes.data.vehicle_reg_no,
+                          vehicle_make: vehicleRes.data.vehicle_make,
+                          vehicle_model: vehicleRes.data.vehicle_model,
+                          status: vehicleRes.data.status
+                        };
+                      }
+                    } catch (error) {
+                      console.error(
+                        'Error loading vehicle case details:',
+                        error
+                      );
+                    }
+                  }
+
+                  if (res.data.ticket.battery_case_id) {
+                    try {
+                      const batteryRes = await (
+                        await import('@/lib/api/batteries')
+                      ).batteryApi.fetchBattery(
+                        res.data.ticket.battery_case_id
+                      );
+
+                      if (batteryRes.success && batteryRes.data) {
+                        casesDetails.batteryCase = {
+                          id: batteryRes.data.id,
+                          serial_number: batteryRes.data.serial_number,
+                          brand: batteryRes.data.brand,
+                          status: batteryRes.data.status
+                        };
+                      }
+                    } catch (error) {
+                      console.error(
+                        'Error loading battery case details:',
+                        error
+                      );
+                    }
+                  }
+
+                  setLinkedCasesDetails(casesDetails);
+                }
+
+                // refresh history
+                const historyRes =
+                  await serviceTicketsApi.listTicketHistory(ticketId);
+                if (historyRes.success && historyRes.data) {
+                  setHistory(historyRes.data);
+                }
+              }}
+            />
 
             {/* Assignment removed: technicians self-handle; no assignee */}
           </TabsContent>
@@ -500,74 +532,13 @@ export default function JobCardDetailPage() {
           <TabsContent value='attachments' className='space-y-6'>
             <Card>
               <CardHeader>
-                <CardTitle>Upload</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-6'>
-                <Form {...uploadsForm}>
-                  <div className='space-y-6'>
-                    <div className='space-y-2'>
-                      <FormFileUpload
-                        control={uploadsForm.control}
-                        name={'photos' as const}
-                        label='Photos'
-                        config={photoConfig}
-                      />
-                      <CaptureControls
-                        onPhotos={async (files) => {
-                          const res = await serviceTicketsApi.uploadAttachments(
-                            { ticketId, files, type: 'photo' }
-                          );
-                          if (!res.success) {
-                            toast.error(res.error || 'Failed to upload photo');
-                            return;
-                          }
-                          const listed =
-                            await serviceTicketsApi.listTicketAttachments(
-                              ticketId
-                            );
-                          if (listed.success && listed.data)
-                            setAttachments(listed.data);
-                        }}
-                      />
-                    </div>
-
-                    <div className='space-y-2'>
-                      <FormFileUpload
-                        control={uploadsForm.control}
-                        name={'audio' as const}
-                        label='Voice Notes'
-                        config={audioConfig}
-                      />
-                      <CaptureControls
-                        onAudio={async (files) => {
-                          const res = await serviceTicketsApi.uploadAttachments(
-                            { ticketId, files, type: 'audio' }
-                          );
-                          if (!res.success) {
-                            toast.error(res.error || 'Failed to upload audio');
-                            return;
-                          }
-                          const listed =
-                            await serviceTicketsApi.listTicketAttachments(
-                              ticketId
-                            );
-                          if (listed.success && listed.data)
-                            setAttachments(listed.data);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </Form>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Existing</CardTitle>
+                <CardTitle>Existing Attachments</CardTitle>
               </CardHeader>
               <CardContent className='space-y-3'>
                 {/* Toolbar */}
-                <div className='flex flex-wrap items-center gap-2'>
+                <div className='flex flex-wrap items-center gap-4'>
                   <div className='flex items-center gap-1 text-sm'>
+                    <span className='text-muted-foreground mr-1'>Type:</span>
                     <button
                       onClick={() => setAttFilter('all')}
                       className={`rounded px-2 py-1 ${attFilter === 'all' ? 'bg-secondary' : 'hover:bg-muted'}`}
@@ -587,6 +558,35 @@ export default function JobCardDetailPage() {
                       Audio
                     </button>
                   </div>
+
+                  {/* Case Type Scope Filter */}
+                  {(ticket.vehicle_case_id || ticket.battery_case_id) && (
+                    <div className='flex items-center gap-1 text-sm'>
+                      <span className='text-muted-foreground mr-1'>Scope:</span>
+                      <button
+                        onClick={() => setAttScopeFilter('all')}
+                        className={`rounded px-2 py-1 ${attScopeFilter === 'all' ? 'bg-secondary' : 'hover:bg-muted'}`}
+                      >
+                        All
+                      </button>
+                      {ticket.vehicle_case_id && (
+                        <button
+                          onClick={() => setAttScopeFilter('vehicle')}
+                          className={`rounded px-2 py-1 ${attScopeFilter === 'vehicle' ? 'bg-secondary' : 'hover:bg-muted'}`}
+                        >
+                          Vehicle
+                        </button>
+                      )}
+                      {ticket.battery_case_id && (
+                        <button
+                          onClick={() => setAttScopeFilter('battery')}
+                          className={`rounded px-2 py-1 ${attScopeFilter === 'battery' ? 'bg-secondary' : 'hover:bg-muted'}`}
+                        >
+                          Battery
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className='ml-auto flex items-center gap-2 text-sm'>
                     <span className='text-muted-foreground'>Sort</span>
                     <select
@@ -635,6 +635,14 @@ export default function JobCardDetailPage() {
                             ? a.attachment_type === 'photo'
                             : a.attachment_type === 'audio'
                       )
+                      .filter((a) => {
+                        if (attScopeFilter === 'all') return true;
+                        if (attScopeFilter === 'vehicle')
+                          return a.case_type === 'vehicle';
+                        if (attScopeFilter === 'battery')
+                          return a.case_type === 'battery';
+                        return true;
+                      })
                       .sort((a, b) => {
                         if (attSort === 'size')
                           return (b.file_size || 0) - (a.file_size || 0);
@@ -751,14 +759,29 @@ export default function JobCardDetailPage() {
                 )}
               </CardContent>
             </Card>
+
+            <EnhancedMediaUploader
+              onUpload={handleMediaUpload}
+              maxFileSize={10}
+            />
+
             <MediaViewerModal
-              attachments={attachments.filter((a) =>
-                attFilter === 'all'
-                  ? true
-                  : attFilter === 'photo'
-                    ? a.attachment_type === 'photo'
-                    : a.attachment_type === 'audio'
-              )}
+              attachments={attachments
+                .filter((a) =>
+                  attFilter === 'all'
+                    ? true
+                    : attFilter === 'photo'
+                      ? a.attachment_type === 'photo'
+                      : a.attachment_type === 'audio'
+                )
+                .filter((a) => {
+                  if (attScopeFilter === 'all') return true;
+                  if (attScopeFilter === 'vehicle')
+                    return a.case_type === 'vehicle';
+                  if (attScopeFilter === 'battery')
+                    return a.case_type === 'battery';
+                  return true;
+                })}
               index={viewerIndex}
               open={viewerOpen}
               onClose={() => setViewerOpen(false)}
@@ -879,7 +902,10 @@ function StickyTicketHeader({
   canEdit,
   onStatusChange
 }: {
-  ticket: ServiceTicket & { customer?: Customer };
+  ticket: ServiceTicket & {
+    customer?: Customer;
+    creator?: { username: string; email: string };
+  };
   canEdit: boolean;
   onStatusChange: (s: ServiceTicket['status']) => Promise<void>;
 }) {

@@ -129,3 +129,63 @@ export interface VehicleStatusHistory {
   changed_at: string;
   notes?: string | null;
 }
+
+// Battery status type (matching VehicleStatus for consistency)
+export type BatteryStatus =
+  | 'received'
+  | 'diagnosed'
+  | 'in_progress'
+  | 'completed'
+  | 'delivered'
+  | 'cancelled'
+  | 'on_hold';
+
+// Connected case for tickets triaged to both vehicle and battery
+export interface ConnectedCase {
+  ticketId: string;
+  ticketNumber: string;
+  ticketStatus: ServiceTicketStatus;
+  createdAt: string;
+  updatedAt: string;
+  customer?: {
+    id: string;
+    name: string;
+    contact?: string;
+  };
+  vehicleCase?: {
+    id: string;
+    status: VehicleStatus;
+    regNo: string;
+    make?: string;
+    model?: string;
+    receivedDate: string;
+  };
+  batteryCase?: {
+    id: string;
+    status: BatteryStatus;
+    serial: string;
+    packType?: string;
+    receivedDate: string;
+  };
+  location?: Location;
+}
+
+// Utility types for status management
+export type CaseStatus = VehicleStatus | BatteryStatus;
+
+export interface StatusInfo {
+  label: string;
+  color: 'green' | 'yellow' | 'blue' | 'purple' | 'gray' | 'red';
+  bgClass: string;
+  textClass: string;
+}
+
+export interface ConnectedCaseFilters {
+  ticketStatus?: ServiceTicketStatus;
+  vehicleStatus?: VehicleStatus;
+  batteryStatus?: BatteryStatus;
+  dateFrom?: string;
+  dateTo?: string;
+  customerId?: string;
+  locationId?: string;
+}

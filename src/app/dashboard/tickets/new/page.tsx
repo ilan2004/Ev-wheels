@@ -20,16 +20,11 @@ import {
 } from '@/components/ui/form';
 import { SectionHeader } from '@/components/layout/section-header';
 import { serviceTicketsApi } from '@/lib/api/service-tickets';
-import {
-  FormFileUpload,
-  FileUploadConfig
-} from '@/components/forms/form-file-upload';
-import CaptureControls from '@/components/media/capture-controls';
+import { UnifiedMediaUploader } from '@/components/job-cards/unified-media-uploader';
 import { CustomerPicker } from '@/components/customers/customer-picker';
 import { toast } from 'sonner';
 import PageContainer from '@/components/layout/page-container';
 import { useRequireAuth } from '@/lib/auth/use-require-auth';
-import { GuidedIntakePhotos } from '@/components/media/guided-intake-photos';
 
 const schema = z.object({
   intake_type: z.enum(['vehicle', 'battery']).default('vehicle'),
@@ -67,12 +62,12 @@ export default function NewServiceTicketPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [photoProgresses, setPhotoProgresses] = useState<
-    Record<string, number>
-  >({});
-  const [audioProgresses, setAudioProgresses] = useState<
-    Record<string, number>
-  >({});
+  const [mandatoryPhotos, setMandatoryPhotos] = useState<Record<string, File>>(
+    {}
+  );
+  const [optionalFiles, setOptionalFiles] = useState<Record<string, File[]>>(
+    {}
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -90,30 +85,16 @@ export default function NewServiceTicketPage() {
     }
   });
 
-  const photoUploadConfig: FileUploadConfig = useMemo(
-    () => ({
-      acceptedTypes: ['image/*'],
-      maxFiles: 8,
-      multiple: true,
-      maxSize: 10 * 1024 * 1024,
-      progresses: photoProgresses
-    }),
-    [photoProgresses]
-  );
-
-  const audioUploadConfig: FileUploadConfig = useMemo(
-    () => ({
-      acceptedTypes: ['audio/*'],
-      maxFiles: 3,
-      multiple: true,
-      maxSize: 15 * 1024 * 1024,
-      progresses: audioProgresses
-    }),
-    [audioProgresses]
-  );
-
   const createdTicketId = React.useRef<string | null>(null);
-  const [guidedPhotos, setGuidedPhotos] = useState<File[]>([]);
+
+  // Track intake type and completion
+  const intakeType = form.watch('intake_type');
+  const isVehicleIntake = intakeType === 'vehicle';
+  const mandatoryPhotosCount = Object.keys(mandatoryPhotos).length;
+  const mandatoryPhotosComplete = isVehicleIntake
+    ? mandatoryPhotosCount === 4
+    : true;
+  const totalOptionalFiles = Object.values(optionalFiles).flat().length;
 
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
@@ -133,31 +114,31 @@ export default function NewServiceTicketPage() {
       createdTicketId.current = newTicketId;
       toast.success(`Job card ${res.data.ticket_number || ''} created`);
 
-      // If user added files in the form, upload them now before navigating
-      const photos = [
-        ...guidedPhotos,
-        ...((values.photos as unknown as File[]) || [])
-      ];
-      const audio = (values.audio as unknown as File[]) || [];
+      // Collect all files for upload
+      const mandatoryPhotoFiles = Object.values(mandatoryPhotos);
+      const optionalPhotoFiles = optionalFiles['additional'] || [];
+      const voiceFiles = optionalFiles['voice'] || [];
 
-      if (photos.length > 0) {
+      // Combine all photos
+      const allPhotos = [...mandatoryPhotoFiles, ...optionalPhotoFiles];
+      const allAudio = voiceFiles;
+
+      if (allPhotos.length > 0) {
+        toast.info('Uploading photos...');
         const up = await serviceTicketsApi.uploadAttachments({
           ticketId: newTicketId,
-          files: photos,
-          type: 'photo',
-          onProgress: (file, progress) =>
-            setPhotoProgresses((p) => ({ ...p, [file.name]: progress }))
+          files: allPhotos,
+          type: 'photo'
         });
         if (!up.success) throw new Error(up.error || 'Failed to upload photos');
       }
 
-      if (audio.length > 0) {
+      if (allAudio.length > 0) {
+        toast.info('Uploading audio...');
         const upa = await serviceTicketsApi.uploadAttachments({
           ticketId: newTicketId,
-          files: audio,
-          type: 'audio',
-          onProgress: (file, progress) =>
-            setAudioProgresses((p) => ({ ...p, [file.name]: progress }))
+          files: allAudio,
+          type: 'audio'
         });
         if (!upa.success)
           throw new Error(upa.error || 'Failed to upload audio');
@@ -281,117 +262,12 @@ export default function NewServiceTicketPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Media Attachments</CardTitle>
-                  </CardHeader>
-                  <CardContent className='space-y-6'>
-                    {/* Intake Type */}
-                    <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-                      <FormField
-                        control={form.control}
-                        name={'intake_type' as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Intake Type</FormLabel>
-                            <FormControl>
-                              <div className='flex gap-2'>
-                                <Button
-                                  type='button'
-                                  variant={
-                                    field.value === 'vehicle'
-                                      ? 'default'
-                                      : 'outline'
-                                  }
-                                  size='sm'
-                                  onClick={() => field.onChange('vehicle')}
-                                >
-                                  Vehicle
-                                </Button>
-                                <Button
-                                  type='button'
-                                  variant={
-                                    field.value === 'battery'
-                                      ? 'default'
-                                      : 'outline'
-                                  }
-                                  size='sm'
-                                  onClick={() => field.onChange('battery')}
-                                >
-                                  Battery
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Guided Required Photos */}
-                    <div>
-                      <div className='mb-2 text-sm font-medium'>
-                        Required Photos
-                      </div>
-                      <GuidedIntakePhotos
-                        mode={
-                          form.getValues('intake_type') as 'vehicle' | 'battery'
-                        }
-                        onFilesChange={(files) => setGuidedPhotos(files)}
-                      />
-                      <div className='text-muted-foreground mt-1 text-xs'>
-                        {guidedPhotos.length} of{' '}
-                        {(form.getValues('intake_type') as any) === 'vehicle'
-                          ? 4
-                          : 2}{' '}
-                        required
-                      </div>
-                    </div>
-                    <div className='space-y-2'>
-                      <div className='text-muted-foreground text-xs'>
-                        Optional additional photos (beyond required)
-                      </div>
-                      <FormFileUpload
-                        control={form.control}
-                        name={'photos' as any}
-                        label='Photos'
-                        description='Upload intake photos (up to 8, 10MB each)'
-                        config={photoUploadConfig}
-                        className=''
-                      />
-                      <CaptureControls
-                        onPhotos={(files) => {
-                          const current =
-                            (form.getValues('photos') as unknown as File[]) ||
-                            [];
-                          form.setValue('photos' as any, [
-                            ...current,
-                            ...files
-                          ]);
-                        }}
-                      />
-                    </div>
-
-                    <div className='space-y-2'>
-                      <FormFileUpload
-                        control={form.control}
-                        name={'audio' as any}
-                        label='Voice Notes'
-                        description='Upload short voice notes (up to 3, 15MB each)'
-                        config={audioUploadConfig}
-                        className=''
-                      />
-                      <CaptureControls
-                        onAudio={(files) => {
-                          const current =
-                            (form.getValues('audio') as unknown as File[]) ||
-                            [];
-                          form.setValue('audio' as any, [...current, ...files]);
-                        }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Unified Media Upload */}
+                <UnifiedMediaUploader
+                  intakeType={intakeType as 'vehicle' | 'battery'}
+                  onMandatoryPhotosChange={setMandatoryPhotos}
+                  onOptionalFilesChange={setOptionalFiles}
+                />
 
                 <div className='flex items-center justify-end gap-3'>
                   <Button
@@ -403,15 +279,21 @@ export default function NewServiceTicketPage() {
                   </Button>
                   <Button
                     type='submit'
-                    disabled={(() => {
-                      const type = form.getValues('intake_type') as
-                        | 'vehicle'
-                        | 'battery';
-                      const required = type === 'vehicle' ? 4 : 2;
-                      return isSubmitting || guidedPhotos.length < required;
-                    })()}
+                    disabled={
+                      isSubmitting ||
+                      (isVehicleIntake && !mandatoryPhotosComplete)
+                    }
                   >
                     {isSubmitting ? 'Saving...' : 'Save Ticket'}
+                    {mandatoryPhotosCount + totalOptionalFiles > 0 && (
+                      <span className='ml-1 text-xs opacity-75'>
+                        ({mandatoryPhotosCount + totalOptionalFiles} file
+                        {mandatoryPhotosCount + totalOptionalFiles !== 1
+                          ? 's'
+                          : ''}
+                        )
+                      </span>
+                    )}
                   </Button>
                 </div>
               </form>
@@ -422,14 +304,63 @@ export default function NewServiceTicketPage() {
               <CardHeader>
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
-              <CardContent className='text-muted-foreground space-y-2 text-sm'>
-                <p>
-                  Photos and audio uploads will start after the ticket is
-                  created. You can add more later from the ticket page.
-                </p>
-                <p>
-                  Customer creation will be added as a quick action in a later
-                  iteration.
+              <CardContent className='text-muted-foreground space-y-3 text-sm'>
+                <div className='rounded-lg border border-blue-200 bg-blue-50 p-3'>
+                  <p className='mb-2 text-sm font-semibold text-blue-900'>
+                    📸 Media Upload
+                  </p>
+                  <div className='space-y-1.5 text-xs text-blue-800'>
+                    {isVehicleIntake ? (
+                      <>
+                        <p>
+                          • <strong>Required:</strong> 4 vehicle photos (Front,
+                          Rear, Left, Right)
+                        </p>
+                        <p>
+                          • <strong>Optional:</strong> Additional photos & voice
+                          notes
+                        </p>
+                        <div className='mt-2 border-t border-blue-200 pt-2'>
+                          <div className='flex items-center justify-between'>
+                            <span>Required Photos:</span>
+                            <span className='font-bold'>
+                              {mandatoryPhotosCount} / 4{' '}
+                              {mandatoryPhotosComplete && '✓'}
+                            </span>
+                          </div>
+                          {totalOptionalFiles > 0 && (
+                            <div className='mt-1 flex items-center justify-between'>
+                              <span>Optional Files:</span>
+                              <span className='font-bold'>
+                                {totalOptionalFiles}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p>• Upload battery photos and voice notes</p>
+                        <p>• All media is optional for battery cases</p>
+                        {totalOptionalFiles > 0 && (
+                          <div className='mt-2 border-t border-blue-200 pt-2'>
+                            <div className='flex items-center justify-between'>
+                              <span>Files Ready:</span>
+                              <span className='font-bold'>
+                                {totalOptionalFiles}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <p className='text-xs'>
+                  <strong>💡 Quick Start:</strong> Use the tabs in the media
+                  upload section to add required photos first, then optional
+                  media.
                 </p>
               </CardContent>
             </Card>

@@ -49,7 +49,8 @@ import {
   IconDownload,
   IconDots,
   IconCar,
-  IconSearch
+  IconSearch,
+  IconLink
 } from '@tabler/icons-react';
 
 export type Icon = React.ComponentType<IconProps>;
@@ -108,5 +109,6 @@ export const Icons = {
   alertTriangle: IconAlertTriangle,
   plus: IconPlus,
   car: IconCar,
-  search: IconSearch
+  search: IconSearch,
+  link: IconLink
 };

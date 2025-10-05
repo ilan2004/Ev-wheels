@@ -28,10 +28,7 @@ import { BatteryDiagnostics } from './battery-diagnostics';
 import { batteryApi } from '@/lib/api/batteries';
 import { serviceTicketsApi } from '@/lib/api/service-tickets';
 import Link from 'next/link';
-import {
-  FormFileUpload,
-  type FileUploadConfig
-} from '@/components/forms/form-file-upload';
+import { EnhancedMediaUploader } from '@/components/job-cards/enhanced-media-uploader';
 import type { TicketAttachment } from '@/lib/types/service-tickets';
 import { supabase } from '@/lib/supabase/client';
 
@@ -56,12 +53,13 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
     ticket_number: string;
   } | null>(null);
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
-  const [photoProgresses, setPhotoProgresses] = useState<
-    Record<string, number>
-  >({});
-  const [audioProgresses, setAudioProgresses] = useState<
-    Record<string, number>
-  >({});
+  const [linkedVehicleCase, setLinkedVehicleCase] = useState<{
+    id: string;
+    vehicle_reg_no: string;
+    vehicle_make: string;
+    vehicle_model: string;
+    status: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchBatteryData = async () => {
@@ -97,7 +95,43 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
   useEffect(() => {
     const loadLinked = async () => {
       const res = await serviceTicketsApi.findTicketByBatteryCaseId(batteryId);
-      if (res.success) setLinkedTicket(res.data || null);
+      if (res.success) {
+        setLinkedTicket(res.data || null);
+
+        // If we have a linked ticket, check for vehicle case
+        if (res.data) {
+          try {
+            const ticketRes = await serviceTicketsApi.fetchTicketWithRelations(
+              res.data.id
+            );
+            if (
+              ticketRes.success &&
+              ticketRes.data &&
+              ticketRes.data.ticket.vehicle_case_id
+            ) {
+              // Fetch vehicle case details
+              const vehicleRes = await (
+                await import('@/lib/api/vehicles')
+              ).vehiclesApi.fetchVehicle(ticketRes.data.ticket.vehicle_case_id);
+
+              if (vehicleRes.success && vehicleRes.data) {
+                setLinkedVehicleCase({
+                  id: vehicleRes.data.id,
+                  vehicle_reg_no: vehicleRes.data.vehicle_reg_no,
+                  vehicle_make: vehicleRes.data.vehicle_make,
+                  vehicle_model: vehicleRes.data.vehicle_model,
+                  status: vehicleRes.data.status
+                });
+              }
+            }
+          } catch (error) {
+            console.error(
+              '[Battery Detail] Error loading linked vehicle case:',
+              error
+            );
+          }
+        }
+      }
     };
     loadLinked();
   }, [batteryId]);
@@ -188,6 +222,33 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
     }
   };
 
+  const handleMediaUpload = async (files: File[], category: string) => {
+    if (!linkedTicket) throw new Error('No linked ticket');
+
+    // Determine attachment type based on category
+    let attachmentType: 'photo' | 'audio' = 'photo';
+    if (category === 'voice-notes') {
+      attachmentType = 'audio';
+    }
+
+    const res = await serviceTicketsApi.uploadAttachments({
+      ticketId: linkedTicket.id,
+      files,
+      type: attachmentType,
+      caseType: 'battery',
+      caseId: batteryId
+    });
+
+    if (!res.success) throw new Error(res.error || 'Failed to upload files');
+
+    // Refresh attachments list
+    const listed = await serviceTicketsApi.listBatteryAttachments(
+      linkedTicket.id,
+      batteryId
+    );
+    if (listed.success && listed.data) setAttachments(listed.data);
+  };
+
   const handleGoBack = () => {
     router.push('/dashboard/batteries');
   };
@@ -273,6 +334,33 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
                 </Link>
               </div>
             )}
+            {linkedVehicleCase && (
+              <div className='mt-2 flex items-center gap-2 text-xs'>
+                <span className='text-muted-foreground'>Vehicle Case:</span>
+                <Link
+                  className='flex items-center gap-1 underline'
+                  href={`/dashboard/vehicles/${linkedVehicleCase.id}`}
+                >
+                  <Badge variant='outline' className='text-xs'>
+                    {linkedVehicleCase.vehicle_reg_no || 'No Reg'}
+                  </Badge>
+                  <span>
+                    {linkedVehicleCase.vehicle_make}{' '}
+                    {linkedVehicleCase.vehicle_model}
+                  </span>
+                  <Badge
+                    variant={
+                      linkedVehicleCase.status === 'completed'
+                        ? 'default'
+                        : 'secondary'
+                    }
+                    className='text-xs'
+                  >
+                    {linkedVehicleCase.status.replace('_', ' ')}
+                  </Badge>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
         <div className='flex w-full flex-col gap-2 sm:flex-row lg:w-auto'>
@@ -291,6 +379,42 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
         </div>
       </div>
 
+      {/* Custom breadcrumb with connectivity */}
+      {linkedTicket && (
+        <div className='text-muted-foreground flex items-center gap-2 text-sm'>
+          <Link href='/dashboard' className='hover:underline'>
+            Dashboard
+          </Link>
+          <span>/</span>
+          <Link href='/dashboard/job-cards' className='hover:underline'>
+            Job Cards
+          </Link>
+          <span>/</span>
+          <Link
+            href={`/dashboard/job-cards/${linkedTicket.id}`}
+            className='hover:underline'
+          >
+            {linkedTicket.ticket_number}
+          </Link>
+          <span>/</span>
+          <span className='font-medium'>Battery</span>
+          {linkedVehicleCase && (
+            <>
+              <span className='mx-2'>•</span>
+              <Link
+                href={`/dashboard/vehicles/${linkedVehicleCase.id}`}
+                className='flex items-center gap-1 hover:underline'
+              >
+                <span className='text-xs'>Also:</span>
+                <Badge variant='outline' className='text-xs'>
+                  Vehicle
+                </Badge>
+              </Link>
+            </>
+          )}
+        </div>
+      )}
+
       <div className='grid grid-cols-1 gap-6 xl:grid-cols-3'>
         {/* Main Content */}
         <div className='order-2 xl:order-1 xl:col-span-2'>
@@ -308,9 +432,10 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
               }
             }}
           >
-            <TabsList className='grid w-full grid-cols-3'>
+            <TabsList className='grid w-full grid-cols-4'>
               <TabsTrigger value='overview'>Overview</TabsTrigger>
               <TabsTrigger value='diagnostics'>Diagnostics</TabsTrigger>
+              <TabsTrigger value='attachments'>Attachments</TabsTrigger>
               <TabsTrigger value='history'>History</TabsTrigger>
             </TabsList>
 
@@ -572,93 +697,28 @@ export function BatteryDetails({ batteryId }: BatteryDetailsProps) {
               />
             </TabsContent>
 
-            <TabsContent value='attachments'>
+            <TabsContent value='attachments' className='space-y-6'>
               {linkedTicket ? (
                 <>
+                  <div className='mb-4 flex items-center justify-between'>
+                    <div className='text-muted-foreground text-sm'>
+                      Battery-specific attachments
+                    </div>
+                    <Button variant='outline' size='sm' asChild>
+                      <Link
+                        href={`/dashboard/job-cards/${linkedTicket.id}?tab=attachments&scope=battery`}
+                      >
+                        View All Battery Attachments →
+                      </Link>
+                    </Button>
+                  </div>
+                  <EnhancedMediaUploader
+                    onUpload={handleMediaUpload}
+                    maxFileSize={10}
+                  />
                   <Card>
                     <CardHeader>
-                      <CardTitle>Upload</CardTitle>
-                    </CardHeader>
-                    <CardContent className='space-y-6'>
-                      <FormFileUpload
-                        control={{} as any}
-                        name={'photos' as any}
-                        label='Photos'
-                        config={
-                          {
-                            acceptedTypes: ['image/*'],
-                            multiple: true,
-                            maxFiles: 8,
-                            maxSize: 10 * 1024 * 1024,
-                            progresses: photoProgresses,
-                            onUpload: async (files) => {
-                              const api = serviceTicketsApi;
-                              const res = await api.uploadAttachments({
-                                ticketId: linkedTicket.id,
-                                files,
-                                type: 'photo',
-                                caseType: 'battery',
-                                caseId: batteryId,
-                                onProgress: (file, progress) =>
-                                  setPhotoProgresses((p) => ({
-                                    ...p,
-                                    [file.name]: progress
-                                  }))
-                              });
-                              if (!res.success)
-                                throw new Error(res.error || 'Upload failed');
-                              const listed = await api.listBatteryAttachments(
-                                linkedTicket.id,
-                                batteryId
-                              );
-                              if (listed.success && listed.data)
-                                setAttachments(listed.data);
-                            }
-                          } as FileUploadConfig
-                        }
-                      />
-                      <FormFileUpload
-                        control={{} as any}
-                        name={'audio' as any}
-                        label='Voice Notes'
-                        config={
-                          {
-                            acceptedTypes: ['audio/*'],
-                            multiple: true,
-                            maxFiles: 3,
-                            maxSize: 15 * 1024 * 1024,
-                            progresses: audioProgresses,
-                            onUpload: async (files) => {
-                              const api = serviceTicketsApi;
-                              const res = await api.uploadAttachments({
-                                ticketId: linkedTicket.id,
-                                files,
-                                type: 'audio',
-                                caseType: 'battery',
-                                caseId: batteryId,
-                                onProgress: (file, progress) =>
-                                  setAudioProgresses((p) => ({
-                                    ...p,
-                                    [file.name]: progress
-                                  }))
-                              });
-                              if (!res.success)
-                                throw new Error(res.error || 'Upload failed');
-                              const listed = await api.listBatteryAttachments(
-                                linkedTicket.id,
-                                batteryId
-                              );
-                              if (listed.success && listed.data)
-                                setAttachments(listed.data);
-                            }
-                          } as FileUploadConfig
-                        }
-                      />
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Existing</CardTitle>
+                      <CardTitle>Existing Attachments</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {attachments.length === 0 ? (

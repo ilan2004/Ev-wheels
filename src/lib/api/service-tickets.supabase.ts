@@ -88,11 +88,15 @@ export class SupabaseServiceTicketsRepository {
 
   async fetchTicketWithRelations(id: string): Promise<
     ApiResponse<{
-      ticket: ServiceTicket & { customer?: Customer };
+      ticket: ServiceTicket & {
+        customer?: Customer;
+        creator?: { username: string; email: string };
+      };
       attachments: TicketAttachment[];
     }>
   > {
     try {
+      // Fetch ticket and attachments
       const [
         { data: ticket, error: tErr },
         { data: attachments, error: aErr }
@@ -108,11 +112,32 @@ export class SupabaseServiceTicketsRepository {
           .eq('ticket_id', id)
           .order('uploaded_at', { ascending: false })
       ]);
+
       if (tErr) throw tErr;
       if (aErr) throw aErr;
+
+      // Fetch creator profile separately (non-critical)
+      let creator: { username: string; email: string } | null = null;
+      if (ticket?.created_by) {
+        const { data: creatorData } = await supabase
+          .from('profiles')
+          .select('username, email')
+          .eq('user_id', ticket.created_by)
+          .single();
+        creator = creatorData || null;
+      }
+
+      const ticketWithCreator = {
+        ...ticket,
+        creator: creator || undefined
+      };
+
       return {
         success: true,
-        data: { ticket: ticket as any, attachments: (attachments || []) as any }
+        data: {
+          ticket: ticketWithCreator as any,
+          attachments: (attachments || []) as any
+        }
       };
     } catch (error) {
       console.error('Error fetching ticket:', error);
@@ -383,6 +408,51 @@ export class SupabaseServiceTicketsRepository {
         .eq('id', ticketId);
       if (uErr) throw uErr;
 
+      // Link existing attachments to the created cases
+      // This allows attachments uploaded to the job card to flow to vehicle/battery sections
+      if (vehicle_case_id) {
+        console.log('[Triage] Linking attachments to vehicle case:', {
+          ticketId,
+          vehicle_case_id
+        });
+        const { data: updateResult, error: linkErr } = await supabase
+          .from('ticket_attachments')
+          .update({
+            case_type: 'vehicle',
+            case_id: vehicle_case_id
+          })
+          .eq('ticket_id', ticketId)
+          .is('case_id', null)
+          .select(); // Add select to see what was updated
+
+        if (linkErr) {
+          console.error('[Triage] Error linking attachments:', linkErr);
+        } else {
+          console.log(
+            '[Triage] Successfully linked',
+            updateResult?.length || 0,
+            'attachments to vehicle'
+          );
+        }
+      }
+
+      if (battery_case_id && routeTo === 'battery') {
+        // For battery-only route, link all attachments to battery
+        await supabase
+          .from('ticket_attachments')
+          .update({
+            case_type: 'battery',
+            case_id: battery_case_id
+          })
+          .eq('ticket_id', ticketId)
+          .is('case_id', null);
+      } else if (battery_case_id && routeTo === 'both') {
+        // For 'both' route, photos go to vehicle (already done above)
+        // Audio/voice notes can go to battery or duplicate to both
+        // For now, we'll keep them with vehicle since they're already linked
+        // In the future, you could duplicate audio attachments to battery case
+      }
+
       // Optional Slack notification for triage routing
       try {
         await fetch('/api/notifications/slack', {
@@ -492,6 +562,34 @@ export class SupabaseServiceTicketsRepository {
       };
     }
   }
+
+  async findTicketByVehicleCaseId(
+    vehicleId: string
+  ): Promise<ApiResponse<{ id: string; ticket_number: string } | null>> {
+    try {
+      const { data, error } = await supabase
+        .from('service_tickets')
+        .select('id, ticket_number')
+        .eq('vehicle_case_id', vehicleId)
+        .single();
+      if (error) {
+        if ((error as any).code === 'PGRST116') {
+          return { success: true, data: null };
+        }
+        throw error;
+      }
+      return { success: true, data: data as any };
+    } catch (error) {
+      console.error('Error finding ticket by vehicle case id:', error);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch linked ticket'
+      };
+    }
+  }
   async listTicketHistory(
     ticketId: string
   ): Promise<
@@ -521,6 +619,23 @@ export class SupabaseServiceTicketsRepository {
     vehicleCaseId: string
   ): Promise<ApiResponse<TicketAttachment[]>> {
     try {
+      console.log('[listVehicleAttachments] Querying with:', {
+        ticketId,
+        vehicleCaseId,
+        case_type: 'vehicle'
+      });
+
+      // First check ALL attachments for this ticket
+      const { data: allAttachments } = await supabase
+        .from('ticket_attachments')
+        .select('id, original_name, case_type, case_id')
+        .eq('ticket_id', ticketId);
+
+      console.log(
+        '[listVehicleAttachments] ALL attachments for ticket:',
+        allAttachments
+      );
+
       const { data, error } = await supabase
         .from('ticket_attachments')
         .select('*')
@@ -528,6 +643,21 @@ export class SupabaseServiceTicketsRepository {
         .eq('case_type', 'vehicle')
         .eq('case_id', vehicleCaseId)
         .order('uploaded_at', { ascending: false });
+
+      console.log('[listVehicleAttachments] Query result:', {
+        success: !error,
+        count: data?.length || 0,
+        error: error?.message,
+        actualData: data
+          ? data.map((d) => ({
+              id: d.id,
+              name: d.original_name,
+              case_type: d.case_type,
+              case_id: d.case_id
+            }))
+          : []
+      });
+
       if (error) throw error;
       return { success: true, data: (data || []) as any };
     } catch (error) {
@@ -605,6 +735,135 @@ export class SupabaseServiceTicketsRepository {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to delete attachment'
+      };
+    }
+  }
+
+  async listConnectedCases(
+    params: {
+      limit?: number;
+      offset?: number;
+      status?: import('@/lib/types/service-tickets').ServiceTicketStatus;
+    } = {}
+  ): Promise<
+    ApiResponse<import('@/lib/types/service-tickets').ConnectedCase[]>
+  > {
+    try {
+      const isAdmin = await isCurrentUserAdmin();
+      const role = await getCurrentUserRole();
+      const isFrontDesk = role === 'front_desk_manager';
+
+      // Build query to fetch tickets with both vehicle and battery cases
+      let query = supabase
+        .from('service_tickets')
+        .select(
+          `
+          id,
+          ticket_number,
+          status,
+          created_at,
+          updated_at,
+          customer:customers(id, name, contact),
+          location:locations(id, name, code),
+          vehicle_case:vehicle_cases!vehicle_case_id(
+            id,
+            status,
+            vehicle_reg_no,
+            vehicle_make,
+            vehicle_model,
+            received_date
+          ),
+          battery_case:battery_records!battery_case_id(
+            id,
+            status,
+            serial_number,
+            brand,
+            model,
+            created_at
+          )
+        `
+        )
+        .not('vehicle_case_id', 'is', null)
+        .not('battery_case_id', 'is', null)
+        .order('created_at', { ascending: false }) as any;
+
+      // Apply location scoping
+      query = scopeQuery('service_tickets', query, { isAdmin, isFrontDesk });
+
+      // Apply filters
+      if (params.status) {
+        query = query.eq('status', params.status);
+      }
+
+      if (params.limit) {
+        query = query.limit(params.limit);
+      }
+
+      if (params.offset) {
+        query = query.range(
+          params.offset,
+          params.offset + (params.limit || 50) - 1
+        );
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Transform the data to match ConnectedCase interface
+      const connectedCases: import('@/lib/types/service-tickets').ConnectedCase[] =
+        (data || []).map((ticket: any) => ({
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticket_number,
+          ticketStatus: ticket.status,
+          createdAt: ticket.created_at,
+          updatedAt: ticket.updated_at,
+          customer: ticket.customer
+            ? {
+                id: ticket.customer.id,
+                name: ticket.customer.name,
+                contact: ticket.customer.contact
+              }
+            : undefined,
+          vehicleCase: ticket.vehicle_case
+            ? {
+                id: ticket.vehicle_case.id,
+                status: ticket.vehicle_case.status,
+                regNo: ticket.vehicle_case.vehicle_reg_no,
+                make: ticket.vehicle_case.vehicle_make,
+                model: ticket.vehicle_case.vehicle_model,
+                receivedDate: ticket.vehicle_case.received_date
+              }
+            : undefined,
+          batteryCase: ticket.battery_case
+            ? {
+                id: ticket.battery_case.id,
+                status: ticket.battery_case.status,
+                serial: ticket.battery_case.serial_number,
+                packType:
+                  ticket.battery_case.brand && ticket.battery_case.model
+                    ? `${ticket.battery_case.brand} ${ticket.battery_case.model}`.trim()
+                    : ticket.battery_case.brand || undefined,
+                receivedDate: ticket.battery_case.created_at
+              }
+            : undefined,
+          location: ticket.location
+            ? {
+                id: ticket.location.id,
+                name: ticket.location.name,
+                code: ticket.location.code
+              }
+            : undefined
+        }));
+
+      return { success: true, data: connectedCases };
+    } catch (error) {
+      console.error('Error listing connected cases:', error);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to list connected cases'
       };
     }
   }

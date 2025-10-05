@@ -36,9 +36,7 @@ export interface ServiceTicketsApiContract {
   listTickets(
     params?: ListTicketsParams
   ): Promise<ApiResponse<(ServiceTicket & { customer?: Customer })[]>>;
-  fetchTicketWithRelations(
-    id: string
-  ): Promise<
+  fetchTicketWithRelations(id: string): Promise<
     ApiResponse<{
       ticket: ServiceTicket & { customer?: Customer };
       attachments: TicketAttachment[];
@@ -70,6 +68,9 @@ export interface ServiceTicketsApiContract {
   findTicketByBatteryCaseId(
     batteryId: string
   ): Promise<ApiResponse<{ id: string; ticket_number: string } | null>>;
+  findTicketByVehicleCaseId(
+    vehicleId: string
+  ): Promise<ApiResponse<{ id: string; ticket_number: string } | null>>;
   listTicketHistory(
     ticketId: string
   ): Promise<
@@ -87,6 +88,13 @@ export interface ServiceTicketsApiContract {
     newStatus: import('@/lib/types/service-tickets').ServiceTicketStatus,
     note?: string
   ): Promise<ApiResponse<ServiceTicket>>;
+  listConnectedCases(params?: {
+    limit?: number;
+    offset?: number;
+    status?: import('@/lib/types/service-tickets').ServiceTicketStatus;
+  }): Promise<
+    ApiResponse<import('@/lib/types/service-tickets').ConnectedCase[]>
+  >;
 }
 
 import { supabaseServiceTicketsRepository } from './service-tickets.supabase';
