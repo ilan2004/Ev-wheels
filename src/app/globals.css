@@ -4,6 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Custom breakpoints */
+@custom-media --xs (width >= 475px);
+
 @import './theme.css';
 
 :root {

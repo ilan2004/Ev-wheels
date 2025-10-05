@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 // Removed User import - using SerializedUser interface
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,11 @@ import {
   EnhancedCard
 } from '@/components/ui/enhanced-card';
 import { formatDashboardDate, getLayoutClasses } from '@/lib/dashboard-utils';
+import { NotificationsBell } from '@/components/dashboard/technician/notifications-bell';
+import { InboxList } from '@/components/dashboard/technician/inbox-list';
+import { MyWorkList } from '@/components/dashboard/technician/my-work-list';
+import { TicketDetailsDrawer } from '@/components/dashboard/technician/ticket-details-drawer';
+import { useRealtimeSync } from '@/hooks/use-realtime';
 
 // Serialized user data for client components
 interface SerializedUser {
@@ -42,10 +48,20 @@ interface TechnicianDashboardProps {
 }
 
 export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
+  const emailName = user.emailAddresses?.[0]?.emailAddress?.split('@')[0] || null;
   const userName = user.firstName
     ? `${user.firstName} ${user.lastName || ''}`.trim()
-    : 'Technician';
+    : (emailName || 'Technician');
   const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  // Realtime and selection state for drawer
+  const { status } = useRealtimeSync({ serviceTickets: true, batteries: false, customers: false });
+  const [selectedTicketId, setSelectedTicketId] = React.useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const openDrawer = (id: string) => {
+    setSelectedTicketId(id);
+    setDrawerOpen(true);
+  };
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -81,52 +97,78 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
       >
         {/* Enhanced Welcome Header */}
         <motion.div
-          className={`flex ${isMobile ? 'flex-col space-y-4' : 'items-center justify-between'}`}
+          className="space-y-4 mb-6"
           variants={itemVariants}
         >
-          <div className='space-y-2'>
-            <div className='flex items-center gap-3'>
-              <h1 className='bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-3xl font-bold tracking-tight text-transparent dark:from-blue-400 dark:to-blue-600'>
-                {getGreeting()}, {userName}!
-              </h1>
-              <div className='hidden sm:block'>
-                <Badge
-                  variant='outline'
-                  className='border-blue-200 bg-blue-50 px-3 py-1 text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-400'
-                >
-                  Technician
-                </Badge>
+          {/* Mobile-first greeting */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <h1 className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-2xl sm:text-3xl font-bold tracking-tight text-transparent dark:from-blue-400 dark:to-blue-600 leading-tight">
+                  {getGreeting()},
+                </h1>
+                <div className="flex items-center gap-2">
+                  <h2 className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-2xl sm:text-3xl font-bold tracking-tight text-transparent dark:from-blue-400 dark:to-blue-600">
+                    Technician {userName}!
+                  </h2>
+                  <Badge
+                    variant="outline"
+                    className="border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-400 flex-shrink-0"
+                  >
+                    Technician
+                  </Badge>
+                </div>
               </div>
             </div>
-            <p className='text-muted-foreground text-lg'>
-              Ready to get some batteries fixed today?
-            </p>
-          </div>
-          <div
-            className={`flex items-center gap-4 ${isMobile ? 'justify-between' : ''}`}
-          >
-            {isMobile && (
-              <Badge
-                variant='outline'
-                className='border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'
+            
+            {/* Status and controls - mobile optimized */}
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+              {/* Realtime status */}
+              <div
+                title={status.connected ? 'Realtime connected' : 'Realtime disconnected'}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                  status.connected 
+                    ? 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-800' 
+                    : 'text-amber-700 bg-amber-50 border border-amber-200 dark:text-amber-400 dark:bg-amber-950/30 dark:border-amber-800'
+                }`}
+                aria-live="polite"
               >
-                Technician
-              </Badge>
-            )}
-            <div className='text-right'>
-              <div className='text-foreground text-sm font-medium'>
-                {formatDashboardDate(new Date(), isMobile ? 'short' : 'long')}
+                <span className={`h-1.5 w-1.5 rounded-full ${
+                  status.connected ? 'bg-green-500 animate-pulse' : 'bg-amber-500'
+                }`} />
+                <span className="hidden xs:inline">{status.connected ? 'Online' : 'Offline'}</span>
+                <span className="xs:hidden">{status.connected ? '●' : '○'}</span>
               </div>
-              <div className='text-muted-foreground text-xs'>
-                Shift: 8:00 AM - 6:00 PM
+              
+              {/* Notifications */}
+              <NotificationsBell />
+              
+              {/* Date and shift info */}
+              <div className="text-right hidden sm:block">
+                <div className="text-foreground text-sm font-medium">
+                  {formatDashboardDate(new Date(), isMobile ? 'short' : 'long')}
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  Shift: 8:00 AM - 6:00 PM
+                </div>
               </div>
+            </div>
+          </div>
+          
+          {/* Mobile date/shift info */}
+          <div className="sm:hidden flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+            <div className="text-sm font-medium">
+              {formatDashboardDate(new Date(), 'short')}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              8:00 AM - 6:00 PM
             </div>
           </div>
         </motion.div>
 
         {/* Enhanced Today's Summary */}
         <motion.div variants={itemVariants}>
-          <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
               title='My Assigned Tasks'
               value={12}
@@ -185,125 +227,17 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
           </div>
         </motion.div>
 
-        {/* Enhanced Quick Actions & Priority Tasks */}
-        <motion.div
-          className='grid gap-6 md:grid-cols-2'
-          variants={itemVariants}
-        >
-          <EnhancedCard variant='elevated' animated>
-            <div className='p-6'>
-              <div className='mb-4 flex items-center gap-2'>
-                <IconPlus className='text-primary h-5 w-5' />
-                <h3 className='text-lg font-semibold'>Quick Actions</h3>
-              </div>
-              <p className='text-muted-foreground mb-6 text-sm'>
-                Common tasks for battery service
-              </p>
-              <div className='grid gap-3'>
-                <Button
-                  asChild
-                  variant='default'
-                  className='h-12 justify-start'
-                >
-                  <Link href='/dashboard/job-cards/new'>
-                    <IconClipboardList className='mr-3 h-5 w-5' />
-                    New Job Card
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant='outline'
-                  className='h-12 justify-start'
-                >
-                  <Link href='/dashboard/batteries/new'>
-                    <IconBattery className='mr-3 h-5 w-5' />
-                    New Battery Record
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant='outline'
-                  className='h-12 justify-start'
-                >
-                  <Link href='/dashboard/invoices/quote/new'>
-                    <IconClipboardList className='mr-3 h-5 w-5' />
-                    Generate Quote
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant='outline'
-                  className='h-12 justify-start'
-                >
-                  <Link href='/dashboard/invoices/labels'>
-                    <IconPrinter className='mr-3 h-5 w-5' />
-                    Print Labels
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant='outline'
-                  className='h-12 justify-start'
-                >
-                  <Link href='/dashboard/customers'>
-                    <IconUsers className='mr-3 h-5 w-5' />
-                    Customer Lookup
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </EnhancedCard>
-
-          <div className='space-y-4'>
-            <div className='mb-4 flex items-center gap-2'>
-              <IconTool className='h-5 w-5 text-blue-600' />
-              <h3 className='text-lg font-semibold'>
-                Today&apos;s Priority Tasks
-              </h3>
-            </div>
-            <div className='space-y-3'>
-              <StatusCard
-                title='72V 39Ah - Basheer'
-                description='Promised delivery today'
-                status='danger'
-                icon={<IconAlertTriangle className='h-4 w-4' />}
-                action={{
-                  label: 'Start Repair',
-                  onClick: () =>
-                    (window.location.href = '/dashboard/batteries/repair/1')
-                }}
-              />
-
-              <StatusCard
-                title='60V 26Ah - Gafoor'
-                description='Due tomorrow'
-                status='warning'
-                icon={<IconClock className='h-4 w-4' />}
-                action={{
-                  label: 'View Details',
-                  onClick: () =>
-                    (window.location.href = '/dashboard/batteries/repair/2')
-                }}
-              />
-
-              <StatusCard
-                title='48V 30Ah - Jamsheer'
-                description='Cell balancing needed'
-                status='info'
-                icon={<IconBattery className='h-4 w-4' />}
-                action={{
-                  label: 'Begin Work',
-                  onClick: () =>
-                    (window.location.href = '/dashboard/batteries/repair/3')
-                }}
-              />
-            </div>
-          </div>
+        {/* Technician Work Area */}
+        <motion.div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2" variants={itemVariants}>
+          {/* Inbox */}
+          <InboxList onSelect={(id) => openDrawer(id)} />
+          {/* My Work */}
+          <MyWorkList onSelect={(id) => openDrawer(id)} />
         </motion.div>
 
         {/* Enhanced Work Progress */}
         <motion.div variants={itemVariants}>
-          <div className='grid gap-6 md:grid-cols-3'>
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             <ProgressCard
               title="Today's Tasks"
               description='Daily repair progress'
@@ -334,7 +268,7 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
 
         {/* Enhanced Recent Work & Customer Interactions */}
         <motion.div
-          className='grid gap-6 md:grid-cols-2'
+          className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2"
           variants={itemVariants}
         >
           <EnhancedCard variant='success' animated>
@@ -353,8 +287,9 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
 
               <div className='space-y-3'>
                 <motion.div
-                  className='flex items-center gap-4 rounded-lg border border-green-200 bg-white p-3 shadow-sm transition-all duration-200 hover:bg-green-50/30 hover:shadow-md dark:border-green-800 dark:bg-gray-900/50 dark:hover:bg-gray-800/50'
+                  className="flex items-center gap-3 sm:gap-4 rounded-lg border border-green-200 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:bg-green-50/30 hover:shadow-md dark:border-green-800 dark:bg-gray-900/50 dark:hover:bg-gray-800/50 cursor-pointer active:scale-[0.98] touch-manipulation"
                   whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2, ease: 'easeOut' }}
                 >
                   <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
@@ -378,8 +313,9 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 </motion.div>
 
                 <motion.div
-                  className='flex items-center gap-4 rounded-lg border border-green-200 bg-white p-3 shadow-sm dark:border-green-800 dark:bg-gray-900'
+                  className="flex items-center gap-3 sm:gap-4 rounded-lg border border-green-200 bg-white p-3 sm:p-4 shadow-sm dark:border-green-800 dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
                   whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
@@ -403,8 +339,9 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 </motion.div>
 
                 <motion.div
-                  className='flex items-center gap-4 rounded-lg border border-green-200 bg-white p-3 shadow-sm dark:border-green-800 dark:bg-gray-900'
+                  className="flex items-center gap-3 sm:gap-4 rounded-lg border border-green-200 bg-white p-3 sm:p-4 shadow-sm dark:border-green-800 dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
                   whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
@@ -446,8 +383,9 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
 
               <div className='space-y-3'>
                 <motion.div
-                  className='flex items-center gap-4 rounded-lg border bg-white p-3 shadow-sm transition-all duration-200 hover:bg-gray-50/50 hover:shadow-md dark:bg-gray-900/50 dark:hover:bg-gray-800/50'
+                  className="flex items-center gap-3 sm:gap-4 rounded-lg border bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:bg-gray-50/50 hover:shadow-md dark:bg-gray-900/50 dark:hover:bg-gray-800/50 cursor-pointer active:scale-[0.98] touch-manipulation"
                   whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2, ease: 'easeOut' }}
                 >
                   <div className='rounded-full bg-blue-100 p-2 dark:bg-blue-900/50'>
@@ -467,8 +405,9 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 </motion.div>
 
                 <motion.div
-                  className='flex items-center gap-4 rounded-lg border bg-white p-3 shadow-sm dark:bg-gray-900'
+                  className="flex items-center gap-3 sm:gap-4 rounded-lg border bg-white p-3 sm:p-4 shadow-sm dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
                   whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className='rounded-full bg-purple-100 p-2 dark:bg-purple-900/50'>
@@ -488,8 +427,9 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 </motion.div>
 
                 <motion.div
-                  className='flex items-center gap-4 rounded-lg border bg-white p-3 shadow-sm dark:bg-gray-900'
+                  className="flex items-center gap-3 sm:gap-4 rounded-lg border bg-white p-3 sm:p-4 shadow-sm dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
                   whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
@@ -510,76 +450,12 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
           </EnhancedCard>
         </motion.div>
 
-        {/* Enhanced Performance Summary */}
-        <motion.div variants={itemVariants}>
-          <EnhancedCard variant='elevated' animated>
-            <div className='p-6'>
-              <div className='mb-6 flex items-center justify-between'>
-                <div>
-                  <h3 className='text-lg font-semibold'>Performance Summary</h3>
-                  <p className='text-muted-foreground text-sm'>
-                    Your work statistics for this month
-                  </p>
-                </div>
-                <Button variant='outline' size='sm' asChild>
-                  <Link href='/dashboard/reports/personal'>
-                    View Detailed Report
-                  </Link>
-                </Button>
-              </div>
-
-              <div className='grid gap-6 md:grid-cols-3'>
-                <motion.div
-                  className='rounded-lg border border-blue-200 bg-blue-50 p-6 text-center transition-colors duration-200 hover:bg-blue-100/50 dark:border-blue-800 dark:bg-blue-950/30 dark:hover:bg-blue-950/40'
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <div className='mb-2 text-3xl font-bold text-blue-600'>
-                    134
-                  </div>
-                  <div className='text-sm font-medium text-blue-700 dark:text-blue-400'>
-                    Batteries Repaired
-                  </div>
-                  <div className='text-muted-foreground mt-1 text-xs'>
-                    +12 from last month
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  className='rounded-lg border border-green-200 bg-green-50 p-6 text-center transition-colors duration-200 hover:bg-green-100/50 dark:border-green-800 dark:bg-green-950/30 dark:hover:bg-green-950/40'
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <div className='mb-2 text-3xl font-bold text-green-600'>
-                    98%
-                  </div>
-                  <div className='text-sm font-medium text-green-700 dark:text-green-400'>
-                    Success Rate
-                  </div>
-                  <div className='text-muted-foreground mt-1 text-xs'>
-                    Excellent performance
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  className='rounded-lg border border-purple-200 bg-purple-50 p-6 text-center transition-colors duration-200 hover:bg-purple-100/50 dark:border-purple-800 dark:bg-purple-950/30 dark:hover:bg-purple-950/40'
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <div className='mb-2 text-3xl font-bold text-purple-600'>
-                    ₹1,67,200
-                  </div>
-                  <div className='text-sm font-medium text-purple-700 dark:text-purple-400'>
-                    Revenue Generated
-                  </div>
-                  <div className='text-muted-foreground mt-1 text-xs'>
-                    +18.5% increase
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </EnhancedCard>
-        </motion.div>
+      {/* Ticket Details Drawer */}
+      <TicketDetailsDrawer
+        ticketId={selectedTicketId}
+        open={drawerOpen}
+        onOpenChange={(v) => setDrawerOpen(v)}
+      />
       </motion.div>
     </PageContainer>
   );
