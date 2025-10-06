@@ -144,17 +144,93 @@ export const getRoleBadgeClassName = (role: string): string => {
   return cn(baseClasses, roleClass || SIDEBAR_STYLE_PRESETS.roleBadges.default);
 };
 
-// Status configuration (moved to separate object for better performance)
-export const STATUS_CONFIG = {
-  Tickets: { count: 12, urgent: 3, color: 'bg-red-500' },
-  Batteries: { count: 8, urgent: 1, color: 'bg-amber-500' },
-  Inventory: { count: 5, urgent: 2, color: 'bg-blue-500' },
-  Quotes: { count: 7, urgent: 0, color: 'bg-green-500' }
+// Live status configuration - now uses dynamic data
+export interface StatusInfo {
+  count: number;
+  urgent: number;
+  color: string;
+}
+
+// Status colors mapping
+const STATUS_COLORS = {
+  'Job Cards': 'bg-red-500',
+  'Batteries': 'bg-amber-500', 
+  'Inventory': 'bg-blue-500',
+  'Quotes': 'bg-green-500',
+  'Vehicles': 'bg-purple-500',
+  'Customers': 'bg-teal-500'
 } as const;
 
-// Optimized status getter (memoizable)
-export const getOptimizedItemStatus = (title: string) => {
-  return STATUS_CONFIG[title as keyof typeof STATUS_CONFIG] || null;
+// Function to get live status - will be replaced with hook data in components
+export const getOptimizedItemStatus = (title: string, liveData?: any): StatusInfo | null => {
+  if (!liveData) {
+    // Fallback to static data if live data not available
+    const fallback = {
+      'Job Cards': { count: 0, urgent: 0 },
+      'Batteries': { count: 0, urgent: 0 },
+      'Inventory': { count: 0, urgent: 0 },
+      'Quotes': { count: 0, urgent: 0 },
+      'Vehicles': { count: 0, urgent: 0 },
+      'Customers': { count: 0, urgent: 0 }
+    };
+    
+    const data = fallback[title as keyof typeof fallback];
+    if (!data) return null;
+    
+    return {
+      ...data,
+      color: STATUS_COLORS[title as keyof typeof STATUS_COLORS] || 'bg-gray-500'
+    };
+  }
+  
+  // Use live data when available
+  let statusData: { count: number; urgent: number } | null = null;
+  
+  switch (title) {
+    case 'Job Cards':
+      statusData = liveData.jobCards ? {
+        count: liveData.jobCards.total || 0,
+        urgent: liveData.jobCards.urgent || 0
+      } : null;
+      break;
+    case 'Batteries':
+      statusData = liveData.batteries ? {
+        count: liveData.batteries.total || 0,
+        urgent: liveData.batteries.urgent || 0
+      } : null;
+      break;
+    case 'Inventory':
+      statusData = liveData.inventory ? {
+        count: liveData.inventory.total || 0,
+        urgent: liveData.inventory.alerts || 0
+      } : null;
+      break;
+    case 'Quotes':
+      statusData = liveData.quotes ? {
+        count: liveData.quotes.total || 0,
+        urgent: liveData.quotes.expiringSoon || 0
+      } : null;
+      break;
+    case 'Vehicles':
+      statusData = liveData.vehicles ? {
+        count: liveData.vehicles.total || 0,
+        urgent: liveData.vehicles.overdue || 0
+      } : null;
+      break;
+    case 'Customers':
+      statusData = liveData.customers ? {
+        count: liveData.customers.total || 0,
+        urgent: 0 // Customers don't typically have urgent status
+      } : null;
+      break;
+  }
+  
+  if (!statusData) return null;
+  
+  return {
+    ...statusData,
+    color: STATUS_COLORS[title as keyof typeof STATUS_COLORS] || 'bg-gray-500'
+  };
 };
 
 // Badge style helpers

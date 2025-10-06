@@ -5,26 +5,16 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  IconBattery,
-  IconUsers,
   IconClipboardList,
-  IconPrinter,
-  IconTool,
   IconAlertTriangle,
   IconCircleCheck,
-  IconClock,
-  IconCalendar,
-  IconPlus
+  IconCalendar
 } from '@tabler/icons-react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useMediaQuery } from 'react-responsive';
 import PageContainer from '@/components/layout/page-container';
 import {
-  MetricCard,
-  StatusCard,
-  ProgressCard,
-  EnhancedCard
+  MetricCard
 } from '@/components/ui/enhanced-card';
 import { formatDashboardDate, getLayoutClasses } from '@/lib/dashboard-utils';
 import { NotificationsBell } from '@/components/dashboard/technician/notifications-bell';
@@ -177,7 +167,8 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 trend: 'neutral'
               }}
               icon={<IconClipboardList className='h-5 w-5' />}
-              variant='info'
+              variant='default'
+              accent='repairs'
               actionable
               onClick={() =>
                 (window.location.href = '/dashboard/batteries/status')
@@ -192,7 +183,8 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 trend: 'up'
               }}
               icon={<IconCircleCheck className='h-5 w-5' />}
-              variant='success'
+              variant='default'
+              accent='batteries'
               actionable
               onClick={() =>
                 (window.location.href = '/dashboard/batteries?filter=completed')
@@ -207,7 +199,8 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 trend: 'down'
               }}
               icon={<IconAlertTriangle className='h-5 w-5' />}
-              variant='danger'
+              variant='default'
+              accent='repairs'
               actionable
               onClick={() =>
                 (window.location.href = '/dashboard/batteries?priority=urgent')
@@ -222,7 +215,8 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
                 trend: 'up'
               }}
               icon={<IconCalendar className='h-5 w-5' />}
-              variant='elevated'
+              variant='default'
+              accent='revenue'
             />
           </div>
         </motion.div>
@@ -235,220 +229,6 @@ export function TechnicianDashboard({ user }: TechnicianDashboardProps) {
           <MyWorkList onSelect={(id) => openDrawer(id)} />
         </motion.div>
 
-        {/* Enhanced Work Progress */}
-        <motion.div variants={itemVariants}>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            <ProgressCard
-              title="Today's Tasks"
-              description='Daily repair progress'
-              progress={5}
-              total={12}
-              variant='info'
-              animated
-            />
-
-            <ProgressCard
-              title="This Week's Goal"
-              description='Weekly repair target'
-              progress={28}
-              total={35}
-              variant='success'
-              animated
-            />
-
-            <ProgressCard
-              title='Quality Score'
-              description='Repair quality rating'
-              progress={96}
-              variant='elevated'
-              animated
-            />
-          </div>
-        </motion.div>
-
-        {/* Enhanced Recent Work & Customer Interactions */}
-        <motion.div
-          className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2"
-          variants={itemVariants}
-        >
-          <EnhancedCard variant='success' animated>
-            <div className='p-6'>
-              <div className='mb-6 flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                  <IconCircleCheck className='h-5 w-5 text-green-600' />
-                  <h3 className='text-lg font-semibold'>Recently Completed</h3>
-                </div>
-                <Button variant='ghost' size='sm' asChild>
-                  <Link href='/dashboard/batteries?filter=completed'>
-                    View All
-                  </Link>
-                </Button>
-              </div>
-
-              <div className='space-y-3'>
-                <motion.div
-                  className="flex items-center gap-3 sm:gap-4 rounded-lg border border-green-200 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:bg-green-50/30 hover:shadow-md dark:border-green-800 dark:bg-gray-900/50 dark:hover:bg-gray-800/50 cursor-pointer active:scale-[0.98] touch-manipulation"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
-                    <IconBattery className='h-4 w-4 text-green-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-medium'>51V 30Ah - Binu</div>
-                    <div className='text-muted-foreground text-xs'>
-                      Completed{' '}
-                      {formatDashboardDate(
-                        new Date(Date.now() - 2 * 60 * 60 * 1000)
-                      )}
-                    </div>
-                  </div>
-                  <Badge
-                    variant='outline'
-                    className='border-green-200 text-xs font-medium text-green-600'
-                  >
-                    ₹3,300
-                  </Badge>
-                </motion.div>
-
-                <motion.div
-                  className="flex items-center gap-3 sm:gap-4 rounded-lg border border-green-200 bg-white p-3 sm:p-4 shadow-sm dark:border-green-800 dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
-                    <IconBattery className='h-4 w-4 text-green-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-medium'>72V 26Ah - Mishal</div>
-                    <div className='text-muted-foreground text-xs'>
-                      Completed{' '}
-                      {formatDashboardDate(
-                        new Date(Date.now() - 4 * 60 * 60 * 1000)
-                      )}
-                    </div>
-                  </div>
-                  <Badge
-                    variant='outline'
-                    className='border-green-200 text-xs font-medium text-green-600'
-                  >
-                    ₹4,500
-                  </Badge>
-                </motion.div>
-
-                <motion.div
-                  className="flex items-center gap-3 sm:gap-4 rounded-lg border border-green-200 bg-white p-3 sm:p-4 shadow-sm dark:border-green-800 dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
-                    <IconBattery className='h-4 w-4 text-green-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-medium'>TVS 48V 31Ah</div>
-                    <div className='text-muted-foreground text-xs'>
-                      Cell balancing •{' '}
-                      {formatDashboardDate(
-                        new Date(Date.now() - 6 * 60 * 60 * 1000)
-                      )}
-                    </div>
-                  </div>
-                  <Badge
-                    variant='outline'
-                    className='border-green-200 text-xs font-medium text-green-600'
-                  >
-                    ₹1,200
-                  </Badge>
-                </motion.div>
-              </div>
-            </div>
-          </EnhancedCard>
-
-          <EnhancedCard variant='info' animated>
-            <div className='p-6'>
-              <div className='mb-6 flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                  <IconUsers className='h-5 w-5 text-blue-600' />
-                  <h3 className='text-lg font-semibold'>
-                    Customer Interactions
-                  </h3>
-                </div>
-                <Button variant='ghost' size='sm' asChild>
-                  <Link href='/dashboard/customers'>View All</Link>
-                </Button>
-              </div>
-
-              <div className='space-y-3'>
-                <motion.div
-                  className="flex items-center gap-3 sm:gap-4 rounded-lg border bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:bg-gray-50/50 hover:shadow-md dark:bg-gray-900/50 dark:hover:bg-gray-800/50 cursor-pointer active:scale-[0.98] touch-manipulation"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <div className='rounded-full bg-blue-100 p-2 dark:bg-blue-900/50'>
-                    <IconUsers className='h-4 w-4 text-blue-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-medium'>
-                      New customer: Ramees
-                    </div>
-                    <div className='text-muted-foreground text-xs'>
-                      62.9V 30Ah battery assessment
-                    </div>
-                  </div>
-                  <Badge variant='secondary' className='text-xs'>
-                    New
-                  </Badge>
-                </motion.div>
-
-                <motion.div
-                  className="flex items-center gap-3 sm:gap-4 rounded-lg border bg-white p-3 sm:p-4 shadow-sm dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className='rounded-full bg-purple-100 p-2 dark:bg-purple-900/50'>
-                    <IconClipboardList className='h-4 w-4 text-purple-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-medium'>
-                      Quote sent to Dhanesh
-                    </div>
-                    <div className='text-muted-foreground text-xs'>
-                      TVS battery repair estimate
-                    </div>
-                  </div>
-                  <Badge variant='outline' className='text-xs'>
-                    Quote
-                  </Badge>
-                </motion.div>
-
-                <motion.div
-                  className="flex items-center gap-3 sm:gap-4 rounded-lg border bg-white p-3 sm:p-4 shadow-sm dark:bg-gray-900 cursor-pointer active:scale-[0.98] touch-manipulation"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className='rounded-full bg-green-100 p-2 dark:bg-green-900/50'>
-                    <IconCircleCheck className='h-4 w-4 text-green-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-medium'>Delivery to Afzal</div>
-                    <div className='text-muted-foreground text-xs'>
-                      60V 26Ah repair completed
-                    </div>
-                  </div>
-                  <Badge variant='outline' className='text-xs text-green-600'>
-                    Delivered
-                  </Badge>
-                </motion.div>
-              </div>
-            </div>
-          </EnhancedCard>
-        </motion.div>
 
       {/* Ticket Details Drawer */}
       <TicketDetailsDrawer

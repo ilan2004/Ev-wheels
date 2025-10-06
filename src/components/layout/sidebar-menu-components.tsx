@@ -1,6 +1,7 @@
 import React, { memo, useCallback } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { useSidebarData } from '@/hooks/use-sidebar-data';
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,18 +41,19 @@ export const SidebarNavigationItem = memo(
     categoryKey: string;
     categoryConfig: any;
   }) => {
+    const { data: sidebarData } = useSidebarData();
     const Icon =
       item.icon && item.icon in Icons
         ? Icons[item.icon as keyof typeof Icons]
         : Icons.logo;
-    const status = getOptimizedItemStatus(item.title);
+    const status = getOptimizedItemStatus(item.title, sidebarData);
     const isActive = pathname === item.url;
 
     // Memoize className calculations
     const menuButtonClassName = getMenuItemClassName(isActive, categoryKey);
     const iconClassName = getIconClassName(isActive, categoryKey);
     const textClassName = getTextClassName(isActive, categoryKey);
-    const statusBadgeClassName = getStatusBadgeClassName(status?.urgent > 0);
+    const statusBadgeClassName = getStatusBadgeClassName((status?.urgent ?? 0) > 0);
 
     // Check if has sub items
     const hasSubItems = item?.items && item?.items?.length > 0;
@@ -79,7 +81,7 @@ export const SidebarNavigationItem = memo(
                 <div className='ml-auto flex items-center gap-2'>
                   {status && (
                     <div className='flex items-center gap-1'>
-                      {status.urgent > 0 && (
+                      {(status.urgent ?? 0) > 0 && (
                         <IconAlertCircle className='h-3 w-3 text-red-500' />
                       )}
                       <Badge
@@ -132,7 +134,7 @@ export const SidebarNavigationItem = memo(
 
             {status && (
               <div className='ml-auto flex items-center gap-1'>
-                {status.urgent > 0 && (
+                {(status.urgent ?? 0) > 0 && (
                   <IconAlertCircle className='h-3 w-3 text-red-500' />
                 )}
                 <Badge variant='secondary' className={statusBadgeClassName}>

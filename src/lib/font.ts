@@ -11,12 +11,18 @@ import { cn } from '@/lib/utils';
 
 const fontSans = Geist({
   subsets: ['latin'],
-  variable: '--font-sans'
+  variable: '--font-sans',
+  fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+  preload: false,
+  display: 'swap'
 });
 
 const fontMono = Geist_Mono({
   subsets: ['latin'],
-  variable: '--font-mono'
+  variable: '--font-mono',
+  fallback: ['ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
+  preload: false,
+  display: 'swap'
 });
 
 const fontInstrument = Instrument_Sans({

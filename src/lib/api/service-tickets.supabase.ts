@@ -306,6 +306,108 @@ export class SupabaseServiceTicketsRepository {
     }
   }
 
+  async createBatteryRecords(params: {
+    ticketId: string;
+    customerId: string;
+    batteries: {
+      serial_number: string;
+      brand: string;
+      model?: string;
+      battery_type: string;
+      voltage: number;
+      capacity: number;
+      cell_type: string;
+      condition_notes?: string;
+    }[];
+  }): Promise<ApiResponse<string[]>> {
+    const { ticketId, customerId, batteries } = params;
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      if (!uid) return { success: false, error: 'Not authenticated' };
+
+      const createdBatteryIds: string[] = [];
+
+      for (const battery of batteries) {
+        const batteryPayloadBase = {
+          serial_number: battery.serial_number,
+          brand: battery.brand,
+          model: battery.model || null,
+          battery_type: battery.battery_type,
+          voltage: battery.voltage,
+          capacity: battery.capacity,
+          cell_type: battery.cell_type,
+          customer_id: customerId,
+          status: 'received',
+          repair_notes: battery.condition_notes || 'Created from intake form',
+          created_by: uid,
+          updated_by: uid
+        } as any;
+
+        // Apply location scoping for RLS
+        const batteryPayload = withLocationId('battery_records', batteryPayloadBase);
+
+        const { data: newBattery, error: batteryErr } = await supabase
+          .from('battery_records')
+          .insert(batteryPayload)
+          .select('id')
+          .single();
+
+        if (batteryErr) throw batteryErr;
+        createdBatteryIds.push((newBattery as any).id);
+      }
+
+      return { success: true, data: createdBatteryIds };
+    } catch (error) {
+      console.error('Error creating battery records:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create battery records'
+      };
+    }
+  }
+
+  async linkBatteriesToTicket(params: {
+    ticketId: string;
+    batteryIds: string[];
+    autoTriage: boolean;
+  }): Promise<ApiResponse<boolean>> {
+    const { ticketId, batteryIds, autoTriage } = params;
+    try {
+      // If multiple batteries, link the first one as the primary battery_case_id
+      // In a more sophisticated system, you might want to handle multiple batteries differently
+      const primaryBatteryId = batteryIds[0];
+
+      if (primaryBatteryId) {
+        const updatePayload: any = {
+          battery_case_id: primaryBatteryId
+        };
+
+        // Auto-triage if requested
+        if (autoTriage) {
+          updatePayload.status = 'triaged';
+          updatePayload.triaged_at = new Date().toISOString();
+          updatePayload.triage_notes = `Auto-triaged: ${batteryIds.length} battery(s) linked`;
+        }
+
+        const { error } = await supabase
+          .from('service_tickets')
+          .update(updatePayload)
+          .eq('id', ticketId);
+
+        if (error) throw error;
+      }
+
+      return { success: true, data: true };
+    } catch (error) {
+      console.error('Error linking batteries to ticket:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to link batteries to ticket'
+      };
+    }
+  }
+
   async triageTicket(params: {
     ticketId: string;
     routeTo: 'vehicle' | 'battery' | 'both';

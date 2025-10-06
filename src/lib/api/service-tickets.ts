@@ -76,6 +76,25 @@ export interface ServiceTicketsApiContract {
   ): Promise<
     ApiResponse<import('@/lib/types/service-tickets').ServiceTicketHistory[]>
   >;
+  createBatteryRecords(params: {
+    ticketId: string;
+    customerId: string;
+    batteries: {
+      serial_number: string;
+      brand: string;
+      model?: string;
+      battery_type: string;
+      voltage: number;
+      capacity: number;
+      cell_type: string;
+      condition_notes?: string;
+    }[];
+  }): Promise<ApiResponse<string[]>>;
+  linkBatteriesToTicket(params: {
+    ticketId: string;
+    batteryIds: string[];
+    autoTriage: boolean;
+  }): Promise<ApiResponse<boolean>>;
   triageTicket(params: {
     ticketId: string;
     routeTo: 'vehicle' | 'battery' | 'both';

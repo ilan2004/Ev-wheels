@@ -42,7 +42,8 @@ import {
   IconBattery,
   IconUserCircle,
   IconTrendingUp,
-  IconAlertCircle
+  IconAlertCircle,
+  IconRefresh
 } from '@tabler/icons-react';
 import {
   SidebarQuickActions,
@@ -57,6 +58,7 @@ import * as React from 'react';
 import { Icons } from '../icons';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useSidebarStats, useSidebarData } from '@/hooks/use-sidebar-data';
 export const company = {
   name: 'E-Wheels',
   logo: IconBattery,
@@ -116,17 +118,7 @@ const CATEGORY_CONFIG = {
   }
 };
 
-// Status indicators for different navigation items
-const getItemStatus = (title: string, pathname: string) => {
-  const statusConfig = {
-    'Job Cards': { count: 12, urgent: 3, color: 'bg-red-500' },
-    Batteries: { count: 8, urgent: 1, color: 'bg-amber-500' },
-    Inventory: { count: 5, urgent: 2, color: 'bg-blue-500' },
-    Quotes: { count: 7, urgent: 0, color: 'bg-green-500' }
-  };
-
-  return statusConfig[title as keyof typeof statusConfig] || null;
-};
+// Status indicators now handled by live data in sidebar-helpers.ts
 
 // Get category for a navigation item
 const getCategoryForItem = (title: string) => {
@@ -144,6 +136,8 @@ export default function AppSidebar() {
   const { user, userInfo, isLoaded, hasAnyPermission } = useAuth();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const { totalTasks, completedTasks, urgentTasks, isLoading: statsLoading } = useSidebarStats();
+  const { data: sidebarData, isFetching: sidebarFetching, refetch: refreshSidebarData } = useSidebarData();
 
   // Performance monitoring
   const finishRender = measureRender('AppSidebar');
@@ -232,31 +226,42 @@ export default function AppSidebar() {
           <div className='border-sidebar-border/30 border-b px-4 py-2'>
             <div className='flex items-center justify-between'>
               <SidebarRoleBadge userInfo={userInfo} />
-              <div className='flex items-center gap-1'>
-                <IconTrendingUp className='h-3 w-3 text-green-500' />
-                <span className='text-xs font-medium text-green-600 dark:text-green-400'>
-                  Active
-                </span>
+              <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-1'>
+                  <IconTrendingUp className='h-3 w-3 text-green-500' />
+                  <span className='text-xs font-medium text-green-600 dark:text-green-400'>
+                    Active
+                  </span>
+                </div>
+                <button
+                  onClick={() => refreshSidebarData()}
+                  className={`flex items-center justify-center h-5 w-5 rounded text-xs transition-colors hover:bg-sidebar-accent ${
+                    sidebarFetching ? 'animate-spin' : ''
+                  }`}
+                  title='Refresh sidebar data'
+                >
+                  <IconRefresh className='h-3 w-3 text-muted-foreground hover:text-foreground' />
+                </button>
               </div>
             </div>
 
-            {/* Quick Stats */}
+            {/* Quick Stats - Live Data */}
             <div className='mt-3 grid grid-cols-3 gap-2 text-xs'>
               <div className='rounded bg-blue-50 p-1 text-center dark:bg-blue-950/20'>
                 <div className='font-semibold text-blue-600 dark:text-blue-400'>
-                  12
+                  {statsLoading ? '—' : totalTasks}
                 </div>
                 <div className='text-muted-foreground'>Tasks</div>
               </div>
               <div className='rounded bg-green-50 p-1 text-center dark:bg-green-950/20'>
                 <div className='font-semibold text-green-600 dark:text-green-400'>
-                  8
+                  {statsLoading ? '—' : completedTasks}
                 </div>
                 <div className='text-muted-foreground'>Done</div>
               </div>
               <div className='rounded bg-amber-50 p-1 text-center dark:bg-amber-950/20'>
                 <div className='font-semibold text-amber-600 dark:text-amber-400'>
-                  3
+                  {statsLoading ? '—' : urgentTasks}
                 </div>
                 <div className='text-muted-foreground'>Urgent</div>
               </div>

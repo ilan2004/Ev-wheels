@@ -13,6 +13,17 @@ const baseConfig: NextConfig = {
     ]
   },
   transpilePackages: ['geist'],
+  experimental: {
+    optimizePackageImports: ['next/font'],
+    turbo: {
+      rules: {
+        '*.css': {
+          loaders: ['css-loader'],
+          as: '*.css'
+        }
+      }
+    }
+  },
   async redirects() {
     return [
       // Legacy tickets routes to new job-cards routes

@@ -24,16 +24,16 @@ export type CardSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const cardVariants = {
   default:
-    'border-border bg-card hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 transition-shadow duration-200',
+    'border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200',
   elevated:
-    'border-border bg-card shadow-lg hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 transition-shadow duration-200 ring-1 ring-black/5 dark:ring-white/5',
+    'border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200 ring-1 ring-sidebar-border/50',
   success:
-    'border-green-200 bg-green-50/50 hover:bg-green-50/70 dark:hover:bg-green-950/40 shadow-md dark:border-green-800 dark:bg-green-950/30 transition-colors duration-200',
+    'border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200',
   warning:
-    'border-orange-200 bg-orange-50/50 hover:bg-orange-50/70 dark:hover:bg-orange-950/40 shadow-md dark:border-orange-800 dark:bg-orange-950/30 transition-colors duration-200',
+    'border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200',
   danger:
-    'border-red-200 bg-red-50/50 hover:bg-red-50/70 dark:hover:bg-red-950/40 shadow-md dark:border-red-800 dark:bg-red-950/30 transition-colors duration-200',
-  info: 'border-blue-200 bg-blue-50/50 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 shadow-md dark:border-blue-800 dark:bg-blue-950/30 transition-colors duration-200'
+    'border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200',
+  info: 'border-sidebar-border bg-sidebar text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200'
 };
 
 const cardSizes = {
@@ -63,7 +63,7 @@ export function EnhancedCard({
     cardVariants[variant],
     cardSizes[size],
     hoverable &&
-      'cursor-pointer hover:scale-[1.01] hover:border-opacity-70 transition-all duration-200 ease-out',
+      'cursor-pointer hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none active:bg-sidebar-accent active:text-sidebar-accent-foreground transition-all duration-200 ease-out',
     className
   );
 
@@ -128,7 +128,7 @@ export function MetricCard({
       case 'down':
         return 'text-red-600 dark:text-red-400';
       case 'neutral':
-        return 'text-muted-foreground';
+        return 'text-sidebar-foreground/60';
     }
   };
 
@@ -188,34 +188,34 @@ export function MetricCard({
           : undefined
       }
     >
-      <div className='p-4 pb-2'>
-        <div className='mb-3 flex items-center justify-between'>
-          <div className='text-muted-foreground text-sm font-medium'>
+      <div className='p-4 pb-3'>
+        <div className='mb-4 flex items-center justify-between'>
+          <div className='text-sidebar-foreground/70 text-sm font-medium tracking-tight'>
             {title}
           </div>
           {icon && (
             <div
               className={cn(
-                'grid h-8 w-8 place-items-center rounded-full',
-                accent ? '' : 'text-muted-foreground bg-muted'
+                'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors duration-200',
+                accent ? 'border-current/20 bg-current/5' : 'border-sidebar-border bg-sidebar text-sidebar-foreground'
               )}
-              style={getChipStyles(accent)}
+              style={accent ? getChipStyles(accent) : undefined}
             >
               {icon}
             </div>
           )}
         </div>
-        <div className='space-y-1'>
-          <div className='text-foreground text-2xl font-bold'>{value}</div>
+        <div className='space-y-2'>
+          <div className='text-sidebar-foreground text-2xl font-bold tabular-nums tracking-tight'>{value}</div>
           {change && (
             <p
               className={cn(
-                'flex items-center gap-1 text-xs',
+                'flex items-center gap-1.5 text-xs font-medium',
                 getTrendColor(change.trend)
               )}
             >
-              <span>{getTrendIcon(change.trend)}</span>
-              {change.value}
+              <span className='text-xs'>{getTrendIcon(change.trend)}</span>
+              <span className='truncate'>{change.value}</span>
             </p>
           )}
         </div>
@@ -351,28 +351,28 @@ export function ProgressCard({
       <div className='p-4'>
         <div className='mb-4 flex items-center justify-between'>
           <div>
-            <div className='mb-1 text-base font-medium'>{title}</div>
+            <div className='mb-1 text-base font-medium tracking-tight'>{title}</div>
             {description && (
               <div className='text-muted-foreground text-sm'>{description}</div>
             )}
           </div>
           {showPercentage && (
-            <div className='text-muted-foreground text-2xl font-bold'>
+            <div className='text-muted-foreground text-xl font-bold tabular-nums'>
               {percentage}%
             </div>
           )}
         </div>
-        <div className='space-y-2'>
+        <div className='space-y-3'>
           {total && (
-            <div className='text-muted-foreground flex justify-between text-sm'>
+            <div className='text-muted-foreground flex justify-between text-sm font-medium'>
               <span>
                 {progress} of {total} completed
               </span>
             </div>
           )}
-          <div className='bg-muted h-2.5 w-full rounded-full'>
+          <div className='bg-muted h-2 w-full rounded-full overflow-hidden'>
             <motion.div
-              className='bg-primary h-2.5 rounded-full transition-all duration-500'
+              className='bg-primary h-2 rounded-full transition-all duration-500'
               initial={{ width: 0 }}
               animate={{ width: `${percentage}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}

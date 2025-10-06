@@ -8,7 +8,8 @@
   },
   "description": "EV Wheels, Custom Software",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -28,7 +29,8 @@
       "prettier --write --no-error-on-unmatched-pattern"
     ]
   },
-  "dependencies": {
+"dependencies": {
+    "css-loader": "^6.x.x",
     "@clerk/nextjs": "^6.12.12",
     "@clerk/themes": "^2.2.26",
     "@dnd-kit/core": "^6.3.1",
