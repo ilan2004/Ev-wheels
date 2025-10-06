@@ -26,7 +26,7 @@ import {
   updateUserLocations,
   type UserProfile
 } from '@/lib/api/admin/users';
-import { toast } from 'sonner';
+import { ToastManager } from '@/lib/toast-utils';
 import { Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -74,6 +74,11 @@ export function UserEditDialog({
 
     setLoading(true);
 
+    // Create loading toast
+    const loadingToastId = ToastManager.loading(
+      `Updating user ${user.username}...`
+    );
+
     try {
       // Update role if changed
       if (selectedRole !== user.role) {
@@ -104,12 +109,16 @@ export function UserEditDialog({
         }
       }
 
-      toast.success('User updated successfully');
+      // Dismiss loading toast and show success
+      ToastManager.dismiss(loadingToastId);
+      ToastManager.users.success(`User ${user.username} updated successfully`);
       onOpenChange(false);
       onUserUpdated?.();
     } catch (error: any) {
       console.error('Error updating user:', error);
-      toast.error(error.message || 'Failed to update user');
+      // Dismiss loading toast and show error
+      ToastManager.dismiss(loadingToastId);
+      ToastManager.users.error('Failed to update user', error.message);
     } finally {
       setLoading(false);
     }

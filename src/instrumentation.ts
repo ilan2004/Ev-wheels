@@ -1,34 +1,11 @@
-import * as Sentry from '@sentry/nextjs';
-
-const sentryOptions: Sentry.NodeOptions | Sentry.EdgeOptions = {
-  // Sentry DSN
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-
-  // Enable Spotlight in development
-  spotlight: process.env.NODE_ENV === 'development',
-
-  // Adds request headers and IP for users, for more info visit
-  sendDefaultPii: true,
-
-  // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: process.env.NODE_ENV === 'development' ? 0.1 : 1,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false
-};
+// Temporarily disabled Sentry to fix dev server issues
+// import * as Sentry from '@sentry/nextjs';
 
 export async function register() {
-  if (!process.env.NEXT_PUBLIC_SENTRY_DISABLED) {
-    if (process.env.NEXT_RUNTIME === 'nodejs') {
-      // Node.js Sentry configuration
-      Sentry.init(sentryOptions);
-    }
-
-    if (process.env.NEXT_RUNTIME === 'edge') {
-      // Edge Sentry configuration
-      Sentry.init(sentryOptions);
-    }
-  }
+  // Sentry disabled
+  console.log('Instrumentation registered (Sentry disabled)');
 }
 
-export const onRequestError = Sentry.captureRequestError;
+export const onRequestError = async (error: any) => {
+  console.error('Request error:', error);
+};

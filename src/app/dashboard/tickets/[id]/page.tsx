@@ -21,6 +21,7 @@ import type { Customer } from '@/types/bms';
 import { EnhancedMediaUploader } from '@/components/job-cards/enhanced-media-uploader';
 import { MediaViewerModal } from '@/components/media/media-viewer-modal';
 import { toast } from 'sonner';
+import { ToastManager } from '@/lib/toast-utils';
 import type { ServiceTicketHistory } from '@/lib/types/service-tickets';
 import PageContainer from '@/components/layout/page-container';
 import { useRequireAuth } from '@/lib/auth/use-require-auth';
@@ -187,23 +188,37 @@ export default function JobCardDetailPage() {
   }, [ticketId]);
 
   const handleMediaUpload = async (files: File[], category: string) => {
-    // Determine attachment type based on category
-    let attachmentType: 'photo' | 'audio' = 'photo';
-    if (category === 'voice-notes') {
-      attachmentType = 'audio';
+    const loadingToastId = ToastManager.file.uploading();
+    
+    try {
+      // Determine attachment type based on category
+      let attachmentType: 'photo' | 'audio' = 'photo';
+      if (category === 'voice-notes') {
+        attachmentType = 'audio';
+      }
+
+      const res = await serviceTicketsApi.uploadAttachments({
+        ticketId,
+        files,
+        type: attachmentType
+      });
+
+      if (!res.success) {
+        ToastManager.error(loadingToastId, res.error || 'Failed to upload files');
+        return;
+      }
+
+      // Refresh attachments list
+      const listed = await serviceTicketsApi.listTicketAttachments(ticketId);
+      if (listed.success && listed.data) setAttachments(listed.data);
+      
+      ToastManager.file.uploaded(loadingToastId);
+    } catch (error) {
+      ToastManager.error(
+        loadingToastId,
+        error instanceof Error ? error.message : 'Failed to upload files'
+      );
     }
-
-    const res = await serviceTicketsApi.uploadAttachments({
-      ticketId,
-      files,
-      type: attachmentType
-    });
-
-    if (!res.success) throw new Error(res.error || 'Failed to upload files');
-
-    // Refresh attachments list
-    const listed = await serviceTicketsApi.listTicketAttachments(ticketId);
-    if (listed.success && listed.data) setAttachments(listed.data);
   };
 
   if (loading)
@@ -239,17 +254,28 @@ export default function JobCardDetailPage() {
           ticket={ticket}
           canEdit={canEdit}
           onStatusChange={async (s) => {
-            const res = await serviceTicketsApi.updateTicketStatus(ticketId, s);
-            if (!res.success) {
-              toast.error(res.error || 'Failed');
-              return;
+            const loadingToastId = ToastManager.ticket.updating();
+            
+            try {
+              const res = await serviceTicketsApi.updateTicketStatus(ticketId, s);
+              if (!res.success) {
+                ToastManager.error(loadingToastId, res.error || 'Failed to update status');
+                return;
+              }
+              
+              const updated =
+                await serviceTicketsApi.fetchTicketWithRelations(ticketId);
+              if (updated.success && updated.data) setTicket(updated.data.ticket);
+              const h = await serviceTicketsApi.listTicketHistory(ticketId);
+              if (h.success && h.data) setHistory(h.data);
+              
+              ToastManager.ticket.updated(loadingToastId);
+            } catch (error) {
+              ToastManager.error(
+                loadingToastId, 
+                error instanceof Error ? error.message : 'Failed to update status'
+              );
             }
-            const updated =
-              await serviceTicketsApi.fetchTicketWithRelations(ticketId);
-            if (updated.success && updated.data) setTicket(updated.data.ticket);
-            const h = await serviceTicketsApi.listTicketHistory(ticketId);
-            if (h.success && h.data) setHistory(h.data);
-            toast.success('Status updated');
           }}
         />
         <SectionHeader
@@ -601,17 +627,31 @@ export default function JobCardDetailPage() {
                     <button
                       disabled={selectedIds.size === 0}
                       onClick={async () => {
-                        const api = serviceTicketsApi;
-                        await Promise.all(
-                          Array.from(selectedIds).map((id) =>
-                            api.deleteTicketAttachment(id)
-                          )
-                        );
-                        setSelectedIds(new Set());
-                        const listed =
-                          await api.listTicketAttachments(ticketId);
-                        if (listed.success && listed.data)
-                          setAttachments(listed.data);
+                        const loadingToastId = ToastManager.file.deleting();
+                        
+                        try {
+                          const api = serviceTicketsApi;
+                          await Promise.all(
+                            Array.from(selectedIds).map((id) =>
+                              api.deleteTicketAttachment(id)
+                            )
+                          );
+                          setSelectedIds(new Set());
+                          const listed =
+                            await api.listTicketAttachments(ticketId);
+                          if (listed.success && listed.data)
+                            setAttachments(listed.data);
+                            
+                          ToastManager.success(
+                            loadingToastId,
+                            `${selectedIds.size} file(s) deleted successfully`
+                          );
+                        } catch (error) {
+                          ToastManager.error(
+                            loadingToastId,
+                            error instanceof Error ? error.message : 'Failed to delete files'
+                          );
+                        }
                       }}
                       className={`rounded px-2 py-1 ${selectedIds.size ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
                     >
@@ -716,15 +756,26 @@ export default function JobCardDetailPage() {
                               variant='destructive'
                               size='sm'
                               onClick={async () => {
-                                await serviceTicketsApi.deleteTicketAttachment(
-                                  a.id
-                                );
-                                const listed =
-                                  await serviceTicketsApi.listTicketAttachments(
-                                    ticketId
+                                const loadingToastId = ToastManager.file.deleting();
+                                
+                                try {
+                                  await serviceTicketsApi.deleteTicketAttachment(
+                                    a.id
                                   );
-                                if (listed.success && listed.data)
-                                  setAttachments(listed.data);
+                                  const listed =
+                                    await serviceTicketsApi.listTicketAttachments(
+                                      ticketId
+                                    );
+                                  if (listed.success && listed.data)
+                                    setAttachments(listed.data);
+                                    
+                                  ToastManager.file.deleted(loadingToastId);
+                                } catch (error) {
+                                  ToastManager.error(
+                                    loadingToastId,
+                                    error instanceof Error ? error.message : 'Failed to delete file'
+                                  );
+                                }
                               }}
                             >
                               Delete
@@ -737,20 +788,32 @@ export default function JobCardDetailPage() {
                             onChange={async (e) => {
                               const f = e.target.files?.[0];
                               if (!f) return;
-                              await serviceTicketsApi.uploadAttachments({
-                                ticketId,
-                                files: [f],
-                                type: a.attachment_type
-                              });
-                              await serviceTicketsApi.deleteTicketAttachment(
-                                a.id
-                              );
-                              const listed =
-                                await serviceTicketsApi.listTicketAttachments(
-                                  ticketId
+                              
+                              const loadingToastId = ToastManager.loading('Replacing file...');
+                              
+                              try {
+                                await serviceTicketsApi.uploadAttachments({
+                                  ticketId,
+                                  files: [f],
+                                  type: a.attachment_type
+                                });
+                                await serviceTicketsApi.deleteTicketAttachment(
+                                  a.id
                                 );
-                              if (listed.success && listed.data)
-                                setAttachments(listed.data);
+                                const listed =
+                                  await serviceTicketsApi.listTicketAttachments(
+                                    ticketId
+                                  );
+                                if (listed.success && listed.data)
+                                  setAttachments(listed.data);
+                                  
+                                ToastManager.success(loadingToastId, 'File replaced successfully');
+                              } catch (error) {
+                                ToastManager.error(
+                                  loadingToastId,
+                                  error instanceof Error ? error.message : 'Failed to replace file'
+                                );
+                              }
                             }}
                           />
                         </div>

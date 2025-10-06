@@ -18,15 +18,23 @@ import { UserCreateDialog } from '@/components/admin/user-management/user-create
 import { UserEditDialog } from '@/components/admin/user-management/user-edit-dialog';
 import { listUsers, type UserProfile } from '@/lib/api/admin/users';
 import { getRoleDisplayName } from '@/lib/auth/utils';
-import { Search, Edit, UserPlus, MapPin, Calendar } from 'lucide-react';
+import { Search, Edit, UserPlus, MapPin, Calendar, Filter } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -35,21 +43,27 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    // Filter users based on search
-    if (!search) {
-      setFilteredUsers(users);
-    } else {
+    // Filter users based on search and role
+    let filtered = users;
+    
+    // Apply role filter
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter((user) => user.role === roleFilter);
+    }
+    
+    // Apply search filter
+    if (search) {
       const searchLower = search.toLowerCase();
-      setFilteredUsers(
-        users.filter(
-          (user) =>
-            user.email.toLowerCase().includes(searchLower) ||
-            user.username.toLowerCase().includes(searchLower) ||
-            getRoleDisplayName(user.role).toLowerCase().includes(searchLower)
-        )
+      filtered = filtered.filter(
+        (user) =>
+          user.email.toLowerCase().includes(searchLower) ||
+          user.username.toLowerCase().includes(searchLower) ||
+          getRoleDisplayName(user.role).toLowerCase().includes(searchLower)
       );
     }
-  }, [search, users]);
+    
+    setFilteredUsers(filtered);
+  }, [search, roleFilter, users]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -96,7 +110,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className='grid gap-4 md:grid-cols-3'>
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Total Users</CardTitle>
@@ -129,21 +143,82 @@ export default function AdminUsersPage() {
               </div>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Technicians
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='text-2xl font-bold'>
+                {users.filter((u) => u.role === 'technician').length}
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Location Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <MapPin className='h-5 w-5' />
+              User Distribution by Location
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='grid gap-2'>
+              {(() => {
+                const locationCounts = new Map<string, number>();
+                users.forEach(user => {
+                  user.locations?.forEach(loc => {
+                    const key = `${loc.location_name} (${loc.location_code})`;
+                    locationCounts.set(key, (locationCounts.get(key) || 0) + 1);
+                  });
+                });
+                return Array.from(locationCounts.entries())
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5)
+                  .map(([location, count]) => (
+                    <div key={location} className='flex items-center justify-between py-1'>
+                      <span className='text-sm text-muted-foreground'>{location}</span>
+                      <Badge variant='outline'>{count} users</Badge>
+                    </div>
+                  ));
+              })()}
+              {users.length > 0 && Array.from(new Map(users.flatMap(u => u.locations || []).map(loc => [`${loc.location_name} (${loc.location_code})`, 1]))).length === 0 && (
+                <p className='text-sm text-muted-foreground'>No location data available</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Search and Table */}
         <Card>
           <CardHeader>
             <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
               <CardTitle>All Users</CardTitle>
-              <div className='relative w-full sm:w-64'>
-                <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
-                <Input
-                  placeholder='Search users...'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className='pl-8'
-                />
+              <div className='flex flex-col gap-2 sm:flex-row sm:gap-4'>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className='w-full sm:w-48'>
+                    <Filter className='mr-2 h-4 w-4' />
+                    <SelectValue placeholder='Filter by role' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All Roles</SelectItem>
+                    <SelectItem value='admin'>Administrators</SelectItem>
+                    <SelectItem value='front_desk_manager'>Front Desk Managers</SelectItem>
+                    <SelectItem value='technician'>Technicians</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className='relative w-full sm:w-64'>
+                  <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
+                  <Input
+                    placeholder='Search users...'
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className='pl-8'
+                  />
+                </div>
               </div>
             </div>
           </CardHeader>

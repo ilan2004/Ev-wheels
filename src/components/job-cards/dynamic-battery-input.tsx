@@ -137,7 +137,7 @@ export function DynamicBatteryInput({
             <p className="text-muted-foreground text-center">
               No batteries added yet.
               <br />
-              Click "Add Battery" to include battery details.
+              Click &quot;Add Battery&quot; to include battery details.
             </p>
           </CardContent>
         </Card>

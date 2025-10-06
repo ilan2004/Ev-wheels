@@ -12,7 +12,6 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet';
 import SearchInput from '@/components/search-input';
-import LocationSwitcher from '@/components/location/location-switcher';
 import { ModeToggle } from '@/components/layout/ThemeToggle/theme-toggle';
 import { ThemeSelector } from '@/components/theme-selector';
 import { useAuth } from '@/hooks/use-auth';
@@ -51,13 +50,6 @@ export default function MobileActionsMenu() {
         <div className='flex flex-col gap-4 p-4'>
           <div>
             <SearchInput />
-          </div>
-
-          <div className='flex flex-col gap-2'>
-            <span className='text-muted-foreground text-xs font-medium'>
-              Location
-            </span>
-            <LocationSwitcher />
           </div>
 
           <div className='flex flex-col gap-2'>

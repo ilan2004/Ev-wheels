@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { ToastManager } from '@/lib/toast-utils';
 import { z } from 'zod';
 
 const triageTemplates = [
@@ -70,18 +71,32 @@ export function CaseManagement({
   });
 
   const onTriageSubmit = async (values: z.infer<typeof triageSchema>) => {
-    const res = await serviceTicketsApi.triageTicket({
-      ticketId,
-      routeTo: values.routeTo,
-      note: values.note || ''
-    });
+    const loadingToastId = ToastManager.triage.starting();
+    
+    try {
+      toast.loading('⏳ Processing triage...', { 
+        id: loadingToastId,
+        dismissible: true
+      });
+      
+      const res = await serviceTicketsApi.triageTicket({
+        ticketId,
+        routeTo: values.routeTo,
+        note: values.note || ''
+      });
 
-    if (res.success) {
-      toast.success('Ticket triaged successfully');
-      triageForm.reset();
-      onRefresh?.();
-    } else {
-      toast.error(res.error || 'Failed to triage ticket');
+      if (res.success) {
+        ToastManager.triage.completed(loadingToastId);
+        triageForm.reset();
+        onRefresh?.();
+      } else {
+        ToastManager.triage.failed(loadingToastId, res.error);
+      }
+    } catch (error) {
+      ToastManager.triage.failed(
+        loadingToastId, 
+        error instanceof Error ? error.message : 'Unexpected error'
+      );
     }
   };
 

@@ -9,7 +9,6 @@ import { UserNav } from './user-nav';
 import { ThemeSelector } from '../theme-selector';
 import { ModeToggle } from './ThemeToggle/theme-toggle';
 import CtaGithub from './cta-github';
-import LocationSwitcher from '@/components/location/location-switcher';
 import MobileActionsMenu from './mobile-actions-menu';
 
 export default function Header() {
@@ -31,7 +30,6 @@ export default function Header() {
       <div className='flex items-center gap-2 px-4'>
         {/* Desktop actions */}
         <div className='hidden items-center gap-2 md:flex'>
-          <LocationSwitcher />
           <CtaGithub />
           <SearchInput />
           <ModeToggle />

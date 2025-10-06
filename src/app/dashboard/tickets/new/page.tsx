@@ -25,6 +25,7 @@ import { serviceTicketsApi } from '@/lib/api/service-tickets';
 import { UnifiedMediaUploader } from '@/components/job-cards/unified-media-uploader';
 import { CustomerPicker } from '@/components/customers/customer-picker';
 import { toast } from 'sonner';
+import { ToastManager } from '@/lib/toast-utils';
 import PageContainer from '@/components/layout/page-container';
 import { useRequireAuth } from '@/lib/auth/use-require-auth';
 import { IconCar, IconBattery } from '@tabler/icons-react';
@@ -134,8 +135,12 @@ export default function NewServiceTicketPage() {
 
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
+    let loadingToastId: string | number | null = null;
+    
     try {
       // Step 1: Create the service ticket
+      loadingToastId = ToastManager.jobCard.creating();
+      
       const res = await serviceTicketsApi.createServiceTicket({
         customer_id: values.customer_id,
         symptom: values.symptom,
@@ -149,12 +154,16 @@ export default function NewServiceTicketPage() {
         throw new Error(res.error || 'Failed to create job card');
       const newTicketId = res.data.id;
       createdTicketId.current = newTicketId;
-      toast.success(`Job card ${res.data.ticket_number || ''} created`);
+      ToastManager.success(loadingToastId, `Job card ${res.data.ticket_number || ''} created successfully`);
 
       // Step 2: Create battery records if batteries are provided
       let batteryIds: string[] = [];
       if (hasBattery && values.batteries && values.batteries.length > 0) {
-        toast.info('Creating battery records...');
+        // Update the existing toast to show battery creation progress
+        toast.loading('⏳ Creating battery records...', { 
+          id: loadingToastId,
+          dismissible: true
+        });
         
         // Validate and clean battery data
         const cleanedBatteries = values.batteries.map(battery => ({
@@ -190,7 +199,7 @@ export default function NewServiceTicketPage() {
           }
         }
         
-        toast.success(`${batteryIds.length} battery record(s) created`);
+        ToastManager.success(loadingToastId, `${batteryIds.length} battery record(s) created successfully`);
       }
 
       // Step 4: Upload files with proper case linking
@@ -203,7 +212,8 @@ export default function NewServiceTicketPage() {
       const allAudio = voiceFiles;
 
       if (allPhotos.length > 0) {
-        toast.info('Uploading photos...');
+        // Update toast to show photo upload progress
+        loadingToastId = ToastManager.file.uploading();
         // For photos, link to battery case if battery-only, otherwise general ticket
         const uploadParams: any = {
           ticketId: newTicketId,
@@ -222,7 +232,15 @@ export default function NewServiceTicketPage() {
       }
 
       if (allAudio.length > 0) {
-        toast.info('Uploading audio...');
+        // Update toast to show audio upload progress (or continue from photo upload)
+        if (!loadingToastId) {
+          loadingToastId = ToastManager.file.uploading();
+        } else {
+          toast.loading('⏳ Uploading audio files...', { 
+            id: loadingToastId,
+            dismissible: true
+          });
+        }
         // For audio, also link to battery case if battery-only
         const uploadParams: any = {
           ticketId: newTicketId,
@@ -240,11 +258,22 @@ export default function NewServiceTicketPage() {
           throw new Error(upa.error || 'Failed to upload audio');
       }
 
+      // Final success notification
+      if (loadingToastId) {
+        ToastManager.success(loadingToastId, 'Job card created successfully! Redirecting...');
+      } else {
+        ToastManager.success('Job card created successfully! Redirecting...');
+      }
+
       // Navigate to detail page after uploads
       router.push(`/dashboard/job-cards/${newTicketId}`);
     } catch (e) {
       console.error(e);
-      toast.error(e instanceof Error ? e.message : 'Failed to create job card');
+      if (loadingToastId) {
+        ToastManager.error(loadingToastId, e instanceof Error ? e.message : 'Failed to create job card');
+      } else {
+        ToastManager.error(e instanceof Error ? e.message : 'Failed to create job card');
+      }
     } finally {
       setIsSubmitting(false);
     }
