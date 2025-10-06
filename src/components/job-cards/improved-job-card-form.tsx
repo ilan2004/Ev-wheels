@@ -115,7 +115,7 @@ export function ImprovedJobCardForm({
   const [currentStep, setCurrentStep] = useState(1);
   
   const form = useForm<JobCardFormData>({
-    resolver: zodResolver(jobCardSchema),
+    resolver: zodResolver(jobCardSchema) as any,
     defaultValues: {
       customer_id: '',
       item_types: {
